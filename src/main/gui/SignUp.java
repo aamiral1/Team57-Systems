@@ -20,6 +20,7 @@ public class SignUp extends JPanel {
     private JLabel postcode;
     private JLabel cityName;
     private JTextField sNameBox;
+    private JLabel jcomp15;
 
     public SignUp() {
         //construct components
@@ -37,6 +38,7 @@ public class SignUp extends JPanel {
         postcode = new JLabel ("Postcode :");
         cityName = new JLabel ("City Name :");
         sNameBox = new JTextField (5);
+        jcomp15 = new JLabel ("WELCOME TO THE LOGIN PAGE ");
 
         //adjust size and set layout
         setPreferredSize (new Dimension (752, 457));
@@ -57,6 +59,7 @@ public class SignUp extends JPanel {
         add (postcode);
         add (cityName);
         add (sNameBox);
+        add (jcomp15);
 
         //set component bounds (only needed by Absolute Positioning)
         sign.setBounds (320, 340, 100, 20);
@@ -73,6 +76,7 @@ public class SignUp extends JPanel {
         postcode.setBounds (220, 270, 65, 15);
         cityName.setBounds (215, 245, 65, 15);
         sNameBox.setBounds (290, 155, 170, 20);
+        jcomp15.setBounds (270, 80, 200, 20);
     }
 
 
