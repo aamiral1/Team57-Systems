@@ -10,10 +10,12 @@ public class DatabaseConnectionHandler {
         try {
             con = DriverManager.getConnection("jdbc:mysql://stusql.dcs.shef.ac.uk/team057", "team057", "iY2loowu9");
             System.out.println("Connection Success!");
+            
         }
 
         catch (Exception ex) {
             ex.printStackTrace();
+            System.out.println("Connection Failed!");
         }
     }
 

@@ -60,8 +60,7 @@ public class Login extends JFrame {
                 try {
                     stmt = db.con.createStatement();
 
-                    PreparedStatement pstmt = db.con
-                            .prepareStatement("SELECT * FROM User WHERE name=? AND hashed_password=?");
+                    PreparedStatement pstmt = db.con.prepareStatement("SELECT * FROM User WHERE name=? AND hashed_password=?");
                     pstmt.setString(1, username);
                     pstmt.setString(2, new String(password));
 

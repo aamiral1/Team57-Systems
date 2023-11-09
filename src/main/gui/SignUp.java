@@ -88,3 +88,9 @@ public class SignUp extends JPanel {
         frame.setVisible (true);
     }
 }
+
+// Implement action listener for signup button
+    // Open database connection (ensure VPN is on)
+    // Create a instance of the User class with entered inputs (using constructor)
+    // Create a new row in the database with the attributes of the user instance
+    // Add a sql query that will add a new row with columsn matching the attributes of the user instance
