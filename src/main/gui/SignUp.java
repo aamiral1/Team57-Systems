@@ -4,6 +4,7 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 import main.db.DatabaseConnectionHandler;
+import main.store.*;
 
 // sql
 import java.sql.*;
@@ -88,6 +89,21 @@ public class SignUp extends JPanel {
                 // open database connection
                 DatabaseConnectionHandler db = new DatabaseConnectionHandler();
                 db.openConnection();
+
+                // Create a row in database with given inputs
+                try{
+                    // User object 
+                    User newUser = new User(fname, )
+                    !new_user.ifexists();
+                    new_user.get_attribtues
+                    prepareStatement array[1]
+                    // Check if user already exists
+                        // if not, create a user row with inputs
+                }
+
+                catch (SQLException ex){
+                    ex.printStackTrace();
+                }
                 
             }
         });
