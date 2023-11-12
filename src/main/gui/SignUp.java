@@ -2,7 +2,12 @@ package main.gui;
 
 import java.awt.*;
 import javax.swing.*;
-import javax.swing.plaf.TreeUI;
+import java.awt.event.*;
+import main.db.DatabaseConnectionHandler;
+
+// sql
+import java.sql.*;
+import javax.sql.*;
 
 public class SignUp extends JPanel {
     private JButton sign;
@@ -64,6 +69,24 @@ public class SignUp extends JPanel {
         sign = new JButton("Sign up");
         footerPanel.add(sign);
 
+        // Action listener to sign up button
+        sign.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+                String fname = emailField.getText();
+                String sname = emailField.getText();
+                String emailAddress = emailField.getText();
+                String password = emailField.getText();
+                String houseNumber = emailField.getText();
+                String roadName = emailField.getText();
+                String cityName = emailField.getText();
+                String postcode = emailField.getText();
+
+                System.out.println("Sign up button was clicked!");
+
+            }
+        });
 
         // Add the header, center, and footer panels to the main panel
         add(headerPanel, BorderLayout.NORTH);
