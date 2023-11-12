@@ -2,12 +2,12 @@ package main.gui;
 
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.plaf.TreeUI;
 
 public class SignUp extends JPanel {
     private JButton sign;
-    private JTextArea fNameBox, houseNumberBox, jcomp3;
-    private JLabel fName, sName, houseNumber, roadName, postcode, cityName, jcomp15;
-    private JTextField roadNameBox, cityNameBox, postcodeBox, sNameBox;
+    private JLabel fName, sName, houseNumber, roadName, postcode, cityName, jcomp15 , emailAddress, password;
+    private JTextField roadNameBox, cityNameBox, postcodeBox, sNameBox, fNameBox, houseNumberBox , emailAddressBox, passwordBox;
 
     public SignUp() {
         // Use BorderLayout for the main panel
@@ -25,11 +25,15 @@ public class SignUp extends JPanel {
         gbc.anchor = GridBagConstraints.WEST; // Align components to the left (west)
 
         fName = new JLabel("Forename:");
-        fNameBox = new JTextArea(1, 20);
+        fNameBox = new JTextField(20);
         sName = new JLabel("Surname:");
         sNameBox = new JTextField(20);
+        emailAddress = new JLabel("Email Address:");
+        emailAddressBox = new JTextField(20);
+        password = new JLabel("Password:");
+        passwordBox = new JTextField(20);
         houseNumber = new JLabel("House Number:");
-        houseNumberBox = new JTextArea(1, 20);
+        houseNumberBox = new JTextField(20);
         roadName = new JLabel("Road Name:");
         roadNameBox = new JTextField(20);
         cityName = new JLabel("City Name:");
@@ -42,24 +46,36 @@ public class SignUp extends JPanel {
         gbc.gridx = 1; gbc.gridy = 0; centerPanel.add(fNameBox, gbc);
         gbc.gridx = 0; gbc.gridy = 1; centerPanel.add(sName, gbc);
         gbc.gridx = 1; gbc.gridy = 1; centerPanel.add(sNameBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 2; centerPanel.add(houseNumber, gbc);
-        gbc.gridx = 1; gbc.gridy = 2; centerPanel.add(houseNumberBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 3; centerPanel.add(roadName, gbc);
-        gbc.gridx = 1; gbc.gridy = 3; centerPanel.add(roadNameBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 4; centerPanel.add(cityName, gbc);
-        gbc.gridx = 1; gbc.gridy = 4; centerPanel.add(cityNameBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 5; centerPanel.add(postcode, gbc);
-        gbc.gridx = 1; gbc.gridy = 5; centerPanel.add(postcodeBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 2; centerPanel.add(emailAddress, gbc);
+        gbc.gridx = 1; gbc.gridy = 2; centerPanel.add(emailAddressBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 3; centerPanel.add(password, gbc);
+        gbc.gridx = 1; gbc.gridy = 3; centerPanel.add(passwordBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 4; centerPanel.add(houseNumber, gbc);
+        gbc.gridx = 1; gbc.gridy = 4; centerPanel.add(houseNumberBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 5; centerPanel.add(roadName, gbc);
+        gbc.gridx = 1; gbc.gridy = 5; centerPanel.add(roadNameBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 6; centerPanel.add(cityName, gbc);
+        gbc.gridx = 1; gbc.gridy = 6; centerPanel.add(cityNameBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 7; centerPanel.add(postcode, gbc);
+        gbc.gridx = 1; gbc.gridy = 7; centerPanel.add(postcodeBox, gbc);
 
         // Create a footer panel for the sign-up button
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         sign = new JButton("Sign up");
         footerPanel.add(sign);
 
+
         // Add the header, center, and footer panels to the main panel
         add(headerPanel, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
         add(footerPanel, BorderLayout.SOUTH);
+    }
+    
+    // JTextFields are treated like Strings
+    public static boolean isStringOrNot(JTextField textField) {
+        String text = textField.getText();
+        // Check if the text is not null and not empty
+        return text != null && !text.trim().isEmpty();
     }
 
     public static void main(String[] args) {
