@@ -74,14 +74,14 @@ public class SignUp extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 
-                String fname = emailField.getText();
-                String sname = emailField.getText();
-                String emailAddress = emailField.getText();
-                String password = emailField.getText();
-                String houseNumber = emailField.getText();
-                String roadName = emailField.getText();
-                String cityName = emailField.getText();
-                String postcode = emailField.getText();
+                String fname = fNameBox.getText();
+                String sname = sNameBox.getText();
+                String emailAddress = emailAddressBox.getText();
+                String password = passwordBox.getText();
+                String houseNumber = houseNumberBox.getText();
+                String roadName = roadNameBox.getText();
+                String cityName = cityNameBox.getText();
+                String postcode = postcodeBox.getText();
 
                 System.out.println("Sign up button was clicked!");
 
