@@ -85,6 +85,10 @@ public class SignUp extends JPanel {
 
                 System.out.println("check if it works" + fname + sname + emailAddress + password + houseNumber + roadName + cityName + postcode);
 
+                // open database connection
+                DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+                db.openConnection();
+                
             }
         });
 
