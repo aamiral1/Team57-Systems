@@ -1,93 +1,78 @@
 package main.gui;
 
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.*;
 
 public class SignUp extends JPanel {
     private JButton sign;
-    private JTextArea fNameBox;
-    private JTextArea jcomp3;
-    private JLabel fName;
-    private JLabel sName;
-    private JTextArea houseNumberBox;
-    private JLabel houseNumber;
-    private JTextField roadNameBox;
-    private JTextField cityNameBox;
-    private JTextField postcodeBox;
-    private JLabel roadName;
-    private JLabel postcode;
-    private JLabel cityName;
-    private JTextField sNameBox;
-    private JLabel jcomp15;
+    private JTextArea fNameBox, houseNumberBox, jcomp3;
+    private JLabel fName, sName, houseNumber, roadName, postcode, cityName, jcomp15;
+    private JTextField roadNameBox, cityNameBox, postcodeBox, sNameBox;
 
     public SignUp() {
-        //construct components
-        sign = new JButton ("Sign up");
-        fNameBox = new JTextArea (5, 5);
-        jcomp3 = new JTextArea (5, 5);
-        fName = new JLabel ("Forename :");
-        sName = new JLabel ("Surname :");
-        houseNumberBox = new JTextArea (5, 5);
-        houseNumber = new JLabel ("House Number :");
-        roadNameBox = new JTextField (5);
-        cityNameBox = new JTextField (5);
-        postcodeBox = new JTextField (5);
-        roadName = new JLabel ("Road Name :");
-        postcode = new JLabel ("Postcode :");
-        cityName = new JLabel ("City Name :");
-        sNameBox = new JTextField (5);
-        jcomp15 = new JLabel ("WELCOME TO THE LOGIN PAGE ");
+        // Use BorderLayout for the main panel
+        setLayout(new BorderLayout(10, 10));
 
-        //adjust size and set layout
-        setPreferredSize (new Dimension (752, 457));
-        setLayout (null);
+        // Create a header panel for the title
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        jcomp15 = new JLabel("WELCOME TO THE SIGNUP PAGE");
+        headerPanel.add(jcomp15);
+        
+        // Create a center panel with GridBagLayout for form fields
+        JPanel centerPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(4, 4, 4, 4); // Padding between grid cells
+        gbc.anchor = GridBagConstraints.WEST; // Align components to the left (west)
 
-        //add components
-        add (sign);
-        add (fNameBox);
-        add (jcomp3);
-        add (fName);
-        add (sName);
-        add (houseNumberBox);
-        add (houseNumber);
-        add (roadNameBox);
-        add (cityNameBox);
-        add (postcodeBox);
-        add (roadName);
-        add (postcode);
-        add (cityName);
-        add (sNameBox);
-        add (jcomp15);
+        fName = new JLabel("Forename:");
+        fNameBox = new JTextArea(1, 20);
+        sName = new JLabel("Surname:");
+        sNameBox = new JTextField(20);
+        houseNumber = new JLabel("House Number:");
+        houseNumberBox = new JTextArea(1, 20);
+        roadName = new JLabel("Road Name:");
+        roadNameBox = new JTextField(20);
+        cityName = new JLabel("City Name:");
+        cityNameBox = new JTextField(20);
+        postcode = new JLabel("Postcode:");
+        postcodeBox = new JTextField(20);
 
-        //set component bounds (only needed by Absolute Positioning)
-        sign.setBounds (320, 340, 100, 20);
-        fNameBox.setBounds (290, 125, 170, 20);
-        jcomp3.setBounds (290, 125, 170, 20);
-        fName.setBounds (220, 120, 65, 25);
-        sName.setBounds (225, 155, 60, 20);
-        houseNumberBox.setBounds (290, 185, 170, 20);
-        houseNumber.setBounds (195, 185, 100, 15);
-        roadNameBox.setBounds (290, 215, 170, 20);
-        cityNameBox.setBounds (290, 245, 170, 20);
-        postcodeBox.setBounds (290, 270, 170, 20);
-        roadName.setBounds (210, 215, 75, 15);
-        postcode.setBounds (220, 270, 65, 15);
-        cityName.setBounds (215, 245, 65, 15);
-        sNameBox.setBounds (290, 155, 170, 20);
-        jcomp15.setBounds (270, 80, 200, 20);
+        // Add components to center panel using GridBagLayout constraints
+        gbc.gridx = 0; gbc.gridy = 0; centerPanel.add(fName, gbc);
+        gbc.gridx = 1; gbc.gridy = 0; centerPanel.add(fNameBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 1; centerPanel.add(sName, gbc);
+        gbc.gridx = 1; gbc.gridy = 1; centerPanel.add(sNameBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 2; centerPanel.add(houseNumber, gbc);
+        gbc.gridx = 1; gbc.gridy = 2; centerPanel.add(houseNumberBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 3; centerPanel.add(roadName, gbc);
+        gbc.gridx = 1; gbc.gridy = 3; centerPanel.add(roadNameBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 4; centerPanel.add(cityName, gbc);
+        gbc.gridx = 1; gbc.gridy = 4; centerPanel.add(cityNameBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 5; centerPanel.add(postcode, gbc);
+        gbc.gridx = 1; gbc.gridy = 5; centerPanel.add(postcodeBox, gbc);
+
+        // Create a footer panel for the sign-up button
+        JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        sign = new JButton("Sign up");
+        footerPanel.add(sign);
+
+        // Add the header, center, and footer panels to the main panel
+        add(headerPanel, BorderLayout.NORTH);
+        add(centerPanel, BorderLayout.CENTER);
+        add(footerPanel, BorderLayout.SOUTH);
     }
 
-
-    public static void main (String[] args) {
-        JFrame frame = new JFrame ("SignUp");
-        frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
-        frame.getContentPane().add (new SignUp());
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("SignUp");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setMinimumSize(new Dimension(750, 750));
+        frame.getContentPane().add(new SignUp());
         frame.pack();
-        frame.setVisible (true);
+        frame.setLocationRelativeTo(null); // Center the frame
+        frame.setVisible(true);
     }
 }
+
 
 // Implement action listener for signup button
     // Open database connection (ensure VPN is on)
