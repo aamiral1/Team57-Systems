@@ -10,24 +10,24 @@ import java.sql.*;
 import javax.sql.*;
 
 public class Login extends JFrame {
-    private JTextField usernameField;
+    private JTextField emailField;
     private JPasswordField passwordField;
     private JButton loginButton;
 
     public Login() {
         // Create components
-        usernameField = new JTextField(15);
+        emailField = new JTextField(15);
         passwordField = new JPasswordField(15);
         loginButton = new JButton("LOGIN");
 
         // Layout setup
         setLayout(new GridLayout(3, 1));
 
-        // Adding Username Panel
-        JPanel usernamePanel = new JPanel();
-        usernamePanel.add(new JLabel("Username:"));
-        usernamePanel.add(usernameField);
-        add(usernamePanel);
+        // Adding Email Panel
+        JPanel emailPanel = new JPanel();
+        emailPanel.add(new JLabel("Email:"));
+        emailPanel.add(emailField);
+        add(emailPanel);
 
         // Adding Password Panel
         JPanel passwordPanel = new JPanel();
@@ -45,10 +45,10 @@ public class Login extends JFrame {
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Logic to handle login
-                String username = usernameField.getText();
+                String emailInput = emailField.getText();
                 char[] password = passwordField.getPassword();
                 // For demo purposes, we just print the credentials
-                System.out.println("Username: " + username);
+                System.out.println("Email: " + emailInput);
                 System.out.println("Password: " + new String(password));
 
                 // open database connection
@@ -60,15 +60,32 @@ public class Login extends JFrame {
                 try {
                     stmt = db.con.createStatement();
 
-                    PreparedStatement pstmt = db.con.prepareStatement("SELECT * FROM User WHERE name=? AND hashed_password=?");
-                    pstmt.setString(1, username);
-                    pstmt.setString(2, new String(password));
+                    PreparedStatement pstmt = db.con.prepareStatement("SELECT * FROM User WHERE email=? AND hashed_password=?");
+                    PreparedStatement countStatement = db.con.prepareStatement("SELECT COUNT(*) FROM User WHERE email=? AND hashed_password=?");
 
+                    
+                    pstmt.setString(1, emailInput); //email = *
+                    pstmt.setString(2, new String(password)); // need to encrypt given user input
+
+                    countStatement.setString(1, emailInput);
+                    countStatement.setString(2, new String(password));
+
+                    // Placeholders for user match count and details
+                    ResultSet count = countStatement.executeQuery();
                     ResultSet res = pstmt.executeQuery();
-
                     // If User exists
                     if (res.next()) {
-                        System.out.println("Log In Successful");
+                        // count.next();
+                        // System.out.println(count.getString(1));
+                        String email = res.getString(4);
+                        String hashed_password = res.getString(3);
+                        
+                        if (count.next()){
+                            if (hashed_password.equals(new String(password)) && email.equals(emailInput)) {
+                                // Need to encrypt password
+                                System.out.println("Log In Successful");
+                            }
+                        }
                     } else {
                         System.out.println("Invalid Credentials");
                     }
