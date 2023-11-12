@@ -83,7 +83,7 @@ public class SignUp extends JPanel {
                 String cityName = cityNameBox.getText();
                 String postcode = postcodeBox.getText();
 
-                System.out.println("Sign up button was clicked!");
+                System.out.println("check if it works" + fname + sname + emailAddress + password + houseNumber + roadName + cityName + postcode);
 
             }
         });
