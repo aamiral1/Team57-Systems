@@ -4,16 +4,16 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 import main.db.DatabaseConnectionHandler;
-import main.store.*;
-
+import main.store.Users.*;
 // sql
 import java.sql.*;
 import javax.sql.*;
 
 public class SignUp extends JPanel {
     private JButton sign;
-    private JLabel fName, sName, houseNumber, roadName, postcode, cityName, jcomp15 , emailAddress, password;
-    private JTextField roadNameBox, cityNameBox, postcodeBox, sNameBox, fNameBox, houseNumberBox , emailAddressBox, passwordBox;
+    private JLabel fName, sName, houseNumber, roadName, postcode, cityName, jcomp15, emailAddress, password;
+    private JTextField roadNameBox, cityNameBox, postcodeBox, sNameBox, fNameBox, houseNumberBox, emailAddressBox,
+            passwordBox;
 
     public SignUp() {
         // Use BorderLayout for the main panel
@@ -90,21 +90,11 @@ public class SignUp extends JPanel {
                 DatabaseConnectionHandler db = new DatabaseConnectionHandler();
                 db.openConnection();
 
-                // Create a row in database with given inputs
-                try{
-                    // User object 
-                    User newUser = new User(fname, )
-                    !new_user.ifexists();
-                    new_user.get_attribtues
-                    prepareStatement array[1]
-                    // Check if user already exists
-                        // if not, create a user row with inputs
+                // Sign Up User
+                User newUser = new User(fname,sname,emailAddress,password,houseNumber,roadName,cityName,postcode);
+                if (!newUser.exists()){
+                    System.out.println("Sign Up Status: " + newUser.signUp());
                 }
-
-                catch (SQLException ex){
-                    ex.printStackTrace();
-                }
-                
             }
         });
 
@@ -113,7 +103,7 @@ public class SignUp extends JPanel {
         add(centerPanel, BorderLayout.CENTER);
         add(footerPanel, BorderLayout.SOUTH);
     }
-    
+
     // JTextFields are treated like Strings
     public static boolean isStringOrNot(JTextField textField) {
         String text = textField.getText();
@@ -132,9 +122,9 @@ public class SignUp extends JPanel {
     }
 }
 
-
 // Implement action listener for signup button
-    // Open database connection (ensure VPN is on)
-    // Create a instance of the User class with entered inputs (using constructor)
-    // Create a new row in the database with the attributes of the user instance
-    // Add a sql query that will add a new row with columsn matching the attributes of the user instance
+// Open database connection (ensure VPN is on)
+// Create a instance of the User class with entered inputs (using constructor)
+// Create a new row in the database with the attributes of the user instance
+// Add a sql query that will add a new row with columsn matching the attributes
+// of the user instance

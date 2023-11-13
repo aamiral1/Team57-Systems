@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import main.db.DatabaseConnectionHandler;
+import main.misc.*;
+import main.store.Users.*;
 
 // sql
 import java.sql.*;
@@ -80,8 +82,10 @@ public class Login extends JFrame {
                         String email = res.getString(4);
                         String hashed_password = res.getString(3);
                         
+                        // Decrypt hashed_password
+                        String decryptedPassword = Encryption.decrypt(hashed_password, User.cryptoPassword);
                         if (count.next()){
-                            if (hashed_password.equals(new String(password)) && email.equals(emailInput)) {
+                            if (decryptedPassword.equals(new String(password)) && email.equals(emailInput)) {
                                 // Need to encrypt password
                                 System.out.println("Log In Successful");
                             }
@@ -94,6 +98,9 @@ public class Login extends JFrame {
                 }
 
                 catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+                catch (Exception ex){
                     ex.printStackTrace();
                 }
 
