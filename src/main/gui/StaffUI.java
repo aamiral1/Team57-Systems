@@ -3,6 +3,7 @@ package main.gui;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
@@ -36,15 +37,25 @@ public class StaffUI extends JPanel {
                 BufferedImage image = ImageIO.read(new URL(getImageUrl(i)));
                 ImageIcon imageIcon = new ImageIcon(resizeImage(image, IMAGE_WIDTH, IMAGE_HEIGHT));
                 JLabel imageLabel = new JLabel(imageIcon);
-                // Set preferred size for the label to ensure the layout respects the image size
                 imageLabel.setPreferredSize(new Dimension(IMAGE_WIDTH, IMAGE_HEIGHT));
                 
                 // Create a sub-panel with BorderLayout for each image and label
                 JPanel cellPanel = new JPanel(new BorderLayout());
                 cellPanel.add(imageLabel, BorderLayout.CENTER);
                 
-                JLabel textLabel = new JLabel(LABEL_TEXTS[i], SwingConstants.CENTER);
-                cellPanel.add(textLabel, BorderLayout.SOUTH);
+                // Change JLabel to JButton
+                JButton button = new JButton(LABEL_TEXTS[i]);
+                button.setPreferredSize(new Dimension(IMAGE_WIDTH, 30)); // Set the preferred height of the button
+
+                // Add action listener to the "Train Sets" button
+                if (LABEL_TEXTS[i].equals("Train Sets")) {
+                    button.addActionListener(e -> {
+                        System.out.println("Hello, this is the Train Sets button");
+
+                    });
+                }
+                
+                cellPanel.add(button, BorderLayout.SOUTH);
                 
                 gridPanel.add(cellPanel);
             }
