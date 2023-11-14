@@ -52,7 +52,7 @@ public class User {
 
         try {
             // Pass in sql query to sign up user
-            String query = "INSERT INTO Users VALUES (?,?,?,?,?,?,?,?,?,?)";
+            String query = "INSERT INTO User VALUES (?,?,?,?,?,?,?,?,?,?)";
             PreparedStatement pstmt = db.con.prepareStatement(query);
 
             // Pass in parameters to SQL Query
@@ -86,7 +86,7 @@ public class User {
         try {
             Statement stmt = db.con.createStatement();
 
-            PreparedStatement pstmt = db.con.prepareStatement("SELECT EXISTS(SELECT * from Users WHERE email=?");
+            PreparedStatement pstmt = db.con.prepareStatement("SELECT EXISTS(SELECT * from Users WHERE email=?)");
             pstmt.setString(1, emailAddress);
 
             ResultSet isExists = pstmt.executeQuery();
