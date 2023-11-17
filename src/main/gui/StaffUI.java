@@ -2,6 +2,10 @@ package main.gui;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+
+import main.gui.Categories.Locomotives;
+import main.gui.Categories.TrainSets;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -50,10 +54,38 @@ public class StaffUI extends JPanel {
                 // Add action listener to the "Train Sets" button
                 if (LABEL_TEXTS[i].equals("Train Sets")) {
                     button.addActionListener(e -> {
-                        System.out.println("Hello, this is the Train Sets button");
-
+                        // Assuming you want to clear the entire window and show only the Train Sets page
+                        JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+                        topFrame.dispose(); // Close the current window
+                        
+                        // Open the Train Sets page
+                        SwingUtilities.invokeLater(() -> {
+                            JFrame trainSetsWindow = new JFrame("Train Sets");
+                            trainSetsWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                            trainSetsWindow.setSize(1000, 700); // Set the size as per your requirement
+                            trainSetsWindow.add(new TrainSets()); // Add TrainSets panel to the frame
+                            trainSetsWindow.setLocationRelativeTo(null);
+                            trainSetsWindow.setVisible(true);
+                        });
                     });
                 }
+                else if (LABEL_TEXTS[i].equals("Locomotives")) {
+                    button.addActionListener(e -> {
+                    // Assuming you want to clear the entire window and show only the Train Sets page
+                    JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+                    topFrame.dispose(); // Close the current window
+                    
+                    // Open the Train Sets page
+                    SwingUtilities.invokeLater(() -> {
+                        JFrame trainSetsWindow = new JFrame("Train Sets");
+                        trainSetsWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                        trainSetsWindow.setSize(1000, 700); // Set the size as per your requirement
+                        trainSetsWindow.add(new Locomotives()); // Add TrainSets panel to the frame
+                        trainSetsWindow.setLocationRelativeTo(null);
+                        trainSetsWindow.setVisible(true);
+                    });
+                });
+            }
                 
                 cellPanel.add(button, BorderLayout.SOUTH);
                 
