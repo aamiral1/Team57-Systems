@@ -11,7 +11,7 @@ public class Locomotives extends JPanel {
     public Locomotives(JFrame parentFrame) {
         setLayout(new BorderLayout());
 
-        // Panel for the title and return button
+        // Panel for the title, return button, and add button
         JPanel northPanel = new JPanel(new BorderLayout());
 
         // Return button
@@ -29,6 +29,17 @@ public class Locomotives extends JPanel {
         JLabel titleLabel = new JLabel("LOCOMOTIVES PAGE", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         northPanel.add(titleLabel, BorderLayout.CENTER);
+
+        // Right panel for the 'Add' button
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton addButton = new JButton("Add");
+        styleButton(addButton, new Color(100, 255, 100)); // Apply styling with a custom color
+        // Placeholder for adding action listener to the 'Add' button
+        // addButton.addActionListener(...);
+        rightPanel.add(addButton);
+
+        northPanel.add(rightPanel, BorderLayout.EAST);
+
         northPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // Add the north panel to the top of the main panel
