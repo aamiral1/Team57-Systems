@@ -2,133 +2,143 @@ package main.gui.Categories;
 
 import java.awt.*;
 import javax.swing.*;
-import javax.swing.border.Border;
-
-import java.awt.event.*;
 import main.db.DatabaseConnectionHandler;
-import main.store.Users.*;
-// sql
+import main.gui.StaffUI; // make sure to import the StaffUI class
 import java.sql.*;
-import javax.sql.*;
 
 public class Locomotives extends JPanel {
-    
-    private static void getLocomotives() {
-    DatabaseConnectionHandler db = new DatabaseConnectionHandler();
-    db.openConnection();
-    
-    // Your SQL query
-    String sqlQuery = "SELECT " +
-            "Product.productCode, " +
-            "Product.brandName, " +
-            "Product.productName, " +
-            "Product.retailPrice, " +
-            "Product.productQuantity, " +
-            "Individual.modelType, " +
-            "Individual.gauge, " +
-            "Locomotives.historicalEra, " +
-            "Locomotives.DCCCode " +
-            "FROM Product " +
-            "INNER JOIN Individual ON Product.productCode = Individual.productCode " +
-            "INNER JOIN Locomotives ON Individual.productCode = Locomotives.productCode;";
 
-    try {
-        PreparedStatement pstmt = db.con.prepareStatement(sqlQuery);
-        ResultSet rs = pstmt.executeQuery();
-
-        while (rs.next()) {
-            // Retrieve each column value from the current row of the ResultSet
-            String productCode = rs.getString("productCode");
-            String brandName = rs.getString("brandName");
-            String productName = rs.getString("productName");
-            float retailPrice = rs.getFloat("retailPrice");
-            int productQuantity = rs.getInt("productQuantity");
-            String modelType = rs.getString("modelType");
-            String gauge = rs.getString("gauge");
-            String historicalEra = rs.getString("historicalEra");
-            String dccCode = rs.getString("DCCCode");
-
-            // Print out the values
-            System.out.println("Product Code: " + productCode);
-            System.out.println("Brand Name: " + brandName);
-            System.out.println("Product Name: " + productName);
-            System.out.println("Retail Price: " + retailPrice);
-            System.out.println("Product Quantity: " + productQuantity);
-            System.out.println("Model Type: " + modelType);
-            System.out.println("Gauge: " + gauge);
-            System.out.println("Historical Era: " + historicalEra);
-            System.out.println("DCC Code: " + dccCode);
-            System.out.println("-----------------------------------");
-        }
-
-        // Close the resources
-        rs.close();
-        pstmt.close();
-
-    } catch (SQLException e) {
-        System.out.println("An error occurred while querying the database:");
-        e.printStackTrace();
-    }
-    // Do not close the db connection here if you need it open for other operations
-}
-
-    public static void main(String[] args) {
-        getLocomotives();
-        
-    }
-
-    public Locomotives() {
+    // Constructor that takes the parent frame as a parameter
+    public Locomotives(JFrame parentFrame) {
         // Main panel layout
-        setLayout(new BorderLayout(10, 20)); // horizontal and vertical gaps
+        setLayout(new BorderLayout());
+
+        // Panel for the title and return button
+        JPanel northPanel = new JPanel(new BorderLayout());
+        
+        // Return button
+        JButton returnButton = new JButton("Return");
+        returnButton.addActionListener(e -> {
+            // Switch back to the Categories page
+            parentFrame.setContentPane(new StaffUI());
+            parentFrame.revalidate();
+            parentFrame.repaint();
+        });
+        northPanel.add(returnButton, BorderLayout.WEST);
 
         // Title label
         JLabel titleLabel = new JLabel("LOCOMOTIVES PAGE", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        add(titleLabel, BorderLayout.NORTH);
+        northPanel.add(titleLabel, BorderLayout.CENTER);
+        northPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Panel for boxes with some padding
+        // Add the north panel to the top of the main panel
+        add(northPanel, BorderLayout.NORTH);
+
+        // Scrollable panel for boxes
         JPanel boxesPanel = new JPanel();
         boxesPanel.setLayout(new BoxLayout(boxesPanel, BoxLayout.Y_AXIS));
-        boxesPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50)); // top, left, bottom, right padding
+        JScrollPane scrollPane = new JScrollPane(boxesPanel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
-        // Create and add boxes
-        boxesPanel.add(createBox("Hello"));
-        boxesPanel.add(Box.createRigidArea(new Dimension(0, 15))); // space between boxes
-        boxesPanel.add(createBox("Hello world"));
-        boxesPanel.add(Box.createRigidArea(new Dimension(0, 15))); // space between boxes
-        boxesPanel.add(createBox("Hellow World"));
+        // Fetch the locomotives data and create boxes for them
+        java.util.List<String[]> locomotives = getLocomotives();
+        for (String[] locomotive : locomotives) {
+            JPanel boxPanel = createBox(locomotive);
+            boxesPanel.add(boxPanel);
+            boxesPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        }
 
-        // Add boxes panel to the center
-        add(boxesPanel, BorderLayout.CENTER);
+        // Add boxes panel to the center, wrapped in a scroll pane
+        add(scrollPane, BorderLayout.CENTER);
     }
-     
-    private JPanel createBox(String text) {
+
+    private java.util.List<String[]> getLocomotives() {
+        java.util.List<String[]> locomotives = new java.util.ArrayList<>();
+        DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+        db.openConnection();
+
+        String sqlQuery = "SELECT " +
+                "Product.productCode, " +
+                "Product.brandName, " +
+                "Product.productName, " +
+                "Product.retailPrice, " +
+                "Product.productQuantity, " +
+                "Individual.modelType, " +
+                "Individual.gauge, " +
+                "Locomotives.historicalEra, " +
+                "Locomotives.DCCCode " +
+                "FROM Product " +
+                "INNER JOIN Individual ON Product.productCode = Individual.productCode " +
+                "INNER JOIN Locomotives ON Individual.productCode = Locomotives.productCode;";
+
+        try (PreparedStatement pstmt = db.con.prepareStatement(sqlQuery);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                String productCode = rs.getString("productCode");
+                String brandName = rs.getString("brandName");
+                String productName = rs.getString("productName");
+                float retailPrice = rs.getFloat("retailPrice");
+                int productQuantity = rs.getInt("productQuantity");
+                String modelType = rs.getString("modelType");
+                String gauge = rs.getString("gauge");
+                String historicalEra = rs.getString("historicalEra");
+                String dccCode = rs.getString("DCCCode");
+
+                locomotives.add(new String[]{
+                        "Product Code: " + productCode,
+                        "Brand Name: " + brandName,
+                        "Product Name: " + productName,
+                        "Retail Price: " + retailPrice,
+                        "Product Quantity: " + productQuantity,
+                        "Model Type: " + modelType,
+                        "Gauge: " + gauge,
+                        "Historical Era: " + historicalEra,
+                        "DCC Code: " + dccCode
+                });
+            }
+        } catch (SQLException e) {
+            System.out.println("An error occurred while querying the database:");
+            e.printStackTrace();
+        } finally {
+            db.closeConnection(); // Make sure to close the connection properly
+        }
+
+        return locomotives;
+    }
+
+    private JPanel createBox(String[] locomotiveData) {
         JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout(10, 10)); // horizontal and vertical gaps
-        panel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1)); // border for the box
-    
-        // Label at the top of the box
-        JLabel label = new JLabel(text, SwingConstants.CENTER);
-        label.setFont(new Font("Arial", Font.PLAIN, 16)); // Set the font for the text
-        panel.add(label, BorderLayout.NORTH);
-    
-        // Panel for buttons
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5)); // flow layout with horizontal and vertical gaps
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // padding inside the button panel
-    
-        // Buttons
-        // JButton addButton = new JButton("Add"); // Remove or comment out this line
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1, true));
+        panel.setBackground(Color.WHITE);
+
+        for (String data : locomotiveData) {
+            JLabel label = new JLabel(data);
+            label.setFont(new Font("Arial", Font.PLAIN, 14));
+            label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+            panel.add(label);
+        }
+
+        // Buttons panel at the bottom of the box
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         JButton deleteButton = new JButton("Delete");
         JButton editButton = new JButton("Edit");
-    
-        // Add buttons to the button panel
-        // buttonPanel.add(addButton); // Remove or comment out this line
+        styleButton(deleteButton);
+        styleButton(editButton);
         buttonPanel.add(deleteButton);
         buttonPanel.add(editButton);
-    
-        // Add the button panel to the bottom of the box
-        panel.add(buttonPanel, BorderLayout.SOUTH);
-    
+        buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(buttonPanel);
+
         return panel;
+    }
+
+    private void styleButton(JButton button) {
+        button.setFont(new Font("Arial", Font.BOLD, 12));
+        button.setBackground(new Color(255, 100, 100)); // Red color for delete
+        button.setForeground(Color.WHITE);
     }
 }

@@ -77,12 +77,13 @@ public class StaffUI extends JPanel {
                     
                     // Open the Train Sets page
                     SwingUtilities.invokeLater(() -> {
-                        JFrame trainSetsWindow = new JFrame("Train Sets");
-                        trainSetsWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                        trainSetsWindow.setSize(1000, 700); // Set the size as per your requirement
-                        trainSetsWindow.add(new Locomotives()); // Add TrainSets panel to the frame
-                        trainSetsWindow.setLocationRelativeTo(null);
-                        trainSetsWindow.setVisible(true);
+                        // Inside the main application where you switch to the Locomotives page:
+                        JFrame frame = new JFrame("Train Sets");
+                        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                        frame.setSize(1000, 700);
+                        frame.add(new Locomotives(frame));
+                        frame.setLocationRelativeTo(null);
+                        frame.setVisible(true);
                     });
                 });
             }
