@@ -3,21 +3,20 @@ package main.gui.Categories;
 import java.awt.*;
 import javax.swing.*;
 import main.db.DatabaseConnectionHandler;
-import main.gui.StaffUI; // make sure to import the StaffUI class
+import main.gui.StaffUI; // Make sure to import your StaffUI class
 import java.sql.*;
 
 public class Locomotives extends JPanel {
 
-    // Constructor that takes the parent frame as a parameter
     public Locomotives(JFrame parentFrame) {
-        // Main panel layout
         setLayout(new BorderLayout());
 
         // Panel for the title and return button
         JPanel northPanel = new JPanel(new BorderLayout());
-        
+
         // Return button
         JButton returnButton = new JButton("Return");
+        styleButton(returnButton, new Color(100, 100, 255)); // Apply styling with a custom color
         returnButton.addActionListener(e -> {
             // Switch back to the Categories page
             parentFrame.setContentPane(new StaffUI());
@@ -126,8 +125,8 @@ public class Locomotives extends JPanel {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         JButton deleteButton = new JButton("Delete");
         JButton editButton = new JButton("Edit");
-        styleButton(deleteButton);
-        styleButton(editButton);
+        styleButton(deleteButton, new Color(255, 100, 100)); // Apply delete button styling
+        styleButton(editButton, new Color(100, 255, 100)); // Apply edit button styling
         buttonPanel.add(deleteButton);
         buttonPanel.add(editButton);
         buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -136,9 +135,24 @@ public class Locomotives extends JPanel {
         return panel;
     }
 
-    private void styleButton(JButton button) {
+    // Method to style buttons
+    private void styleButton(JButton button, Color color) {
         button.setFont(new Font("Arial", Font.BOLD, 12));
-        button.setBackground(new Color(255, 100, 100)); // Red color for delete
+        button.setBackground(color);
         button.setForeground(Color.WHITE);
+        button.setBorderPainted(false);
+        button.setFocusPainted(false);
+        button.setOpaque(true);
+        button.setBorder(BorderFactory.createEmptyBorder(10, 25, 10, 25));
+        // Mouse listener for hover effect
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(color.darker());
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(color);
+            }
+        });
     }
 }

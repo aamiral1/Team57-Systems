@@ -2,7 +2,6 @@ package main.gui;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-
 import main.gui.Categories.Locomotives;
 import main.gui.Categories.TrainSets;
 
@@ -17,96 +16,92 @@ public class StaffUI extends JPanel {
         "Train Sets", "Track Packs", "Locomotives",
         "Rolling Stock", "Track", "Controllers"
     };
-    
-    private static final int IMAGE_WIDTH = 300;
-    private static final int IMAGE_HEIGHT = 200;
 
     public StaffUI() {
-        // Use BorderLayout for the main panel
         setLayout(new BorderLayout());
+        add(createTitlePanel(), BorderLayout.NORTH);
+        add(createGridPanel(), BorderLayout.CENTER);
+    }
 
-        // Title panel with FlowLayout for centering the title
+    private JPanel createTitlePanel() {
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JLabel titleLabel = new JLabel("CATEGORIES PAGE");
-        titleLabel.setFont(new Font("Serif", Font.BOLD, 24));
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titlePanel.add(titleLabel);
-        
-        // Add the title panel to the top of the BorderLayout
-        add(titlePanel, BorderLayout.NORTH);
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        return titlePanel;
+    }
 
-        // Panel for images and labels with GridLayout
+    private JPanel createGridPanel() {
         JPanel gridPanel = new JPanel(new GridLayout(2, 3, 10, 10));
-        try {
-            for (int i = 0; i < 6; i++) {
-                BufferedImage image = ImageIO.read(new URL(getImageUrl(i)));
-                ImageIcon imageIcon = new ImageIcon(resizeImage(image, IMAGE_WIDTH, IMAGE_HEIGHT));
-                JLabel imageLabel = new JLabel(imageIcon);
-                imageLabel.setPreferredSize(new Dimension(IMAGE_WIDTH, IMAGE_HEIGHT));
-                
-                // Create a sub-panel with BorderLayout for each image and label
-                JPanel cellPanel = new JPanel(new BorderLayout());
-                cellPanel.add(imageLabel, BorderLayout.CENTER);
-                
-                // Change JLabel to JButton
-                JButton button = new JButton(LABEL_TEXTS[i]);
-                button.setPreferredSize(new Dimension(IMAGE_WIDTH, 30)); // Set the preferred height of the button
+        gridPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
 
-                // Add action listener to the "Train Sets" button
-                if (LABEL_TEXTS[i].equals("Train Sets")) {
-                    button.addActionListener(e -> {
-                        // Assuming you want to clear the entire window and show only the Train Sets page
-                        JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-                        topFrame.dispose(); // Close the current window
-                        
-                        // Open the Train Sets page
-                        SwingUtilities.invokeLater(() -> {
-                            JFrame trainSetsWindow = new JFrame("Train Sets");
-                            trainSetsWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                            trainSetsWindow.setSize(1000, 700); // Set the size as per your requirement
-                            trainSetsWindow.add(new TrainSets()); // Add TrainSets panel to the frame
-                            trainSetsWindow.setLocationRelativeTo(null);
-                            trainSetsWindow.setVisible(true);
-                        });
-                    });
-                }
-                else if (LABEL_TEXTS[i].equals("Locomotives")) {
-                    button.addActionListener(e -> {
-                    // Assuming you want to clear the entire window and show only the Train Sets page
-                    JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-                    topFrame.dispose(); // Close the current window
-                    
-                    // Open the Train Sets page
-                    SwingUtilities.invokeLater(() -> {
-                        // Inside the main application where you switch to the Locomotives page:
-                        JFrame frame = new JFrame("Train Sets");
-                        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                        frame.setSize(1000, 700);
-                        frame.add(new Locomotives(frame));
-                        frame.setLocationRelativeTo(null);
-                        frame.setVisible(true);
-                    });
-                });
-            }
-                
-                cellPanel.add(button, BorderLayout.SOUTH);
-                
-                gridPanel.add(cellPanel);
-            }
+        for (int i = 0; i < LABEL_TEXTS.length; i++) {
+            gridPanel.add(createCellPanel(i));
+        }
+        
+        return gridPanel;
+    }
+
+    private JPanel createCellPanel(int index) {
+        JPanel cellPanel = new JPanel(new BorderLayout());
+        try {
+            BufferedImage image = ImageIO.read(new URL(getImageUrl(index)));
+            ImageIcon imageIcon = new ImageIcon(resizeImage(image, 300, 200));
+            JLabel imageLabel = new JLabel(imageIcon);
+            imageLabel.setPreferredSize(new Dimension(300, 200));
+            cellPanel.add(imageLabel, BorderLayout.CENTER);
+
+            JButton button = new JButton(LABEL_TEXTS[index]);
+            styleButton(button);
+            button.addActionListener(getCategoryActionListener(LABEL_TEXTS[index]));
+            cellPanel.add(button, BorderLayout.SOUTH);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
-        // Add the grid panel to the center of the BorderLayout
-        add(gridPanel, BorderLayout.CENTER);
+        return cellPanel;
+    }
+
+    private ActionListener getCategoryActionListener(String category) {
+        return e -> {
+            JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor((Component) e.getSource());
+            JPanel newPanel;
+
+            switch (category) {
+                case "Train Sets":
+                    newPanel = new TrainSets(); // Placeholder for the actual TrainSets panel
+                    break;
+                case "Locomotives":
+                    newPanel = new Locomotives(topFrame); // Pass the frame to the Locomotives panel
+                    break;
+                // Add other cases for different categories
+                default:
+                    newPanel = new JPanel();
+            }
+
+            topFrame.setContentPane(newPanel);
+            topFrame.revalidate();
+            topFrame.repaint();
+        };
+    }
+
+    private void styleButton(JButton button) {
+        button.setFont(new Font("Arial", Font.BOLD, 12));
+        button.setBackground(new Color(100, 100, 255)); // Similar style to Locomotives Return button
+        button.setForeground(Color.WHITE);
+        button.setBorderPainted(false);
+        button.setFocusPainted(false);
+        button.setOpaque(true);
+        button.setPreferredSize(new Dimension(300, 30));
     }
 
     private Image resizeImage(BufferedImage originalImage, int width, int height) {
-        Image resultingImage = originalImage.getScaledInstance(width, height, Image.SCALE_DEFAULT);
-        return resultingImage;
+        return originalImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
     }
 
     private String getImageUrl(int index) {
         String[] urls = {
+            // Add your actual URLs for each category here
             "https://www.bigjigstoys.co.uk/cdn/shop/products/BJT016-4.jpg?v=1671207335",
             "https://railwaymodels.uk/pimg/hornby-R3945-o.jpg",
             "https://s7d2.scene7.com/is/image/Caterpillar/CM20200325-fd782-a61d2",
@@ -121,11 +116,10 @@ public class StaffUI extends JPanel {
         SwingUtilities.invokeLater(() -> {
             JFrame window = new JFrame("Categories Page");
             window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            window.setSize(1000, 700); // Adjust the size to accommodate title and labels
+            window.setSize(1000, 700);
             window.add(new StaffUI());
             window.setLocationRelativeTo(null);
             window.setVisible(true);
         });
     }
 }
-
