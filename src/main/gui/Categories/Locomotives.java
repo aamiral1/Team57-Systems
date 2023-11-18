@@ -8,7 +8,11 @@ import java.sql.*;
 
 public class Locomotives extends JPanel {
 
+    private JFrame parentFrame;
+    private JPanel boxesPanel;
+
     public Locomotives(JFrame parentFrame) {
+        this.parentFrame = parentFrame;
         setLayout(new BorderLayout());
 
         // Panel for the title, return button, and add button
@@ -30,7 +34,7 @@ public class Locomotives extends JPanel {
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         northPanel.add(titleLabel, BorderLayout.CENTER);
 
-        // Right panel for the 'Add' button
+        // Right panel for the 'Add' button and 'Refresh' button
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton addButton = new JButton("Add");
         styleButton(addButton, new Color(100, 255, 100)); // Apply styling with a custom color
@@ -38,30 +42,40 @@ public class Locomotives extends JPanel {
         // addButton.addActionListener(...);
         rightPanel.add(addButton);
 
-        northPanel.add(rightPanel, BorderLayout.EAST);
+        // Refresh button
+        JButton refreshButton = new JButton("Refresh");
+        styleButton(refreshButton, new Color(100, 100, 255)); // Apply styling with a custom color
+        refreshButton.addActionListener(e -> refreshLocomotives());
+        rightPanel.add(refreshButton);
 
+        northPanel.add(rightPanel, BorderLayout.EAST);
         northPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // Add the north panel to the top of the main panel
         add(northPanel, BorderLayout.NORTH);
 
         // Scrollable panel for boxes
-        JPanel boxesPanel = new JPanel();
+        boxesPanel = new JPanel();
         boxesPanel.setLayout(new BoxLayout(boxesPanel, BoxLayout.Y_AXIS));
+        refreshLocomotives();
+
+        // Add boxes panel to the center, wrapped in a scroll pane
         JScrollPane scrollPane = new JScrollPane(boxesPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        add(scrollPane, BorderLayout.CENTER);
+    }
 
-        // Fetch the locomotives data and create boxes for them
+    private void refreshLocomotives() {
+        boxesPanel.removeAll();
         java.util.List<String[]> locomotives = getLocomotives();
         for (String[] locomotive : locomotives) {
             JPanel boxPanel = createBox(locomotive);
             boxesPanel.add(boxPanel);
             boxesPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         }
-
-        // Add boxes panel to the center, wrapped in a scroll pane
-        add(scrollPane, BorderLayout.CENTER);
+        boxesPanel.revalidate();
+        boxesPanel.repaint();
     }
 
     private java.util.List<String[]> getLocomotives() {
