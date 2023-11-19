@@ -9,7 +9,6 @@ import main.store.Users.*;
 
 // sql
 import java.sql.*;
-import javax.sql.*;
 
 public class Login extends JFrame {
     private JTextField emailField;
@@ -76,7 +75,7 @@ public class Login extends JFrame {
                     ResultSet count = countStatement.executeQuery();
                     ResultSet res = pstmt.executeQuery();
                     // If User exists
-                    if (res.next()) {
+                    while (res.next()) {
                         // count.next();
                         // System.out.println(count.getString(1));
                         String email = res.getString(4);
