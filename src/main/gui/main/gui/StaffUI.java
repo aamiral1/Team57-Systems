@@ -1,4 +1,4 @@
-//package main.gui;
+package main.gui;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -7,9 +7,9 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
-import main.gui.displayInduvidualProductsUI;
 
-public class CustomerUI extends JPanel {
+
+public class StaffUI extends JPanel {
 
     private static final String[] LABEL_TEXTS = {
         "Train Sets", "Track Packs", "Locomotives",
@@ -19,7 +19,7 @@ public class CustomerUI extends JPanel {
     private static final int IMAGE_WIDTH = 300;
     private static final int IMAGE_HEIGHT = 200;
 
-    public CustomerUI() {
+    public StaffUI() {
         // Use BorderLayout for the main panel
         setLayout(new BorderLayout());
 
@@ -34,11 +34,8 @@ public class CustomerUI extends JPanel {
 
         // Panel for images and labels with GridLayout
         JPanel gridPanel = new JPanel(new GridLayout(2, 3, 10, 10));
-
         try {
-
             for (int i = 0; i < 6; i++) {
-
                 BufferedImage image = ImageIO.read(new URL(getImageUrl(i)));
                 ImageIcon imageIcon = new ImageIcon(resizeImage(image, IMAGE_WIDTH, IMAGE_HEIGHT));
                 JLabel imageLabel = new JLabel(imageIcon);
@@ -52,29 +49,18 @@ public class CustomerUI extends JPanel {
                 JButton button = new JButton(LABEL_TEXTS[i]);
                 button.setPreferredSize(new Dimension(IMAGE_WIDTH, 30)); // Set the preferred height of the button
 
+                // Add action listener to the "Train Sets" button
+                if (LABEL_TEXTS[i].equals("Train Sets")) {
+                    button.addActionListener(e -> {
+                        System.out.println("Hello, this is the Train Sets button");
 
-                button.addActionListener(e -> {
-
-                    // Get the label text of the clicked button
-                    String buttonText = ((JButton) e.getSource()).getText();
-
-                    // Close the current window
-                    Window currentWindow = SwingUtilities.windowForComponent(this);
-                    currentWindow.dispose();
-            
-                    // Open a new window (you can customize this part based on your requirements)
-                    //JFrame newWindow = new JFrame(buttonText);
-                    if (buttonText == "Locomotives"){
-                        String[][] locomotiveDetails = displayInduvidualProductsUI.getLocomotives();
-                        displayInduvidualProductsUI.createAndShowGUI(locomotiveDetails);
-                    }
-                });
+                    });
+                }
                 
                 cellPanel.add(button, BorderLayout.SOUTH);
                 
                 gridPanel.add(cellPanel);
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -105,9 +91,10 @@ public class CustomerUI extends JPanel {
             JFrame window = new JFrame("Categories Page");
             window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             window.setSize(1000, 700); // Adjust the size to accommodate title and labels
-            window.add(new CustomerUI());
+            window.add(new StaffUI());
             window.setLocationRelativeTo(null);
             window.setVisible(true);
         });
     }
 }
+
