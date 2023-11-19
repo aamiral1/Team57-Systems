@@ -1,4 +1,5 @@
-package main.gui.Categories;
+package Categories;
+
 
 import java.awt.*;
 import javax.swing.*;
