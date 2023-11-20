@@ -5,6 +5,8 @@ import javax.swing.*;
 import main.db.DatabaseConnectionHandler;
 import main.gui.StaffUI; // Make sure this class exists in your project
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Locomotives extends JPanel {
 
@@ -37,6 +39,7 @@ public class Locomotives extends JPanel {
 
         JButton addButton = new JButton("Add");
         styleButton(addButton, new Color(50, 205, 50)); // Green color
+        addButton.addActionListener(e -> openAddDialog());
         rightPanel.add(addButton);
 
         JButton refreshButton = new JButton("Refresh");
@@ -70,6 +73,129 @@ public class Locomotives extends JPanel {
         }
         boxesPanel.revalidate();
         boxesPanel.repaint();
+    }
+
+    // Call this method when the Add button is clicked
+    private void openAddDialog() {
+        JDialog addDialog = new JDialog(parentFrame, "Add New Locomotive", true);
+        addDialog.setLayout(new BorderLayout());
+        addDialog.setSize(400, 300);
+        addDialog.setLocationRelativeTo(parentFrame);
+
+        JPanel fieldsPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+        Map<String, JTextField> textFieldMap = new HashMap<>();
+
+        // Define the fields for the new locomotive details
+        String[] fields = {
+            "Product Code", "Brand Name", "Product Name", "Retail Price",
+            "Product Quantity", "Model Type", "Gauge", "Historical Era", "DCC Code"
+        };
+
+        // Create labels and text fields for each field
+        for (String field : fields) {
+            JLabel label = new JLabel(field);
+            JTextField textField = new JTextField(20);
+            fieldsPanel.add(label);
+            fieldsPanel.add(textField);
+            textFieldMap.put(field, textField);
+        }
+
+        JButton saveButton = new JButton("Save New Locomotive");
+        saveButton.addActionListener(e -> {
+            saveNewLocomotive(textFieldMap);
+            addDialog.dispose();
+        });
+
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(e -> addDialog.dispose());
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(saveButton);
+        buttonPanel.add(cancelButton);
+
+        addDialog.add(fieldsPanel, BorderLayout.CENTER);
+        addDialog.add(buttonPanel, BorderLayout.SOUTH);
+        addDialog.setVisible(true);
+    }
+
+    private boolean insertLocomotive(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap) throws SQLException {
+        boolean success = false; // default to false, will be set to true if inserts succeed
+        db.con.setAutoCommit(false); // Begin transaction
+    
+        try {
+            // Insert into Product table
+            String insertProductSQL = "INSERT INTO Product (productCode, brandName, productName, retailPrice, productQuantity) VALUES (?, ?, ?, ?, ?)";
+            try (PreparedStatement pstmtProduct = db.con.prepareStatement(insertProductSQL)) {
+                pstmtProduct.setString(1, textFieldMap.get("Product Code").getText());
+                pstmtProduct.setString(2, textFieldMap.get("Brand Name").getText());
+                pstmtProduct.setString(3, textFieldMap.get("Product Name").getText());
+                String retailPriceText = textFieldMap.get("Retail Price").getText().replaceAll("[^\\d.]", ""); // Remove non-numeric characters
+                pstmtProduct.setFloat(4, Float.parseFloat(retailPriceText));
+                pstmtProduct.setInt(5, Integer.parseInt(textFieldMap.get("Product Quantity").getText()));
+                pstmtProduct.executeUpdate();
+            }
+    
+            // Insert into Individual table
+            String insertIndividualSQL = "INSERT INTO Individual (productCode, modelType, gauge) VALUES (?, ?, ?)";
+            try (PreparedStatement pstmtIndividual = db.con.prepareStatement(insertIndividualSQL)) {
+                pstmtIndividual.setString(1, textFieldMap.get("Product Code").getText());
+                pstmtIndividual.setString(2, textFieldMap.get("Model Type").getText());
+                pstmtIndividual.setString(3, textFieldMap.get("Gauge").getText());
+                pstmtIndividual.executeUpdate();
+            }
+    
+            // Insert into Locomotives table
+            String insertLocomotivesSQL = "INSERT INTO Locomotives (productCode, historicalEra, DCCCode) VALUES (?, ?, ?)";
+            try (PreparedStatement pstmtLocomotives = db.con.prepareStatement(insertLocomotivesSQL)) {
+                pstmtLocomotives.setString(1, textFieldMap.get("Product Code").getText());
+                pstmtLocomotives.setString(2, textFieldMap.get("Historical Era").getText());
+                pstmtLocomotives.setString(3, textFieldMap.get("DCC Code").getText());
+                pstmtLocomotives.executeUpdate();
+            }
+    
+            db.con.commit(); // Commit transaction
+            success = true; // if we reached this point, everything went well
+    
+        } catch (SQLException e) {
+            db.con.rollback(); // Roll back transaction if anything goes wrong
+            throw e; // Rethrow the exception after rolling back to handle it in the calling method
+        } finally {
+            db.con.setAutoCommit(true); // Restore default behavior
+        }
+    
+        return success; // return the status of the insert operation
+    }
+    
+    private void saveNewLocomotive(Map<String, JTextField> textFieldMap) {
+        DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+        boolean isInserted = false;
+    
+        try {
+            db.openConnection();
+            isInserted = insertLocomotive(db, textFieldMap);
+    
+            if (isInserted) {
+                JOptionPane.showMessageDialog(this, "New locomotive added successfully!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Insert failed, no changes were made.");
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Insert error: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            try {
+                if (db.con != null && !db.con.isClosed()) {
+                    db.closeConnection();
+                }
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Error closing the database connection: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    
+        if (isInserted) {
+            refreshLocomotives();
+        }
     }
 
 
@@ -149,6 +275,7 @@ public class Locomotives extends JPanel {
 
         JButton editButton = new JButton("Edit");
         styleButton(editButton, new Color(144, 238, 144)); // Light green color
+        editButton.addActionListener(e -> openEditDialog(locomotiveData));
         buttonPanel.add(editButton);
 
         panel.add(buttonPanel);
@@ -208,6 +335,142 @@ public class Locomotives extends JPanel {
             refreshLocomotives();
         }
     }
+
+    private String getTextFieldText(Map<String, JTextField> textFieldMap, String key) {
+        // Remove the colon and trim the key
+        key = key.replace(":", "").trim();
+        JTextField textField = textFieldMap.get(key);
+        if (textField == null) {
+            throw new IllegalArgumentException("Text field for key '" + key + "' not found.");
+        }
+        // Remove the dollar sign if it's a price field
+        String text = textField.getText();
+        if (key.equals("Retail Price")) {
+            text = text.replace("$", "").replace(",", "");
+        }
+        return text;
+    }
+
+    private boolean updateLocomotive(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap, String productCode) throws SQLException {
+        boolean success = false; // default to false, will be set to true if updates succeed
+        db.con.setAutoCommit(false); // Begin transaction
+
+        try {
+            // Update Product table
+            String updateProductSQL = "UPDATE Product SET brandName = ?, productName = ?, retailPrice = ?, productQuantity = ? WHERE productCode = ?";
+            try (PreparedStatement pstmtProduct = db.con.prepareStatement(updateProductSQL)) {
+                pstmtProduct.setString(1, textFieldMap.get("Brand Name").getText());
+                pstmtProduct.setString(2, textFieldMap.get("Product Name").getText());
+                String retailPriceText = textFieldMap.get("Retail Price").getText().replaceAll("[^\\d.]", ""); // Remove non-numeric characters.
+                pstmtProduct.setFloat(3, Float.parseFloat(retailPriceText));
+                pstmtProduct.setInt(4, Integer.parseInt(textFieldMap.get("Product Quantity").getText()));
+                pstmtProduct.setString(5, productCode);
+                pstmtProduct.executeUpdate();
+            }
+
+            // Update Individual table
+            String updateIndividualSQL = "UPDATE Individual SET modelType = ?, gauge = ? WHERE productCode = ?";
+            try (PreparedStatement pstmtIndividual = db.con.prepareStatement(updateIndividualSQL)) {
+                pstmtIndividual.setString(1, textFieldMap.get("Model Type").getText());
+                pstmtIndividual.setString(2, textFieldMap.get("Gauge").getText());
+                pstmtIndividual.setString(3, productCode);
+                pstmtIndividual.executeUpdate();
+            }
+
+            // Update Locomotives table
+            String updateLocomotivesSQL = "UPDATE Locomotives SET historicalEra = ?, DCCCode = ? WHERE productCode = ?";
+            try (PreparedStatement pstmtLocomotives = db.con.prepareStatement(updateLocomotivesSQL)) {
+                pstmtLocomotives.setString(1, textFieldMap.get("Historical Era").getText());
+                pstmtLocomotives.setString(2, textFieldMap.get("DCC Code").getText());
+                pstmtLocomotives.setString(3, productCode);
+                pstmtLocomotives.executeUpdate();
+            }
+
+            db.con.commit(); // Commit transaction
+            success = true; // if we reached this point, everything went well
+
+        } catch (SQLException e) {
+            db.con.rollback(); // Roll back transaction if anything goes wrong
+            throw e; // Rethrow the exception after rolling back to handle it in the calling method
+        } finally {
+            db.con.setAutoCommit(true); // Restore default behavior
+        }
+
+        return success; // return the status of the update operation
+    }
+
+
+    private void saveLocomotiveChanges(Map<String, JTextField> textFieldMap, String productCode) {
+        DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+        boolean isUpdated = false;
+    
+        try {
+            db.openConnection();
+            isUpdated = updateLocomotive(db, textFieldMap, productCode);
+    
+            if (isUpdated) {
+                JOptionPane.showMessageDialog(this, "Locomotive updated successfully!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Update failed, no changes were made.");
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Update error: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            try {
+                if (db.con != null && !db.con.isClosed()) {
+                    db.closeConnection();
+                }
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Error closing the database connection: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    
+        if (isUpdated) {
+            refreshLocomotives();
+        }
+    }
+
+    private void openEditDialog(String[] locomotiveData) {
+        JDialog editDialog = new JDialog(parentFrame, "Edit Locomotive", true);
+        editDialog.setLayout(new BorderLayout());
+        editDialog.setSize(400, 300);
+        editDialog.setLocationRelativeTo(parentFrame);
+    
+        JPanel fieldsPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+        Map<String, JTextField> textFieldMap = new HashMap<>();
+    
+        // Create text fields pre-filled with locomotive data
+        for (String data : locomotiveData) {
+            String[] splitData = data.split(":\\s+");
+            if (splitData.length == 2) {
+                JLabel label = new JLabel(splitData[0].trim());
+                JTextField textField = new JTextField(splitData[1]);
+                fieldsPanel.add(label);
+                fieldsPanel.add(textField);
+                // Remove the colon and trim the label before using it as a key
+                textFieldMap.put(splitData[0].trim(), textField);
+            }
+        }
+
+    JButton saveButton = new JButton("Save Changes");
+    saveButton.addActionListener(e -> {
+        saveLocomotiveChanges(textFieldMap, locomotiveData[0].split(": ")[1]);
+        editDialog.dispose();
+    });
+
+    JButton cancelButton = new JButton("Cancel");
+    cancelButton.addActionListener(e -> editDialog.dispose());
+
+    JPanel buttonPanel = new JPanel();
+    buttonPanel.add(saveButton);
+    buttonPanel.add(cancelButton);
+
+    editDialog.add(fieldsPanel, BorderLayout.CENTER);
+    editDialog.add(buttonPanel, BorderLayout.SOUTH);
+    editDialog.setVisible(true);
+}
 
      private void styleButton(JButton button, Color color) {
         button.setFont(new Font("SansSerif", Font.PLAIN, 12));
