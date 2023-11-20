@@ -1,10 +1,9 @@
 package Categories;
 
-
 import java.awt.*;
 import javax.swing.*;
 import main.db.DatabaseConnectionHandler;
-import main.gui.StaffUI; // Make sure to import your StaffUI class
+import main.gui.StaffUI; // Make sure this class exists in your project
 import java.sql.*;
 
 public class Locomotives extends JPanel {
@@ -16,51 +15,45 @@ public class Locomotives extends JPanel {
         this.parentFrame = parentFrame;
         setLayout(new BorderLayout());
 
-        // Panel for the title, return button, and add button
         JPanel northPanel = new JPanel(new BorderLayout());
+        northPanel.setBackground(Color.WHITE); // Setting background color to white
 
-        // Return button
         JButton returnButton = new JButton("Return");
-        styleButton(returnButton, new Color(100, 100, 255)); // Apply styling with a custom color
+        styleButton(returnButton, new Color(135, 206, 250)); // Light blue color
         returnButton.addActionListener(e -> {
-            // Switch back to the Categories page
-            parentFrame.setContentPane(new StaffUI());
+            parentFrame.setContentPane(new StaffUI()); // Make sure StaffUI constructor accepts JFrame
             parentFrame.revalidate();
             parentFrame.repaint();
         });
         northPanel.add(returnButton, BorderLayout.WEST);
 
-        // Title label
         JLabel titleLabel = new JLabel("LOCOMOTIVES PAGE", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 24)); // Setting font
+        titleLabel.setForeground(Color.BLACK); // Text color
         northPanel.add(titleLabel, BorderLayout.CENTER);
 
-        // Right panel for the 'Add' button and 'Refresh' button
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        rightPanel.setBackground(Color.WHITE); // Setting background color to white
+
         JButton addButton = new JButton("Add");
-        styleButton(addButton, new Color(100, 255, 100)); // Apply styling with a custom color
-        // Placeholder for adding action listener to the 'Add' button
-        // addButton.addActionListener(...);
+        styleButton(addButton, new Color(50, 205, 50)); // Green color
         rightPanel.add(addButton);
 
-        // Refresh button
         JButton refreshButton = new JButton("Refresh");
-        styleButton(refreshButton, new Color(100, 100, 255)); // Apply styling with a custom color
+        styleButton(refreshButton, new Color(30, 144, 255)); // Dodger blue color
         refreshButton.addActionListener(e -> refreshLocomotives());
         rightPanel.add(refreshButton);
 
         northPanel.add(rightPanel, BorderLayout.EAST);
         northPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Add the north panel to the top of the main panel
         add(northPanel, BorderLayout.NORTH);
 
-        // Scrollable panel for boxes
         boxesPanel = new JPanel();
         boxesPanel.setLayout(new BoxLayout(boxesPanel, BoxLayout.Y_AXIS));
+        boxesPanel.setBackground(Color.WHITE); // Setting background color to white
         refreshLocomotives();
 
-        // Add boxes panel to the center, wrapped in a scroll pane
         JScrollPane scrollPane = new JScrollPane(boxesPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
@@ -79,11 +72,11 @@ public class Locomotives extends JPanel {
         boxesPanel.repaint();
     }
 
+
     private java.util.List<String[]> getLocomotives() {
         java.util.List<String[]> locomotives = new java.util.ArrayList<>();
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         db.openConnection();
-
         String sqlQuery = "SELECT " +
                 "Product.productCode, " +
                 "Product.brandName, " +
@@ -100,7 +93,6 @@ public class Locomotives extends JPanel {
 
         try (PreparedStatement pstmt = db.con.prepareStatement(sqlQuery);
              ResultSet rs = pstmt.executeQuery()) {
-
             while (rs.next()) {
                 String productCode = rs.getString("productCode");
                 String brandName = rs.getString("brandName");
@@ -116,7 +108,7 @@ public class Locomotives extends JPanel {
                         "Product Code: " + productCode,
                         "Brand Name: " + brandName,
                         "Product Name: " + productName,
-                        "Retail Price: " + retailPrice,
+                        "Retail Price: $" + retailPrice,
                         "Product Quantity: " + productQuantity,
                         "Model Type: " + modelType,
                         "Gauge: " + gauge,
@@ -125,52 +117,106 @@ public class Locomotives extends JPanel {
                 });
             }
         } catch (SQLException e) {
-            System.out.println("An error occurred while querying the database:");
             e.printStackTrace();
         } finally {
-            db.closeConnection(); // Make sure to close the connection properly
+            db.closeConnection();
         }
-
         return locomotives;
     }
 
     private JPanel createBox(String[] locomotiveData) {
         JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1, true));
+        panel.setLayout(new GridLayout(0, 1));
+        panel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         panel.setBackground(Color.WHITE);
 
         for (String data : locomotiveData) {
             JLabel label = new JLabel(data);
-            label.setFont(new Font("Arial", Font.PLAIN, 14));
-            label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+            label.setFont(new Font("SansSerif", Font.PLAIN, 12));
+            label.setForeground(Color.BLACK);
+            label.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             panel.add(label);
         }
 
-        // Buttons panel at the bottom of the box
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        buttonPanel.setBackground(Color.WHITE); // Setting background color to white
+
         JButton deleteButton = new JButton("Delete");
-        JButton editButton = new JButton("Edit");
-        styleButton(deleteButton, new Color(255, 100, 100)); // Apply delete button styling
-        styleButton(editButton, new Color(100, 255, 100)); // Apply edit button styling
+        styleButton(deleteButton, new Color(255, 99, 71)); // Tomato color
+        String productCode = locomotiveData[0].split(": ")[1];
+        deleteButton.addActionListener(e -> deleteLocomotive(productCode));
         buttonPanel.add(deleteButton);
+
+        JButton editButton = new JButton("Edit");
+        styleButton(editButton, new Color(144, 238, 144)); // Light green color
         buttonPanel.add(editButton);
-        buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         panel.add(buttonPanel);
 
         return panel;
     }
 
-    // Method to style buttons
-    private void styleButton(JButton button, Color color) {
-        button.setFont(new Font("Arial", Font.BOLD, 12));
+
+    private void deleteLocomotive(String productCode) {
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Are you sure you want to delete this locomotive?",
+                "Delete Confirmation",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+            db.openConnection();
+            try {
+                db.con.setAutoCommit(false);
+
+                String deleteLocomotivesSQL = "DELETE FROM Locomotives WHERE productCode = ?";
+                try (PreparedStatement pstmtLocomotives = db.con.prepareStatement(deleteLocomotivesSQL)) {
+                    pstmtLocomotives.setString(1, productCode);
+                    pstmtLocomotives.executeUpdate();
+                }
+
+                String deleteIndividualSQL = "DELETE FROM Individual WHERE productCode = ?";
+                try (PreparedStatement pstmtIndividual = db.con.prepareStatement(deleteIndividualSQL)) {
+                    pstmtIndividual.setString(1, productCode);
+                    pstmtIndividual.executeUpdate();
+                }
+
+                String deleteProductSQL = "DELETE FROM Product WHERE productCode = ?";
+                try (PreparedStatement pstmtProduct = db.con.prepareStatement(deleteProductSQL)) {
+                    pstmtProduct.setString(1, productCode);
+                    pstmtProduct.executeUpdate();
+                }
+
+                db.con.commit();
+            } catch (SQLException e) {
+                try {
+                    db.con.rollback();
+                } catch (SQLException e2) {
+                    e2.printStackTrace();
+                }
+                e.printStackTrace();
+            } finally {
+                try {
+                    db.con.setAutoCommit(true);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                db.closeConnection();
+            }
+
+            refreshLocomotives();
+        }
+    }
+
+     private void styleButton(JButton button, Color color) {
+        button.setFont(new Font("SansSerif", Font.PLAIN, 12));
         button.setBackground(color);
         button.setForeground(Color.WHITE);
         button.setBorderPainted(false);
         button.setFocusPainted(false);
         button.setOpaque(true);
-        button.setBorder(BorderFactory.createEmptyBorder(10, 25, 10, 25));
-        // Mouse listener for hover effect
+        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 button.setBackground(color.darker());
