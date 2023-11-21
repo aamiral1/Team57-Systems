@@ -121,7 +121,7 @@ public class Locomotives extends JPanel {
     private boolean insertLocomotive(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap) throws SQLException {
         boolean success = false; // default to false, will be set to true if inserts succeed
         db.con.setAutoCommit(false); // Begin transaction
-        
+    
         try {
             // Insert into Product table
             String insertProductSQL = "INSERT INTO Product (productCode, brandName, productName, retailPrice, productQuantity) VALUES (?, ?, ?, ?, ?)";
@@ -142,7 +142,7 @@ public class Locomotives extends JPanel {
                     JOptionPane.showMessageDialog(null, "Invalid number format for Retail Price.", "Input Error", JOptionPane.ERROR_MESSAGE);
                     return false; // Return early or throw an exception
                 }
-        
+    
                 // Check and parse product quantity
                 String productQuantityText = textFieldMap.get("Product Quantity").getText();
                 if (productQuantityText.isEmpty()) {
@@ -155,27 +155,19 @@ public class Locomotives extends JPanel {
                     JOptionPane.showMessageDialog(null, "Invalid number format for Product Quantity.", "Input Error", JOptionPane.ERROR_MESSAGE);
                     return false;
                 }
-        
+    
                 pstmtProduct.executeUpdate();
             }
-        
+    
             // Insert into Individual table
             String insertIndividualSQL = "INSERT INTO Individual (productCode, modelType, gauge) VALUES (?, ?, ?)";
             try (PreparedStatement pstmtIndividual = db.con.prepareStatement(insertIndividualSQL)) {
                 pstmtIndividual.setString(1, textFieldMap.get("Product Code").getText());
                 pstmtIndividual.setString(2, textFieldMap.get("Model Type").getText());
-                
-                // Retrieve gauge text and truncate if necessary
-                String gaugeText = textFieldMap.get("Gauge").getText();
-                int gaugeMaxLength = 10; // Replace with the actual max length of your 'gauge' column
-                if (gaugeText.length() > gaugeMaxLength) {
-                    gaugeText = gaugeText.substring(0, gaugeMaxLength); // Truncate to max length
-                    JOptionPane.showMessageDialog(null, "Gauge data was too long and was truncated to " + gaugeMaxLength + " characters.", "Input Warning", JOptionPane.WARNING_MESSAGE);
-                }
-                pstmtIndividual.setString(3, gaugeText);
+                pstmtIndividual.setString(3, textFieldMap.get("Gauge").getText());
                 pstmtIndividual.executeUpdate();
             }
-        
+    
             // Insert into Locomotives table
             String insertLocomotivesSQL = "INSERT INTO Locomotives (productCode, historicalEra, DCCCode) VALUES (?, ?, ?)";
             try (PreparedStatement pstmtLocomotives = db.con.prepareStatement(insertLocomotivesSQL)) {
@@ -184,17 +176,17 @@ public class Locomotives extends JPanel {
                 pstmtLocomotives.setString(3, textFieldMap.get("DCC Code").getText());
                 pstmtLocomotives.executeUpdate();
             }
-        
+    
             db.con.commit(); // Commit transaction
             success = true; // if we reached this point, everything went well
-        
+    
         } catch (SQLException e) {
             db.con.rollback(); // Roll back transaction if anything goes wrong
             throw e; // Rethrow the exception after rolling back to handle it in the calling method
         } finally {
             db.con.setAutoCommit(true); // Restore default behavior
         }
-        
+    
         return success; // return the status of the insert operation
     }
     
