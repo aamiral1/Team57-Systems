@@ -48,9 +48,11 @@ public class DatabaseOperations {
 
                 // check if account locked
                 if (accountLocked) {
-                    return "Account is locked. Please contact support";
+                    System.out.println("Account is locked. Please contact support");
+                    return false;
                 } else {
                     // verify entered password against stored hashed password
+                    
                     if (verifyPassword(enteredPassword, storedPasswordHash)) {
                         // Login Successful
                         query = "UPDATE User SET last_login = CURRENT_TIMESTAMP, " +
@@ -90,16 +92,18 @@ public class DatabaseOperations {
             e.printStackTrace();
         }
 
-        return "User not found.";
+        System.out.println("User Not Found");
+        return false;
     }
 
     public static Boolean verifyPassword(char[] enteredPassword, String storedPasswordHash) {
         Boolean matchStatus = false;
         try {
             // check if hashes match
+            System.out.println("Password trying to match " + String.valueOf(enteredPassword));
             String encryptedEnteredPassword = Encryption.encrypt(String.valueOf(enteredPassword), User.salt);
-            System.out.println("DECRYPTED DB PASSWORD: " + Encryption.decrypt(storedPasswordHash, User.salt));
-
+            System.out.println(encryptedEnteredPassword);
+    
             if (encryptedEnteredPassword.equals(storedPasswordHash)) {
                 matchStatus = true; // passwords matched succesfully
                 System.out.println("Match Successful");

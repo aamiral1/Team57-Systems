@@ -6,7 +6,6 @@ import javax.crypto.spec.IvParameterSpec;
 import java.util.Base64;
 import java.security.MessageDigest;
 import java.util.Arrays;
-import main.store.Users.*;
 
 public class Encryption {
 
@@ -40,21 +39,21 @@ public class Encryption {
     }
 
     public static void main(String[] args){
-        String originalData = "pass";
-        String password = User.salt;
+        // String originalData = "pass";
+        // String password = User.salt;
 
-        try {
-            String encryptedData = encrypt(originalData, password);
-            System.out.println("Encrypted Data: " + encryptedData);
+        // try {
+        //     String encryptedData = encrypt(originalData, password);
+        //     System.out.println("Encrypted Data: " + encryptedData);
 
-            String decryptedData = decrypt(encryptedData, password);
-            System.out.println("Decrypted Data: " + decryptedData);
+        //     String decryptedData = decrypt(encryptedData, password);
+        //     System.out.println("Decrypted Data: " + decryptedData);
 
-            // Check if the decrypted data matches the original
-            System.out.println("Does the decrypted data match the original? " + originalData.equals(decryptedData));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        //     // Check if the decrypted data matches the original
+        //     System.out.println("Does the decrypted data match the original? " + originalData.equals(decryptedData));
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        // }
     }
 }
 

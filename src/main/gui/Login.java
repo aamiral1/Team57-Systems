@@ -45,6 +45,7 @@ public class Login extends JFrame {
         // Action Listener for login button
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                Boolean loginStatus = false;
                 // Logic to handle login
                 String usernameInput = usernameField.getText();
                 char[] password = passwordField.getPassword();
@@ -57,7 +58,14 @@ public class Login extends JFrame {
                 db.openConnection();
 
                 // verify login
-                Boolean loginStatus = DatabaseOperations.verifyLogin(db.con, usernameInput, password);
+                if (password != null){
+                    loginStatus = DatabaseOperations.verifyLogin(db.con, usernameInput, password);
+                }
+                else{
+                    // show error box
+                    JOptionPane.showMessageDialog(Login.this, "Password cannot be empty");
+                }
+                
                 if (loginStatus){
                     // open customer dashboard if login is successful
                     Login.this.setVisible(false); // or Login.this.dispose();
@@ -66,6 +74,7 @@ public class Login extends JFrame {
                     CustomerUI customerUI = new CustomerUI();
                     customerUI.setVisible(true);
                 }
+
                 db.closeConnection();
             }
         });

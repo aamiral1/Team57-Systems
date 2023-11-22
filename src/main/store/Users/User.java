@@ -7,7 +7,7 @@ import main.misc.*;
 
 public class User {
 
-    String userID;
+    int userID;
     Date joinDate;
     Boolean accountLocked;
 
@@ -40,11 +40,15 @@ public class User {
     // }
     // public String[] getCurrentUser;
 
+    public String getName() {
+        return this.userName;
+    }
+
     // Create constructor with all attributes
     public User(String userID, String username, String emailAddress, String password,
             String houseNumber, String roadName, String cityName, String postcode, Date joinDate, Boolean accountLocked) {
         // Transfer inputs from constructor
-        this.userID = userID;
+        this.userID = Integer.valueOf(userID);
         this.userName = username;
         this.emailAddress = emailAddress;
         try{this.password = Encryption.encrypt(password, salt);}
@@ -96,10 +100,9 @@ public class User {
 
             // Pass in parameters to SQL Query
             pstmt.setInt(1, userID);
-            pstmt.setString(2, name);
+            pstmt.setString(2, userName);
             pstmt.setString(3, password);
             pstmt.setString(4, emailAddress);
-            pstmt.setBoolean(5, isRegistered);
             pstmt.setString(6, houseNumber);
             pstmt.setString(7, cityName);
             pstmt.setString(8, roadName);
@@ -116,43 +119,43 @@ public class User {
         return flag;
     }
 
-    public Boolean exists() {
-        // initiate Database Connections
-        DatabaseConnectionHandler db = new DatabaseConnectionHandler();
-        db.openConnection();
-        Boolean flag = false;
+//     public Boolean exists() {
+//         // initiate Database Connections
+//         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+//         db.openConnection();
+//         Boolean flag = false;
 
-        try {
-            Statement stmt = db.con.createStatement();
+//         try {
+//             Statement stmt = db.con.createStatement();
 
-            PreparedStatement pstmt = db.con.prepareStatement("SELECT EXISTS(SELECT * from Users WHERE email=?)");
-            pstmt.setString(1, emailAddress);
+//             PreparedStatement pstmt = db.con.prepareStatement("SELECT EXISTS(SELECT * from Users WHERE email=?)");
+//             pstmt.setString(1, emailAddress);
 
-            ResultSet isExists = pstmt.executeQuery();
+//             ResultSet isExists = pstmt.executeQuery();
 
-            if (isExists.next()) {
-                if (isExists.getString(1).equals("1")) {
-                    flag = true;
-                }
-            } else {
-                System.out.println("Result set issue");
-            }
+//             if (isExists.next()) {
+//                 if (isExists.getString(1).equals("1")) {
+//                     flag = true;
+//                 }
+//             } else {
+//                 System.out.println("Result set issue");
+//             }
 
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
+//         } catch (SQLException ex) {
+//             ex.printStackTrace();
+//         }
 
-        return flag;
+//         return flag;
 
-    }
+//     }
 
-    // Useless?
-    // public String signIn(String name, String password, String email) {
-    // return "Well done you signed in";
-    // }
+//     // Useless?
+//     // public String signIn(String name, String password, String email) {
+//     // return "Well done you signed in";
+//     // }
 
-    // public boolean signOut() {
-    // return false;
-    // }
+//     // public boolean signOut() {
+//     // return false;
+//     // }
 
 }

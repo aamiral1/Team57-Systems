@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import main.gui.displayInduvidualProductsUI;
+import main.store.Users.*;
 
 public class CustomerUI extends JPanel {
 
@@ -23,9 +24,11 @@ public class CustomerUI extends JPanel {
         // Use BorderLayout for the main panel
         setLayout(new BorderLayout());
 
+        String currentUser = UserManager.getCurrentUser().getName();
+
         // Title panel with FlowLayout for centering the title
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JLabel titleLabel = new JLabel("CATEGORIES PAGE");
+        JLabel titleLabel = new JLabel("Hello "+currentUser);
         titleLabel.setFont(new Font("Serif", Font.BOLD, 24));
         titlePanel.add(titleLabel);
         
