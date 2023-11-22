@@ -90,6 +90,8 @@ public class SignUp extends JPanel {
                 DatabaseConnectionHandler db = new DatabaseConnectionHandler();
                 db.openConnection();
 
+                // generate user id
+
                 // Sign Up User
                 User newUser = new User(fname,sname,emailAddress,password,houseNumber,roadName,cityName,postcode);
                 if (!newUser.exists()){

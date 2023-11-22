@@ -115,3 +115,34 @@ public class DatabaseOperations {
         return matchStatus;
     }
 }
+
+public Boolean signUp(int){
+    Boolean flag = false;
+    DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+    db.openConnection();
+
+    try {
+        // Pass in sql query to sign up user
+        String query = "INSERT INTO User VALUES (?,?,?,?,?,?,?,?,?,?)";
+        PreparedStatement pstmt = db.con.prepareStatement(query);
+
+        // Pass in parameters to SQL Query
+        pstmt.setInt(1, userID);
+        pstmt.setString(2, userName);
+        pstmt.setString(3, password);
+        pstmt.setString(4, emailAddress);
+        pstmt.setString(6, houseNumber);
+        pstmt.setString(7, cityName);
+        pstmt.setString(8, roadName);
+        pstmt.setString(9, postcode);
+        pstmt.setDate(10, joinDate);
+
+        // execute Query
+        pstmt.executeUpdate();
+    }
+    catch(SQLException ex){
+        ex.printStackTrace();
+    }
+
+    return flag;
+}
