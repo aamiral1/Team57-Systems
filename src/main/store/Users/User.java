@@ -7,11 +7,11 @@ import main.misc.*;
 
 public class User {
 
-    int userID;
+    String userID;
     Date joinDate;
-    Boolean isRegistered;
+    Boolean accountLocked;
 
-    String name;
+    String userName;
     String emailAddress;
     String password;
     String houseNumber;
@@ -19,29 +19,68 @@ public class User {
     String cityName;
     String postcode;
 
-    public static String cryptoPassword = "team057";
+
+
+    public static String salt = "team057";
+
+    // // Singleton status variable
+    // private static Boolean uniqueInstance = null;
+
+    // // current User details
+    // private static String currentUsername;
+    // private static String currentUserID;
+
+    // // form a unique instance of the User class
+    // public Boolean createUniqueUser
+
+    // // getter and setter methods
+    // public void setCurrentUser (String username, String userID){
+    //     User.currentUsername = username;
+    //     User.currentUserID = userID;
+    // }
+    // public String[] getCurrentUser;
 
     // Create constructor with all attributes
-    public User(String fname, String sname, String emailAddress, String password,
-            String houseNumber, String roadName, String cityName, String postcode) {
+    public User(String userID, String username, String emailAddress, String password,
+            String houseNumber, String roadName, String cityName, String postcode, Date joinDate, Boolean accountLocked) {
         // Transfer inputs from constructor
-        this.name = fname + " " + sname;
+        this.userID = userID;
+        this.userName = username;
         this.emailAddress = emailAddress;
-        try{this.password = Encryption.encrypt(password, cryptoPassword);}
+        try{this.password = Encryption.encrypt(password, salt);}
         catch (Exception e) {e.printStackTrace();}
         this.houseNumber = houseNumber;
         this.roadName = roadName;
         this.cityName = cityName;
         this.postcode = postcode;
+        this.joinDate = joinDate;
+        this.accountLocked = accountLocked;
+    
 
         // System generated info
-        LocalDate currentDate;
-        currentDate = LocalDate.now();
-        joinDate = java.sql.Date.valueOf(currentDate);
-        isRegistered = true;
-        // DO THIS TOO
+        // LocalDate currentDate;
+        // currentDate = LocalDate.now();
+        // joinDate = java.sql.Date.valueOf(currentDate);
+        // isRegistered = true;
+        // // DO THIS TOO
         // GenID idGenerator = new GenID();
-        userID = 00000001;
+        // userID = 00000001;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+            "userID='" + userID + '\'' +
+            ", userName='" + userName + '\'' +
+            ", emailAddress='" + emailAddress + '\'' +
+            // Don't print the password, even if it's encrypted, for security reasons
+            ", houseNumber='" + houseNumber + '\'' +
+            ", roadName='" + roadName + '\'' +
+            ", cityName='" + cityName + '\'' +
+            ", postcode='" + postcode + '\'' +
+            ", joinDate=" + joinDate +
+            ", accountLocked=" + accountLocked +
+            '}';
     }
 
     // Get methods

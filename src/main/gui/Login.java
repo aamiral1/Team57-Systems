@@ -3,7 +3,7 @@ package main.gui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import main.db.DatabaseConnectionHandler;
+import main.db.*;
 import main.misc.*;
 import main.store.Users.*;
 
@@ -11,24 +11,24 @@ import main.store.Users.*;
 import java.sql.*;
 
 public class Login extends JFrame {
-    private JTextField emailField;
+    private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton;
 
     public Login() {
         // Create components
-        emailField = new JTextField(15);
+        usernameField = new JTextField(15);
         passwordField = new JPasswordField(15);
         loginButton = new JButton("LOGIN");
 
         // Layout setup
         setLayout(new GridLayout(3, 1));
 
-        // Adding Email Panel
-        JPanel emailPanel = new JPanel();
-        emailPanel.add(new JLabel("Email:"));
-        emailPanel.add(emailField);
-        add(emailPanel);
+        // Adding Username Panel
+        JPanel usernamePanel = new JPanel();
+        usernamePanel.add(new JLabel("Username:"));
+        usernamePanel.add(usernameField);
+        add(usernamePanel);
 
         // Adding Password Panel
         JPanel passwordPanel = new JPanel();
@@ -46,63 +46,27 @@ public class Login extends JFrame {
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Logic to handle login
-                String emailInput = emailField.getText();
+                String usernameInput = usernameField.getText();
                 char[] password = passwordField.getPassword();
                 // For demo purposes, we just print the credentials
-                System.out.println("Email: " + emailInput);
+                System.out.println("Username: " + usernameInput);
                 System.out.println("Password: " + new String(password));
 
                 // open database connection
                 DatabaseConnectionHandler db = new DatabaseConnectionHandler();
                 db.openConnection();
 
-                // Check if user exists
-                Statement stmt = null;
-                try {
-                    stmt = db.con.createStatement();
-
-                    PreparedStatement pstmt = db.con.prepareStatement("SELECT * FROM User WHERE email=? AND hashed_password=?");
-                    PreparedStatement countStatement = db.con.prepareStatement("SELECT COUNT(*) FROM User WHERE email=? AND hashed_password=?");
-
-                    
-                    pstmt.setString(1, emailInput); //email = *
-                    pstmt.setString(2, new String(password)); // need to encrypt given user input
-
-                    countStatement.setString(1, emailInput);
-                    countStatement.setString(2, new String(password));
-
-                    // Placeholders for user match count and details
-                    ResultSet count = countStatement.executeQuery();
-                    ResultSet res = pstmt.executeQuery();
-                    // If User exists
-                    while (res.next()) {
-                        // count.next();
-                        // System.out.println(count.getString(1));
-                        String email = res.getString(4);
-                        String hashed_password = res.getString(3);
-                        
-                        // Decrypt hashed_password
-                        String decryptedPassword = Encryption.decrypt(hashed_password, User.cryptoPassword);
-                        if (count.next()){
-                            if (decryptedPassword.equals(new String(password)) && email.equals(emailInput)) {
-                                // Need to encrypt password
-                                System.out.println("Log In Successful");
-                            }
-                        }
-                    } else {
-                        System.out.println("Invalid Credentials");
-                    }
-
-                    pstmt.close();
+                // verify login
+                Boolean loginStatus = DatabaseOperations.verifyLogin(db.con, usernameInput, password);
+                if (loginStatus){
+                    // open customer dashboard if login is successful
+                    Login.this.setVisible(false); // or Login.this.dispose();
+            
+                    // Open the CustomerUI window
+                    CustomerUI customerUI = new CustomerUI();
+                    customerUI.setVisible(true);
                 }
-
-                catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-                catch (Exception ex){
-                    ex.printStackTrace();
-                }
-
+                db.closeConnection();
             }
         });
 
