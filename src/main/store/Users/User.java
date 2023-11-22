@@ -7,21 +7,19 @@ import main.misc.*;
 
 public class User {
 
-    int userID;
-    Date joinDate;
-    Boolean accountLocked;
-
-    String userName;
-    String emailAddress;
-    String password;
-    String houseNumber;
-    String roadName;
-    String cityName;
-    String postcode;
-
-
-
-    public static String salt = "team057";
+    private int userID;
+    private String username;
+    private String name;
+    private String hashedPassword;
+    private String emailAddress;
+    private String houseNumber;
+    private String roadName;
+    private String cityName;
+    private String postcode;
+    private Date joinDate;
+    private Boolean accountLocked=false;
+    private String role;
+    private String salt;
 
     // // Singleton status variable
     // private static Boolean uniqueInstance = null;
@@ -41,17 +39,25 @@ public class User {
     // public String[] getCurrentUser;
 
     public String getName() {
-        return this.userName;
+        return this.username;
+    }
+
+    public Boolean lockUser() {
+        this.accountLocked = true;
+        return true;
     }
 
     // Create constructor with all attributes
-    public User(String userID, String username, String emailAddress, String password,
-            String houseNumber, String roadName, String cityName, String postcode, Date joinDate, Boolean accountLocked) {
+    public User(String userID, String username, String name, String hashedPassword, String emailAddress,
+            String houseNumber, String cityName, String roadName, String postcode, Date joinDate, Boolean accountLocked,
+            String role) {
         // Transfer inputs from constructor
         this.userID = Integer.valueOf(userID);
-        this.userName = username;
+        this.username = username;
+        this.name = name;
+        this.salt = Encryption.generateSalt(); // assign user-specific salt
         this.emailAddress = emailAddress;
-        try{this.password = Encryption.encrypt(password, salt);}
+        try{this.hashedPassword = Encryption.encrypt(hashedPassword, this.salt);}
         catch (Exception e) {e.printStackTrace();}
         this.houseNumber = houseNumber;
         this.roadName = roadName;
@@ -59,72 +65,47 @@ public class User {
         this.postcode = postcode;
         this.joinDate = joinDate;
         this.accountLocked = accountLocked;
-    
-
-        // System generated info
-        // LocalDate currentDate;
-        // currentDate = LocalDate.now();
-        // joinDate = java.sql.Date.valueOf(currentDate);
-        // isRegistered = true;
-        // // DO THIS TOO
-        // GenID idGenerator = new GenID();
-        // userID = 00000001;
     }
 
     @Override
     public String toString() {
         return "User{" +
-            "userID='" + userID + '\'' +
-            ", userName='" + userName + '\'' +
+            "userID=" + userID +
+            ", username='" + username + '\'' +
+            ", name='" + name + '\'' +
+            ", hashedPassword='" + hashedPassword + '\'' +
             ", emailAddress='" + emailAddress + '\'' +
-            // Don't print the password, even if it's encrypted, for security reasons
             ", houseNumber='" + houseNumber + '\'' +
-            ", roadName='" + roadName + '\'' +
             ", cityName='" + cityName + '\'' +
+            ", roadName='" + roadName + '\'' +
             ", postcode='" + postcode + '\'' +
             ", joinDate=" + joinDate +
             ", accountLocked=" + accountLocked +
+            ", role='" + role + '\'' +
+            ", salt='" + salt + '\'' +
             '}';
     }
 
+    public Object[] getAttributes() {
+        // compute attributes into an easily accessible array
+        Object[] attributes = {
+            this.userID,
+            this.username,
+            this.name,
+            this.hashedPassword,
+            this.emailAddress,
+            this.houseNumber,
+            this.roadName,
+            this.cityName,
+            this.postcode,
+            this.joinDate,
+            this.accountLocked,
+            this.role,
+            this.salt
+        };
 
-//     public Boolean exists() {
-//         // initiate Database Connections
-//         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
-//         db.openConnection();
-//         Boolean flag = false;
-
-//         try {
-//             Statement stmt = db.con.createStatement();
-
-//             PreparedStatement pstmt = db.con.prepareStatement("SELECT EXISTS(SELECT * from Users WHERE email=?)");
-//             pstmt.setString(1, emailAddress);
-
-//             ResultSet isExists = pstmt.executeQuery();
-
-//             if (isExists.next()) {
-//                 if (isExists.getString(1).equals("1")) {
-//                     flag = true;
-//                 }
-//             } else {
-//                 System.out.println("Result set issue");
-//             }
-
-//         } catch (SQLException ex) {
-//             ex.printStackTrace();
-//         }
-
-//         return flag;
-
-//     }
-
-//     // Useless?
-//     // public String signIn(String name, String password, String email) {
-//     // return "Well done you signed in";
-//     // }
-
-//     // public boolean signOut() {
-//     // return false;
-//     // }
+        return attributes;
+        
+    }
 
 }

@@ -116,7 +116,7 @@ public class DatabaseOperations {
     }
 }
 
-public Boolean signUp(int){
+public Boolean signUp(User signUpUser){
     Boolean flag = false;
     DatabaseConnectionHandler db = new DatabaseConnectionHandler();
     db.openConnection();

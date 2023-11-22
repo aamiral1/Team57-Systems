@@ -6,6 +6,7 @@ import javax.crypto.spec.IvParameterSpec;
 import java.util.Base64;
 import java.security.MessageDigest;
 import java.util.Arrays;
+import java.security.SecureRandom;
 
 public class Encryption {
 
@@ -28,6 +29,18 @@ public class Encryption {
         cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(new byte[16]));
         byte[] original = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
         return new String(original, "UTF-8");
+    }
+
+    // generate user salt
+    public static String generateSalt(){
+        byte[] salt = new byte[16];
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(salt);
+
+        // convert salt to base64 string for easier storage
+        String saltString = Base64.getEncoder().encodeToString(salt);
+
+        return saltString;
     }
 
     private static SecretKeySpec createKey(String password) throws Exception {

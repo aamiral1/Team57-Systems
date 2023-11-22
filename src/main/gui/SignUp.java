@@ -91,6 +91,7 @@ public class SignUp extends JPanel {
                 db.openConnection();
 
                 // generate user id
+                String userID = 
 
                 // Sign Up User
                 User newUser = new User(fname,sname,emailAddress,password,houseNumber,roadName,cityName,postcode);
