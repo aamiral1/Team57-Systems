@@ -8,12 +8,12 @@ import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Locomotives extends JPanel {
+public class Controllers extends JPanel {
 
     private JFrame parentFrame;
     private JPanel boxesPanel;
 
-    public Locomotives(JFrame parentFrame) {
+    public Controllers(JFrame parentFrame) {
         this.parentFrame = parentFrame;
         setLayout(new BorderLayout());
 
@@ -358,6 +358,21 @@ public class Locomotives extends JPanel {
 
             refreshLocomotives();
         }
+    }
+
+    private String getTextFieldText(Map<String, JTextField> textFieldMap, String key) {
+        // Remove the colon and trim the key
+        key = key.replace(":", "").trim();
+        JTextField textField = textFieldMap.get(key);
+        if (textField == null) {
+            throw new IllegalArgumentException("Text field for key '" + key + "' not found.");
+        }
+        // Remove the dollar sign if it's a price field
+        String text = textField.getText();
+        if (key.equals("Retail Price")) {
+            text = text.replace("$", "").replace(",", "");
+        }
+        return text;
     }
 
     private boolean updateLocomotive(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap, String productCode) throws SQLException {
