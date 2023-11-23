@@ -1,4 +1,4 @@
-//package main.gui;
+package main.gui;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import main.gui.displayInduvidualProductsUI;
+import main.store.Users.*;
 
 public class CustomerUI extends JPanel {
 
@@ -23,9 +24,11 @@ public class CustomerUI extends JPanel {
         // Use BorderLayout for the main panel
         setLayout(new BorderLayout());
 
+        String currentUser = UserManager.getCurrentUser().getName();
+
         // Title panel with FlowLayout for centering the title
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JLabel titleLabel = new JLabel("CATEGORIES PAGE");
+        JLabel titleLabel = new JLabel("Hello "+currentUser);
         titleLabel.setFont(new Font("Serif", Font.BOLD, 24));
         titlePanel.add(titleLabel);
         
@@ -62,17 +65,26 @@ public class CustomerUI extends JPanel {
                     Window currentWindow = SwingUtilities.windowForComponent(this);
                     currentWindow.dispose();
             
-                    // Open a new window (you can customize this part based on your requirements)
-                    //JFrame newWindow = new JFrame(buttonText);
                     if (buttonText == "Locomotives"){
-                        String[][] locomotiveDetails = displayInduvidualProductsUI.getLocomotives();
+                        String[][] locomotiveDetails = displayInduvidualProductsUI.getLocomotives("Locomotives");
                         displayInduvidualProductsUI.createAndShowGUI(locomotiveDetails);
-                    }
+                    } else if (buttonText == "Controllers"){
+                        String[][] controllerDetails = displayInduvidualProductsUI.getLocomotives("Controllers");
+                        displayInduvidualProductsUI.createAndShowGUI(controllerDetails);
+                    } else if (buttonText == "Track"){
+                        String[][] controllerDetails = displayInduvidualProductsUI.getLocomotives("Track");
+                        displayInduvidualProductsUI.createAndShowGUI(controllerDetails);
+                    } else if (buttonText == "Rolling Stock"){
+                        String[][] controllerDetails = displayInduvidualProductsUI.getLocomotives("Rolling Stock");
+                        displayInduvidualProductsUI.createAndShowGUI(controllerDetails);
+                    };
+
                 });
                 
                 cellPanel.add(button, BorderLayout.SOUTH);
                 
                 gridPanel.add(cellPanel);
+
             }
 
         } catch (IOException e) {
@@ -97,6 +109,7 @@ public class CustomerUI extends JPanel {
             "https://i.etsystatic.com/9299240/r/il/7a9e15/818131480/il_fullxfull.818131480_mied.jpg",
             "https://www.keyboardspecialists.co.uk/cdn/shop/products/rd_frontview_709x700.jpg?v=1610537906"
         };
+
         return urls[index];
     }
 
@@ -109,5 +122,5 @@ public class CustomerUI extends JPanel {
             window.setLocationRelativeTo(null);
             window.setVisible(true);
         });
-    }
+    } 
 }
