@@ -1,10 +1,6 @@
-package main.gui;
-
+package Categories;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-
-import Categories.TrainSets;
-import Categories.Locomotives;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -70,10 +66,22 @@ public class StaffUI extends JPanel {
 
             switch (category) {
                 case "Train Sets":
-                    newPanel = new TrainSets(); // Placeholder for the actual TrainSets panel
+                    newPanel = new TrainSets(topFrame); // Placeholder for the actual TrainSets panel
+                    break;
+                case "Track Packs":
+                    newPanel = new TrackPacks(topFrame); // Pass the frame to the Locomotives panel
                     break;
                 case "Locomotives":
                     newPanel = new Locomotives(topFrame); // Pass the frame to the Locomotives panel
+                    break;
+                case "Rolling Stock":
+                    newPanel = new RollingStock(topFrame); // Pass the frame to the Locomotives panel
+                    break;
+                case "Track":
+                    newPanel = new Track(topFrame); // Pass the frame to the Locomotives panel
+                    break;
+                case "Controllers":
+                    newPanel = new Controllers(topFrame); // Pass the frame to the Locomotives panel
                     break;
                 // Add other cases for different categories
                 default:

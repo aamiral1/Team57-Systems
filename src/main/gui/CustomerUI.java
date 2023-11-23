@@ -1,3 +1,5 @@
+
+//package main.gui;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -6,7 +8,8 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
-import main.gui.displayInduvidualProductsUI;
+//import main.gui.displayInduvidualProductsUI;
+import main.store.Users.*;
 
 public class CustomerUI extends JPanel {
 
@@ -21,6 +24,7 @@ public class CustomerUI extends JPanel {
     public CustomerUI() {
         // Use BorderLayout for the main panel
         setLayout(new BorderLayout());
+
 
         // Panel for organisation with BorderLayout
         JPanel navBarPanelOrganiser = new JPanel(new BorderLayout());
@@ -63,9 +67,11 @@ public class CustomerUI extends JPanel {
         // Add the navigation bar panel to the top of the BorderLayout
         navBarPanelOrganiser.add(navBarPanel, BorderLayout.CENTER);
 
+        //String currentUser = UserManager.getCurrentUser().getName();
+
         // Title panel with FlowLayout for centering the title
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JLabel titleLabel = new JLabel("CATEGORIES PAGE");
+        JLabel titleLabel = new JLabel("Categories");
         titleLabel.setFont(new Font("Serif", Font.BOLD, 24));
         titlePanel.add(titleLabel);
 

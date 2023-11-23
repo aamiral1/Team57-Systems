@@ -7,113 +7,105 @@ import main.misc.*;
 
 public class User {
 
-    int userID;
-    Date joinDate;
-    Boolean isRegistered;
+    private int userID;
+    private String username;
+    private String name;
+    private String hashedPassword;
+    private String emailAddress;
+    private String houseNumber;
+    private String roadName;
+    private String cityName;
+    private String postcode;
+    private Date joinDate;
+    private Boolean accountLocked=false;
+    private String role;
+    private String salt;
 
-    String name;
-    String emailAddress;
-    String password;
-    String houseNumber;
-    String roadName;
-    String cityName;
-    String postcode;
+    // // Singleton status variable
+    // private static Boolean uniqueInstance = null;
 
-    public static String cryptoPassword = "team057";
+    // // current User details
+    // private static String currentUsername;
+    // private static String currentUserID;
+
+    // // form a unique instance of the User class
+    // public Boolean createUniqueUser
+
+    // // getter and setter methods
+    // public void setCurrentUser (String username, String userID){
+    //     User.currentUsername = username;
+    //     User.currentUserID = userID;
+    // }
+    // public String[] getCurrentUser;
+
+    public String getName() {
+        return this.username;
+    }
+
+    public Boolean lockUser() {
+        this.accountLocked = true;
+        return true;
+    }
 
     // Create constructor with all attributes
-    public User(String fname, String sname, String emailAddress, String password,
-            String houseNumber, String roadName, String cityName, String postcode) {
+    public User(String userID, String username, String name, String hashedPassword, String emailAddress,
+            String houseNumber, String cityName, String roadName, String postcode, Date joinDate, Boolean accountLocked,
+            String role) {
         // Transfer inputs from constructor
-        this.name = fname + " " + sname;
+        this.userID = Integer.valueOf(userID);
+        this.username = username;
+        this.name = name;
+        this.salt = Encryption.generateSalt(); // assign user-specific salt
         this.emailAddress = emailAddress;
-        try{this.password = Encryption.encrypt(password, cryptoPassword);}
+        try{this.hashedPassword = Encryption.encrypt(hashedPassword, this.salt);}
         catch (Exception e) {e.printStackTrace();}
         this.houseNumber = houseNumber;
         this.roadName = roadName;
         this.cityName = cityName;
         this.postcode = postcode;
-
-        // System generated info
-        LocalDate currentDate;
-        currentDate = LocalDate.now();
-        joinDate = java.sql.Date.valueOf(currentDate);
-        isRegistered = true;
-        // DO THIS TOO
-        // GenID idGenerator = new GenID();
-        userID = 00000001;
+        this.joinDate = joinDate;
+        this.accountLocked = accountLocked;
     }
 
-    // Get methods
-    public Boolean signUp(){
-        Boolean flag = false;
-        DatabaseConnectionHandler db = new DatabaseConnectionHandler();
-        db.openConnection();
-
-        try {
-            // Pass in sql query to sign up user
-            String query = "INSERT INTO User VALUES (?,?,?,?,?,?,?,?,?,?)";
-            PreparedStatement pstmt = db.con.prepareStatement(query);
-
-            // Pass in parameters to SQL Query
-            pstmt.setInt(1, userID);
-            pstmt.setString(2, name);
-            pstmt.setString(3, password);
-            pstmt.setString(4, emailAddress);
-            pstmt.setBoolean(5, isRegistered);
-            pstmt.setString(6, houseNumber);
-            pstmt.setString(7, cityName);
-            pstmt.setString(8, roadName);
-            pstmt.setString(9, postcode);
-            pstmt.setDate(10, joinDate);
-
-            // execute Query
-            pstmt.executeUpdate();
-        }
-        catch(SQLException ex){
-            ex.printStackTrace();
-        }
-
-        return flag;
+    @Override
+    public String toString() {
+        return "User{" +
+            "userID=" + userID +
+            ", username='" + username + '\'' +
+            ", name='" + name + '\'' +
+            ", hashedPassword='" + hashedPassword + '\'' +
+            ", emailAddress='" + emailAddress + '\'' +
+            ", houseNumber='" + houseNumber + '\'' +
+            ", cityName='" + cityName + '\'' +
+            ", roadName='" + roadName + '\'' +
+            ", postcode='" + postcode + '\'' +
+            ", joinDate=" + joinDate +
+            ", accountLocked=" + accountLocked +
+            ", role='" + role + '\'' +
+            ", salt='" + salt + '\'' +
+            '}';
     }
 
-    public Boolean exists() {
-        // initiate Database Connections
-        DatabaseConnectionHandler db = new DatabaseConnectionHandler();
-        db.openConnection();
-        Boolean flag = false;
+    public Object[] getAttributes() {
+        // compute attributes into an easily accessible array
+        Object[] attributes = {
+            this.userID,
+            this.username,
+            this.name,
+            this.hashedPassword,
+            this.emailAddress,
+            this.houseNumber,
+            this.roadName,
+            this.cityName,
+            this.postcode,
+            this.joinDate,
+            this.accountLocked,
+            this.role,
+            this.salt
+        };
 
-        try {
-            Statement stmt = db.con.createStatement();
-
-            PreparedStatement pstmt = db.con.prepareStatement("SELECT EXISTS(SELECT * from Users WHERE email=?)");
-            pstmt.setString(1, emailAddress);
-
-            ResultSet isExists = pstmt.executeQuery();
-
-            if (isExists.next()) {
-                if (isExists.getString(1).equals("1")) {
-                    flag = true;
-                }
-            } else {
-                System.out.println("Result set issue");
-            }
-
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-
-        return flag;
-
+        return attributes;
+        
     }
-
-    // Useless?
-    // public String signIn(String name, String password, String email) {
-    // return "Well done you signed in";
-    // }
-
-    // public boolean signOut() {
-    // return false;
-    // }
 
 }

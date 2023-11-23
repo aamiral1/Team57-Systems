@@ -7,12 +7,12 @@ import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TrainSets extends JPanel {
+public class TrackPacks extends JPanel {
 
     private JFrame parentFrame;
     private JPanel boxesPanel;
 
-    public TrainSets(JFrame parentFrame) {
+    public TrackPacks(JFrame parentFrame) {
         this.parentFrame = parentFrame;
         setLayout(new BorderLayout());
 

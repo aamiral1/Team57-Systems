@@ -7,12 +7,12 @@ import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TrainSets extends JPanel {
+public class RollingStock extends JPanel {
 
     private JFrame parentFrame;
     private JPanel boxesPanel;
 
-    public TrainSets(JFrame parentFrame) {
+    public RollingStock(JFrame parentFrame) {
         this.parentFrame = parentFrame;
         setLayout(new BorderLayout());
 
@@ -28,7 +28,7 @@ public class TrainSets extends JPanel {
         });
         northPanel.add(returnButton, BorderLayout.WEST);
 
-        JLabel titleLabel = new JLabel("LOCOMOTIVES PAGE", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("ROLLING STOCK PAGE", SwingConstants.CENTER);
         titleLabel.setFont(new Font("SansSerif", Font.BOLD, 24)); // Setting font
         titleLabel.setForeground(Color.BLACK); // Text color
         northPanel.add(titleLabel, BorderLayout.CENTER);
@@ -43,7 +43,7 @@ public class TrainSets extends JPanel {
 
         JButton refreshButton = new JButton("Refresh");
         styleButton(refreshButton, new Color(30, 144, 255)); // Dodger blue color
-        refreshButton.addActionListener(e -> refreshLocomotives());
+        refreshButton.addActionListener(e -> refreshRollingStock());
         rightPanel.add(refreshButton);
 
         northPanel.add(rightPanel, BorderLayout.EAST);
@@ -54,7 +54,7 @@ public class TrainSets extends JPanel {
         boxesPanel = new JPanel();
         boxesPanel.setLayout(new BoxLayout(boxesPanel, BoxLayout.Y_AXIS));
         boxesPanel.setBackground(Color.WHITE); // Setting background color to white
-        refreshLocomotives();
+        refreshRollingStock();
 
         JScrollPane scrollPane = new JScrollPane(boxesPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -62,11 +62,11 @@ public class TrainSets extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
-    private void refreshLocomotives() {
+    private void refreshRollingStock() {
         boxesPanel.removeAll();
-        java.util.List<String[]> locomotives = getLocomotives();
-        for (String[] locomotive : locomotives) {
-            JPanel boxPanel = createBox(locomotive);
+        java.util.List<String[]> rollingStocks = getRollingStock();
+        for (String[] rollingStock : rollingStocks) {
+            JPanel boxPanel = createBox(rollingStock);
             boxesPanel.add(boxPanel);
             boxesPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         }
@@ -76,18 +76,19 @@ public class TrainSets extends JPanel {
 
     // Call this method when the Add button is clicked
     private void openAddDialog() {
-        JDialog addDialog = new JDialog(parentFrame, "Add New Locomotive", true);
+        JDialog addDialog = new JDialog(parentFrame, "Add New Rolling Stock", true);
         addDialog.setLayout(new BorderLayout());
-        addDialog.setSize(400, 300);
+        addDialog.setSize(500, 400);
         addDialog.setLocationRelativeTo(parentFrame);
 
         JPanel fieldsPanel = new JPanel(new GridLayout(0, 2, 10, 10));
         Map<String, JTextField> textFieldMap = new HashMap<>();
 
-        // Define the fields for the new locomotive details
+        // Define the fields for the new Rolling Stock details
         String[] fields = {
             "Product Code", "Brand Name", "Product Name", "Retail Price",
-            "Product Quantity", "Model Type", "Gauge", "Historical Era", "DCC Code"
+            "Product Quantity", "Model Type", "Gauge", "Carriage Type", 
+            "Wagon Type", "Historical Era", "Mark Type"
         };
 
         // Create labels and text fields for each field
@@ -99,9 +100,9 @@ public class TrainSets extends JPanel {
             textFieldMap.put(field, textField);
         }
 
-        JButton saveButton = new JButton("Save New Locomotive");
+        JButton saveButton = new JButton("Save New Rolling Stock");
         saveButton.addActionListener(e -> {
-            saveNewLocomotive(textFieldMap);
+            saveNewRollingStock(textFieldMap);
             addDialog.dispose();
         });
 
@@ -117,7 +118,8 @@ public class TrainSets extends JPanel {
         addDialog.setVisible(true);
     }
 
-    private boolean insertLocomotive(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap) throws SQLException {
+
+    private boolean insertRollingStock(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap) throws SQLException {
         boolean success = false; // default to false, will be set to true if inserts succeed
         db.con.setAutoCommit(false); // Begin transaction
     
@@ -167,13 +169,15 @@ public class TrainSets extends JPanel {
                 pstmtIndividual.executeUpdate();
             }
     
-            // Insert into Locomotives table
-            String insertLocomotivesSQL = "INSERT INTO Locomotives (productCode, historicalEra, DCCCode) VALUES (?, ?, ?)";
-            try (PreparedStatement pstmtLocomotives = db.con.prepareStatement(insertLocomotivesSQL)) {
-                pstmtLocomotives.setString(1, textFieldMap.get("Product Code").getText());
-                pstmtLocomotives.setString(2, textFieldMap.get("Historical Era").getText());
-                pstmtLocomotives.setString(3, textFieldMap.get("DCC Code").getText());
-                pstmtLocomotives.executeUpdate();
+            // Insert into RollingStock table
+            String insertRollingStockSQL = "INSERT INTO RollingStock (productCode, carriageType, wagonType, historicalEra, markType) VALUES (?, ?, ?, ?, ?)";
+            try (PreparedStatement pstmtRollingStock = db.con.prepareStatement(insertRollingStockSQL)) {
+                pstmtRollingStock.setString(1, textFieldMap.get("Product Code").getText());
+                pstmtRollingStock.setString(2, textFieldMap.get("Carriage Type").getText());
+                pstmtRollingStock.setString(3, textFieldMap.get("Wagon Type").getText()); // Assuming the Wagon Type can be null
+                pstmtRollingStock.setString(4, textFieldMap.get("Historical Era").getText());
+                pstmtRollingStock.setString(5, textFieldMap.get("Mark Type").getText());
+                pstmtRollingStock.executeUpdate();
             }
     
             db.con.commit(); // Commit transaction
@@ -189,16 +193,16 @@ public class TrainSets extends JPanel {
         return success; // return the status of the insert operation
     }
     
-    private void saveNewLocomotive(Map<String, JTextField> textFieldMap) {
+    private void saveNewRollingStock(Map<String, JTextField> textFieldMap) {
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         boolean isInserted = false;
     
         try {
             db.openConnection();
-            isInserted = insertLocomotive(db, textFieldMap);
+            isInserted = insertRollingStock(db, textFieldMap);
     
             if (isInserted) {
-                JOptionPane.showMessageDialog(this, "New locomotive added successfully!");
+                JOptionPane.showMessageDialog(this, "New Rolling Stock added successfully!");
             } else {
                 JOptionPane.showMessageDialog(this, "Insert failed, no changes were made.");
             }
@@ -217,13 +221,12 @@ public class TrainSets extends JPanel {
         }
     
         if (isInserted) {
-            refreshLocomotives();
+            refreshRollingStock();
         }
     }
 
-
-    private java.util.List<String[]> getLocomotives() {
-        java.util.List<String[]> locomotives = new java.util.ArrayList<>();
+    private java.util.List<String[]> getRollingStock() {
+        java.util.List<String[]> rollingStocks = new java.util.ArrayList<>();
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         db.openConnection();
         String sqlQuery = "SELECT " +
@@ -234,12 +237,14 @@ public class TrainSets extends JPanel {
                 "Product.productQuantity, " +
                 "Individual.modelType, " +
                 "Individual.gauge, " +
-                "Locomotives.historicalEra, " +
-                "Locomotives.DCCCode " +
+                "RollingStock.carriageType, " +
+                "RollingStock.wagonType, " +
+                "RollingStock.historicalEra, " +
+                "RollingStock.markType " +
                 "FROM Product " +
                 "INNER JOIN Individual ON Product.productCode = Individual.productCode " +
-                "INNER JOIN Locomotives ON Individual.productCode = Locomotives.productCode;";
-
+                "INNER JOIN RollingStock ON Individual.productCode = RollingStock.productCode;";
+    
         try (PreparedStatement pstmt = db.con.prepareStatement(sqlQuery);
              ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
@@ -250,10 +255,12 @@ public class TrainSets extends JPanel {
                 int productQuantity = rs.getInt("productQuantity");
                 String modelType = rs.getString("modelType");
                 String gauge = rs.getString("gauge");
+                String carriageType = rs.getString("carriageType");
+                String wagonType = rs.getString("wagonType");
                 String historicalEra = rs.getString("historicalEra");
-                String dccCode = rs.getString("DCCCode");
-
-                locomotives.add(new String[]{
+                String markType = rs.getString("markType");
+    
+                rollingStocks.add(new String[]{
                         "Product Code: " + productCode,
                         "Brand Name: " + brandName,
                         "Product Name: " + productName,
@@ -261,8 +268,10 @@ public class TrainSets extends JPanel {
                         "Product Quantity: " + productQuantity,
                         "Model Type: " + modelType,
                         "Gauge: " + gauge,
+                        "Carriage Type: " + carriageType,
+                        "Wagon Type: " + wagonType,
                         "Historical Era: " + historicalEra,
-                        "DCC Code: " + dccCode
+                        "Mark Type: " + markType
                 });
             }
         } catch (SQLException e) {
@@ -270,96 +279,102 @@ public class TrainSets extends JPanel {
         } finally {
             db.closeConnection();
         }
-        return locomotives;
+        return rollingStocks;
     }
 
-    private JPanel createBox(String[] locomotiveData) {
+    private JPanel createBox(String[] rollingStockData) {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(0, 1));
         panel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         panel.setBackground(Color.WHITE);
-
-        for (String data : locomotiveData) {
+    
+        // Assuming rollingStockData contains only the values in the correct order
+        for (String data : rollingStockData) {
             JLabel label = new JLabel(data);
             label.setFont(new Font("SansSerif", Font.PLAIN, 12));
             label.setForeground(Color.BLACK);
             label.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             panel.add(label);
         }
-
+    
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
-        buttonPanel.setBackground(Color.WHITE); // Setting background color to white
-
+        buttonPanel.setBackground(Color.WHITE);
+    
         JButton deleteButton = new JButton("Delete");
         styleButton(deleteButton, new Color(255, 99, 71)); // Tomato color
-        String productCode = locomotiveData[0].split(": ")[1];
-        deleteButton.addActionListener(e -> deleteLocomotive(productCode));
+        String productCode = rollingStockData[0]; // Assumes productCode is the first element
+        deleteButton.addActionListener(e -> deleteRollingStock(productCode));
         buttonPanel.add(deleteButton);
-
+    
         JButton editButton = new JButton("Edit");
         styleButton(editButton, new Color(144, 238, 144)); // Light green color
-        editButton.addActionListener(e -> openEditDialog(locomotiveData));
+        editButton.addActionListener(e -> openEditDialog(rollingStockData));
         buttonPanel.add(editButton);
-
+    
         panel.add(buttonPanel);
-
+    
         return panel;
     }
 
 
-    private void deleteLocomotive(String productCode) {
+    private void deleteRollingStock(String productCode) {
         int confirm = JOptionPane.showConfirmDialog(
                 this,
-                "Are you sure you want to delete this locomotive?",
+                "Are you sure you want to delete this Rolling Stock?",
                 "Delete Confirmation",
                 JOptionPane.YES_NO_OPTION);
-
+    
         if (confirm == JOptionPane.YES_OPTION) {
             DatabaseConnectionHandler db = new DatabaseConnectionHandler();
             db.openConnection();
             try {
-                db.con.setAutoCommit(false);
-
-                String deleteLocomotivesSQL = "DELETE FROM Locomotives WHERE productCode = ?";
-                try (PreparedStatement pstmtLocomotives = db.con.prepareStatement(deleteLocomotivesSQL)) {
-                    pstmtLocomotives.setString(1, productCode);
-                    pstmtLocomotives.executeUpdate();
+                db.con.setAutoCommit(false); // Start transaction
+    
+                // Delete from RollingStock table
+                String deleteRollingStockSQL = "DELETE FROM RollingStock WHERE productCode = ?";
+                try (PreparedStatement pstmtRollingStock = db.con.prepareStatement(deleteRollingStockSQL)) {
+                    pstmtRollingStock.setString(1, productCode);
+                    pstmtRollingStock.executeUpdate();
                 }
-
+    
+                // Delete from Individual table
                 String deleteIndividualSQL = "DELETE FROM Individual WHERE productCode = ?";
                 try (PreparedStatement pstmtIndividual = db.con.prepareStatement(deleteIndividualSQL)) {
                     pstmtIndividual.setString(1, productCode);
                     pstmtIndividual.executeUpdate();
                 }
-
+    
+                // Delete from Product table
                 String deleteProductSQL = "DELETE FROM Product WHERE productCode = ?";
                 try (PreparedStatement pstmtProduct = db.con.prepareStatement(deleteProductSQL)) {
                     pstmtProduct.setString(1, productCode);
                     pstmtProduct.executeUpdate();
                 }
-
-                db.con.commit();
+    
+                db.con.commit(); // Commit transaction
+    
             } catch (SQLException e) {
                 try {
-                    db.con.rollback();
+                    db.con.rollback(); // If there's an error, roll back the transaction
                 } catch (SQLException e2) {
                     e2.printStackTrace();
                 }
                 e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Delete error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             } finally {
                 try {
-                    db.con.setAutoCommit(true);
+                    db.con.setAutoCommit(true); // Restore default auto-commit behavior
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-                db.closeConnection();
+                db.closeConnection(); // Close the database connection
             }
-
-            refreshLocomotives();
+    
+            refreshRollingStock(); // Refresh the display to show that the rolling stock has been deleted
         }
     }
 
-    private boolean updateLocomotive(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap, String productCode) throws SQLException {
+    private boolean updateRollingStock(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap, String productCode) throws SQLException {
         boolean success = false; // default to false, will be set to true if updates succeed
         db.con.setAutoCommit(false); // Begin transaction
 
@@ -385,13 +400,15 @@ public class TrainSets extends JPanel {
                 pstmtIndividual.executeUpdate();
             }
 
-            // Update Locomotives table
-            String updateLocomotivesSQL = "UPDATE Locomotives SET historicalEra = ?, DCCCode = ? WHERE productCode = ?";
-            try (PreparedStatement pstmtLocomotives = db.con.prepareStatement(updateLocomotivesSQL)) {
-                pstmtLocomotives.setString(1, textFieldMap.get("Historical Era").getText());
-                pstmtLocomotives.setString(2, textFieldMap.get("DCC Code").getText());
-                pstmtLocomotives.setString(3, productCode);
-                pstmtLocomotives.executeUpdate();
+            // Update RollingStock table
+            String updateRollingStockSQL = "UPDATE RollingStock SET carriageType = ?, wagonType = ?, historicalEra = ?, markType = ? WHERE productCode = ?";
+            try (PreparedStatement pstmtRollingStock = db.con.prepareStatement(updateRollingStockSQL)) {
+                pstmtRollingStock.setString(1, textFieldMap.get("Carriage Type").getText());
+                pstmtRollingStock.setString(2, textFieldMap.get("Wagon Type").getText());
+                pstmtRollingStock.setString(3, textFieldMap.get("Historical Era").getText());
+                pstmtRollingStock.setString(4, textFieldMap.get("Mark Type").getText());
+                pstmtRollingStock.setString(5, productCode);
+                pstmtRollingStock.executeUpdate();
             }
 
             db.con.commit(); // Commit transaction
@@ -408,16 +425,16 @@ public class TrainSets extends JPanel {
     }
 
 
-    private void saveLocomotiveChanges(Map<String, JTextField> textFieldMap, String productCode) {
+    private void saveRollingStockChanges(Map<String, JTextField> textFieldMap, String productCode) {
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         boolean isUpdated = false;
     
         try {
             db.openConnection();
-            isUpdated = updateLocomotive(db, textFieldMap, productCode);
+            isUpdated = updateRollingStock(db, textFieldMap, productCode);
     
             if (isUpdated) {
-                JOptionPane.showMessageDialog(this, "Locomotive updated successfully!");
+                JOptionPane.showMessageDialog(this, "Rolling Stock updated successfully!"); // Updated message to reflect 'Rolling Stock' instead of 'Locomotive'
             } else {
                 JOptionPane.showMessageDialog(this, "Update failed, no changes were made.");
             }
@@ -436,21 +453,21 @@ public class TrainSets extends JPanel {
         }
     
         if (isUpdated) {
-            refreshLocomotives();
+            refreshRollingStock(); // Refresh the UI only if the update was successful
         }
     }
 
-    private void openEditDialog(String[] locomotiveData) {
-        JDialog editDialog = new JDialog(parentFrame, "Edit Locomotive", true);
+    private void openEditDialog(String[] rollingStockData) {
+        JDialog editDialog = new JDialog(parentFrame, "Edit Rolling Stock", true); // Corrected title
         editDialog.setLayout(new BorderLayout());
-        editDialog.setSize(400, 300);
+        editDialog.setSize(500, 400);
         editDialog.setLocationRelativeTo(parentFrame);
     
         JPanel fieldsPanel = new JPanel(new GridLayout(0, 2, 10, 10));
         Map<String, JTextField> textFieldMap = new HashMap<>();
     
-        // Create text fields pre-filled with locomotive data
-        for (String data : locomotiveData) {
+        // Create text fields pre-filled with RollingStock data
+        for (String data : rollingStockData) {
             String[] splitData = data.split(":\\s+");
             if (splitData.length == 2) {
                 JLabel label = new JLabel(splitData[0].trim());
@@ -464,7 +481,7 @@ public class TrainSets extends JPanel {
 
     JButton saveButton = new JButton("Save Changes");
     saveButton.addActionListener(e -> {
-        saveLocomotiveChanges(textFieldMap, locomotiveData[0].split(": ")[1]);
+        saveRollingStockChanges(textFieldMap, rollingStockData[0].split(": ")[1]);
         editDialog.dispose();
     });
 

@@ -1,4 +1,4 @@
-package main.gui;
+//package main.gui;
 import main.db.DatabaseConnectionHandler;
 import javax.swing.*;
 import java.awt.*;
