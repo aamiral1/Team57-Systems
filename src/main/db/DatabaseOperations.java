@@ -54,9 +54,8 @@ public class DatabaseOperations {
                     System.out.println("Account is locked. Please contact support");
                     return false;
                 } else {
-                    // verify entered password against stored hashed password
-
-                    if (verifyPassword(enteredPassword, storedPasswordHash, salt)) {
+                    // verify entered password against stored hashed password and username
+                    if (verifyPassword(enteredPassword, storedPasswordHash, salt) && username.equals(myUsername)) {
                         // Login Successful
                         query = "UPDATE User SET last_login = CURRENT_TIMESTAMP, " +
                                 "failed_login_attempts = 0 WHERE user_id = ?";
@@ -192,5 +191,30 @@ public class DatabaseOperations {
             }
         }
         return flag;
+    }
+
+    public static Boolean userExists(User myUser){
+        Boolean isExists=false;
+        String username;
+        // open db connection
+        DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+        db.openConnection();
+
+        try{
+            String query = "SELECT 1 FROM User WHERE username=?";
+            PreparedStatement pstmt = db.con.prepareStatement(query);
+
+            // get username
+            pstmt.setString(1, myUser.getUsername());
+            ResultSet matchedUsers = pstmt.executeQuery();
+
+            if (matchedUsers.next()){
+                isExists=true; // a user with entered username already exists
+            }
+            
+        } catch (SQLException se){
+            se.printStackTrace();
+        }
+        return isExists;
     }
 }

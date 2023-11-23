@@ -102,8 +102,9 @@ public class SignUp extends JPanel {
 
                 // Sign Up User
                 User newUser = new User(userID, username, name, hashedPassword, emailAddress, houseNumber, cityName, roadName, postcode, joinDate, role, salt);
-                // TODO: Implement userExists()
-                DatabaseOperations.signUp(newUser);
+                if (!DatabaseOperations.userExists(newUser)){
+                    DatabaseOperations.signUp(newUser);
+                }
                 }
         });
 

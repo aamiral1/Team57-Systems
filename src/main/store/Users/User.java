@@ -38,7 +38,7 @@ public class User {
     // }
     // public String[] getCurrentUser;
 
-    public String getName() {
+    public String getUsername() {
         return this.username;
     }
 
