@@ -1,17 +1,6 @@
-package main.gui;
-
+package Categories;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-
-import Categories.TrainSets;
-import Categories.Controllers;
-// import Categories.TrackPacks;
-import Categories.Locomotives;
-import Categories.RollingStock;
-// import Categories.Track;
-// import Categories.Controllers;
-import Categories.Track;
-import Categories.TrackPacks;
 
 import java.awt.*;
 import java.awt.event.ActionListener;

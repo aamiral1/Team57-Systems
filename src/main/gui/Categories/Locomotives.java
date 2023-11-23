@@ -3,7 +3,6 @@ package Categories;
 import java.awt.*;
 import javax.swing.*;
 import main.db.DatabaseConnectionHandler;
-import main.gui.StaffUI; // Make sure this class exists in your project
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
