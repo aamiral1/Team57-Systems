@@ -1,18 +1,20 @@
-package main.gui;
-
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 import main.db.DatabaseConnectionHandler;
+import main.db.DatabaseOperations;
+import main.misc.Encryption;
+import main.misc.UniqueUserIDGenerator;
 import main.store.Users.*;
+import java.text.SimpleDateFormat;
 // sql
 import java.sql.*;
 import javax.sql.*;
 
 public class SignUp extends JPanel {
     private JButton sign;
-    private JLabel fName, sName, houseNumber, roadName, postcode, cityName, jcomp15, emailAddress, password;
-    private JTextField roadNameBox, cityNameBox, postcodeBox, sNameBox, fNameBox, houseNumberBox, emailAddressBox,
+    private JLabel fName, sName, username, houseNumber, roadName, postcode, cityName, jcomp15, emailAddress, password;
+    private JTextField roadNameBox, cityNameBox, postcodeBox, sNameBox, fNameBox, usernameBox, houseNumberBox, emailAddressBox,
             passwordBox;
 
     public SignUp() {
@@ -34,6 +36,8 @@ public class SignUp extends JPanel {
         fNameBox = new JTextField(20);
         sName = new JLabel("Surname:");
         sNameBox = new JTextField(20);
+        username = new JLabel("Username:");
+        usernameBox = new JTextField(20);
         emailAddress = new JLabel("Email Address:");
         emailAddressBox = new JTextField(20);
         password = new JLabel("Password:");
@@ -52,18 +56,20 @@ public class SignUp extends JPanel {
         gbc.gridx = 1; gbc.gridy = 0; centerPanel.add(fNameBox, gbc);
         gbc.gridx = 0; gbc.gridy = 1; centerPanel.add(sName, gbc);
         gbc.gridx = 1; gbc.gridy = 1; centerPanel.add(sNameBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 2; centerPanel.add(emailAddress, gbc);
-        gbc.gridx = 1; gbc.gridy = 2; centerPanel.add(emailAddressBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 3; centerPanel.add(password, gbc);
-        gbc.gridx = 1; gbc.gridy = 3; centerPanel.add(passwordBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 4; centerPanel.add(houseNumber, gbc);
-        gbc.gridx = 1; gbc.gridy = 4; centerPanel.add(houseNumberBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 5; centerPanel.add(roadName, gbc);
-        gbc.gridx = 1; gbc.gridy = 5; centerPanel.add(roadNameBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 6; centerPanel.add(cityName, gbc);
-        gbc.gridx = 1; gbc.gridy = 6; centerPanel.add(cityNameBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 7; centerPanel.add(postcode, gbc);
-        gbc.gridx = 1; gbc.gridy = 7; centerPanel.add(postcodeBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 2; centerPanel.add(username, gbc);
+        gbc.gridx = 1; gbc.gridy = 2; centerPanel.add(usernameBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 3; centerPanel.add(emailAddress, gbc);
+        gbc.gridx = 1; gbc.gridy = 3; centerPanel.add(emailAddressBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 4; centerPanel.add(password, gbc);
+        gbc.gridx = 1; gbc.gridy = 4; centerPanel.add(passwordBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 5; centerPanel.add(houseNumber, gbc);
+        gbc.gridx = 1; gbc.gridy = 5; centerPanel.add(houseNumberBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 6; centerPanel.add(roadName, gbc);
+        gbc.gridx = 1; gbc.gridy = 6; centerPanel.add(roadNameBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 7; centerPanel.add(cityName, gbc);
+        gbc.gridx = 1; gbc.gridy = 7; centerPanel.add(cityNameBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 8; centerPanel.add(postcode, gbc);
+        gbc.gridx = 1; gbc.gridy = 8; centerPanel.add(postcodeBox, gbc);
 
         // Create a footer panel for the sign-up button
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -74,31 +80,31 @@ public class SignUp extends JPanel {
         sign.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                
-                String fname = fNameBox.getText();
-                String sname = sNameBox.getText();
+                String userID = UniqueUserIDGenerator.generateUniqueUserID();
+                String username = usernameBox.getText();
+                String name = fNameBox.getText() + " " + sNameBox.getText();
+                String hashedPassword = passwordBox.getText();
                 String emailAddress = emailAddressBox.getText();
-                String password = passwordBox.getText();
                 String houseNumber = houseNumberBox.getText();
                 String roadName = roadNameBox.getText();
                 String cityName = cityNameBox.getText();
                 String postcode = postcodeBox.getText();
-
-                System.out.println("check if it works" + fname + sname + emailAddress + password + houseNumber + roadName + cityName + postcode);
+                String role = "User";
+                String salt = Encryption.generateSalt();
+                
+                // store date of sign up
+                java.util.Date utilDate = new java.util.Date();
+                java.sql.Date joinDate = new java.sql.Date(utilDate.getTime());
 
                 // open database connection
                 DatabaseConnectionHandler db = new DatabaseConnectionHandler();
                 db.openConnection();
 
-                // generate user id
-                String userID = 
-
                 // Sign Up User
-                User newUser = new User(fname,sname,emailAddress,password,houseNumber,roadName,cityName,postcode);
-                if (!newUser.exists()){
-                    System.out.println("Sign Up Status: " + newUser.signUp());
+                User newUser = new User(userID, username, name, hashedPassword, emailAddress, houseNumber, cityName, roadName, postcode, joinDate, role, salt);
+                // TODO: Implement userExists()
+                DatabaseOperations.signUp(newUser);
                 }
-            }
         });
 
         // Add the header, center, and footer panels to the main panel

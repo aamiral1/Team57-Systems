@@ -7,7 +7,7 @@ import main.misc.*;
 
 public class User {
 
-    private int userID;
+    private String userID;
     private String username;
     private String name;
     private String hashedPassword;
@@ -49,13 +49,13 @@ public class User {
 
     // Create constructor with all attributes
     public User(String userID, String username, String name, String hashedPassword, String emailAddress,
-            String houseNumber, String cityName, String roadName, String postcode, Date joinDate, Boolean accountLocked,
-            String role) {
+            String houseNumber, String cityName, String roadName, String postcode, Date joinDate,
+            String role, String salt) {
         // Transfer inputs from constructor
-        this.userID = Integer.valueOf(userID);
+        this.userID = userID;
         this.username = username;
         this.name = name;
-        this.salt = Encryption.generateSalt(); // assign user-specific salt
+        this.salt = salt; // assign user-specific salt
         this.emailAddress = emailAddress;
         try{this.hashedPassword = Encryption.encrypt(hashedPassword, this.salt);}
         catch (Exception e) {e.printStackTrace();}
@@ -64,7 +64,7 @@ public class User {
         this.cityName = cityName;
         this.postcode = postcode;
         this.joinDate = joinDate;
-        this.accountLocked = accountLocked;
+        this.role = role;
     }
 
     @Override
@@ -95,8 +95,8 @@ public class User {
             this.hashedPassword,
             this.emailAddress,
             this.houseNumber,
-            this.roadName,
             this.cityName,
+            this.roadName,
             this.postcode,
             this.joinDate,
             this.accountLocked,
