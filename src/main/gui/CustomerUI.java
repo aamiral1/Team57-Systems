@@ -3,13 +3,13 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+//import java.awt.event.ActionEvent;
+//import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 //import main.gui.displayInduvidualProductsUI;
-import main.store.Users.*;
+//import main.store.Users.*;
 
 public class CustomerUI extends JPanel {
 
@@ -110,17 +110,17 @@ public class CustomerUI extends JPanel {
                     currentWindow.dispose();
 
                     if (buttonText.equals("Locomotives")) {
-                        String[][] locomotiveDetails = displayInduvidualProductsUI.getLocomotives("Locomotives");
+                        String[][] locomotiveDetails = displayInduvidualProductsUI.getProducts("Locomotives");
                         displayInduvidualProductsUI.createAndShowGUI(locomotiveDetails);
                     } else if (buttonText.equals("Controllers")) {
-                        String[][] controllerDetails = displayInduvidualProductsUI.getLocomotives("Controllers");
+                        String[][] controllerDetails = displayInduvidualProductsUI.getProducts("Controllers");
                         displayInduvidualProductsUI.createAndShowGUI(controllerDetails);
                     } else if (buttonText.equals("Track")) {
-                        String[][] controllerDetails = displayInduvidualProductsUI.getLocomotives("Track");
-                        displayInduvidualProductsUI.createAndShowGUI(controllerDetails);
+                        String[][] trackDetails = displayInduvidualProductsUI.getProducts("Track");
+                        displayInduvidualProductsUI.createAndShowGUI(trackDetails);
                     } else if (buttonText.equals("Rolling Stock")) {
-                        String[][] controllerDetails = displayInduvidualProductsUI.getLocomotives("Rolling Stock");
-                        displayInduvidualProductsUI.createAndShowGUI(controllerDetails);
+                        String[][] rollingStockDetails = displayInduvidualProductsUI.getProducts("Rolling Stock");
+                        displayInduvidualProductsUI.createAndShowGUI(rollingStockDetails);
                     }
 
                 });

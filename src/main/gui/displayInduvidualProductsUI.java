@@ -10,33 +10,39 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 public class displayInduvidualProductsUI {
-
+    // Array list to store items added to cart ---> Needs to be saved not just from the page that it is one - should be global
     private static ArrayList<String[]> cart = new ArrayList<>();
 
-    public static void createAndShowGUI(String[][] locomotiveDetails) {
-        JFrame frame = new JFrame("Product Details");
+    // Method to create and show the GUI
+    public static void createAndShowGUI(String[][] productDetails) {
 
+        JFrame frame = new JFrame("Product Details");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
         JPanel northPanel = new JPanel(new BorderLayout());
 
-        // Header
         JLabel headerLabel = new JLabel("Product Details Page", SwingConstants.CENTER);
         headerLabel.setFont(new Font("Arial", Font.BOLD, 24));
         northPanel.add(headerLabel, BorderLayout.NORTH);
 
         // View Cart Button
         JButton viewCartButton = new JButton("View Cart");
-        viewCartButton.addActionListener(e -> viewCart()); //calls viewCart() method
+        viewCartButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                viewCart(); // Calls the view cart method
+                frame.dispose(); // Closes the current window
+            }
+        });
 
         // Main Panel for product details
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
   
-        for (String[] details : locomotiveDetails) {
-            JPanel productPanel = createProductPanel(details);
-            mainPanel.add(productPanel);
+        for (String[] details : productDetails) { // Iterates through the product details array
+            JPanel productPanel = createProductPanel(details); // Creates panel containing details for each product
+            mainPanel.add(productPanel); // Adds product panels to the main panel
         }
 
         JScrollPane scrollPane = new JScrollPane(mainPanel);
@@ -50,23 +56,67 @@ public class displayInduvidualProductsUI {
         frame.add(northPanel, BorderLayout.NORTH);
 
         frame.pack();
-        frame.setLocationRelativeTo(null); // Center the frame
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
 //-----------------------------------------------------------------------------------------------------------------------
 
+    // Method to view items added to cart
     private static void viewCart() {
-        // Implement the code to display the cart contents (cart variable)
-        // For simplicity, just printing the cart contents here
+        
+        JFrame cartFrame = new JFrame("View Cart");
+        cartFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        cartFrame.setLayout(new BorderLayout());
+
+        JPanel displayCartPanel = new JPanel();
+        displayCartPanel.setLayout(new BoxLayout(displayCartPanel, BoxLayout.Y_AXIS));
+
         for (String[] product : cart) {
-            System.out.println("Product: " + product[1] + ", Quantity: " + product[product.length - 1]);
+            JPanel productPanel = createProductCart(product);
+            displayCartPanel.add(productPanel);
         }
+
+        JScrollPane scrollPane = new JScrollPane(displayCartPanel);
+        cartFrame.add(scrollPane, BorderLayout.CENTER);
+
+        JLabel pageTitle = new JLabel("Your cart");
+        cartFrame.add(pageTitle, BorderLayout.NORTH);
+        
+        JButton backButton = new JButton("Back");
+        cartFrame.add(backButton, BorderLayout.SOUTH);
+
+        cartFrame.pack();
+        cartFrame.setLocationRelativeTo(null);
+        cartFrame.setVisible(true);
+
     }
+
+    // Method that creates cart
+    private static JPanel createProductCart(String[] productDetails) {
+
+        JPanel productPanel = new JPanel();
+        productPanel.setLayout(new BoxLayout(productPanel, BoxLayout.X_AXIS));
+    
+        for (String detail : productDetails) {
+            JLabel label = new JLabel(detail);
+            label.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+            productPanel.add(label);
+        }
+    
+        productPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+    
+        return productPanel;
+    }
+
 
 //-----------------------------------------------------------------------------------------------------------------------
 
+
+    // Method that creates a product panel depending on which product category is selected
+
     private static JPanel createProductPanel(String[] details) {
+
         JPanel productPanel = new JPanel();
         productPanel.setLayout(new BoxLayout(productPanel, BoxLayout.X_AXIS));
     
@@ -77,23 +127,26 @@ public class displayInduvidualProductsUI {
         }
     
         // Quantity Selector
+
         JSpinner quantitySpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
-        Dimension spinnerSize = new Dimension(60, 25); // Set the desired size for the spinner
-        quantitySpinner.setMaximumSize(spinnerSize); // Set the maximum size
-        quantitySpinner.setPreferredSize(spinnerSize); // Set the preferred size
-        quantitySpinner.setMinimumSize(spinnerSize); // Set the minimum size
+        Dimension spinnerSize = new Dimension(60, 25); // Sets the desired size for the spinner
+        quantitySpinner.setMaximumSize(spinnerSize); // Sets the maximum size
+        quantitySpinner.setPreferredSize(spinnerSize); // Sets the preferred size
+        quantitySpinner.setMinimumSize(spinnerSize); // Sets the minimum size
         productPanel.add(quantitySpinner);
     
-        // Add to Cart Button
+        // Creating add to Cart Button
+
         JButton addToCartButton = new JButton("Add to Cart");
         addToCartButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Get the details of the product row the button is on and add to the cart data structure
+
+                // Gets the details of the product row the button is on using cutom method and adds to the cart data structure
                 String[] productDetails = getProductDetailsFromPanel((JPanel) addToCartButton.getParent());
                 int quantity = (int) quantitySpinner.getValue();
 
-                // Add the product details and quantity to the cart
+                // Adds the product details and quantity to the cart
                 addToCart(productDetails, quantity);
             }
         });
@@ -108,22 +161,26 @@ public class displayInduvidualProductsUI {
         return productPanel;
     }
 
-    // Method to add prodcuts to cart
+    // Method to add products to cart
+
     private static void addToCart(String[] productDetails, int quantity) {
+
         // Create a copy of the product details array with the quantity
         String[] productWithQuantity = new String[productDetails.length + 1];
         System.arraycopy(productDetails, 0, productWithQuantity, 0, productDetails.length);
         productWithQuantity[productDetails.length] = String.valueOf(quantity);
 
-        // Add the product to the cart
+        // Adds the product to the cart
         cart.add(productWithQuantity);
 
-        // You can optionally display a message to the user confirming the addition to the cart
+        // Displays a message to the user confirming the addition to the cart
         JOptionPane.showMessageDialog(null, "Product added to cart!");
     }
 
     // Method to get product details from current panel
+
     private static String[] getProductDetailsFromPanel(JPanel productPanel) {
+
         int componentCount = productPanel.getComponentCount();
         String[] details = new String[componentCount - 2]; // Exclude quantity spinner and button
 
@@ -132,8 +189,7 @@ public class displayInduvidualProductsUI {
             if (component instanceof JLabel) {
             details[i] = ((JLabel) component).getText();
             } else {
-                // Handle the case when the component is not a JLabel (e.g., JSpinner)
-                // You may want to adjust this part based on the actual components in your panel
+                // Handles the case when the component is not a JLabel (e.g., JSpinner)
                 details[i] = "N/A";
             }
         }
@@ -141,12 +197,13 @@ public class displayInduvidualProductsUI {
         return details;
     }   
 
-    public static String[][] getLocomotives(String productType) {
+    public static String[][] getProducts(String productType) {
+
         // Open a connection to the database
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         db.openConnection();
 
-        String[][] locomotiveDetails = null;
+        String[][] productDetails = null;
 
         if (productType.equals("Locomotives")){
     
@@ -181,7 +238,7 @@ public class displayInduvidualProductsUI {
                     rowCount++;
                 }
             
-                locomotiveDetails = new String[rowCount][7];
+                productDetails = new String[rowCount][7];
 
                 resultSet.beforeFirst();
 
@@ -189,13 +246,13 @@ public class displayInduvidualProductsUI {
     
                 // Process the ResultSet and populate array
                 while (resultSet.next()){
-                    locomotiveDetails[rowNum][0] = resultSet.getString("modelType"); // This needs to be done for all of the information we want to store to display to customers
-                    locomotiveDetails[rowNum][1] = resultSet.getString("productName");
-                    locomotiveDetails[rowNum][2] = resultSet.getString("brandName");
-                    locomotiveDetails[rowNum][3] = resultSet.getString("DCCCode");
-                    locomotiveDetails[rowNum][4] = resultSet.getString("gauge");
-                    locomotiveDetails[rowNum][5] = resultSet.getString("historicalEra");
-                    locomotiveDetails[rowNum][6] = resultSet.getString("retailPrice");
+                    productDetails[rowNum][0] = resultSet.getString("modelType"); // This needs to be done for all of the information we want to store to display to customers
+                    productDetails[rowNum][1] = resultSet.getString("productName");
+                    productDetails[rowNum][2] = resultSet.getString("brandName");
+                    productDetails[rowNum][3] = resultSet.getString("DCCCode");
+                    productDetails[rowNum][4] = resultSet.getString("gauge");
+                    productDetails[rowNum][5] = resultSet.getString("historicalEra");
+                    productDetails[rowNum][6] = resultSet.getString("retailPrice");
                     rowNum++;
                 }
 
@@ -207,7 +264,7 @@ public class displayInduvidualProductsUI {
                 db.closeConnection();
                 }
     
-                return locomotiveDetails;
+                return productDetails;
 
         } else if(productType.equals("Controllers")) {
 
@@ -241,7 +298,7 @@ public class displayInduvidualProductsUI {
                     rowCount++;
                 }
             
-                locomotiveDetails = new String[rowCount][7];
+                productDetails = new String[rowCount][7];
 
                 resultSet.beforeFirst();
 
@@ -249,13 +306,12 @@ public class displayInduvidualProductsUI {
     
                 // Process the ResultSet and populate array
                 while (resultSet.next()){
-                    locomotiveDetails[rowNum][0] = resultSet.getString("modelType"); // This needs to be done for all of the information we want to store to display to customers
-                    locomotiveDetails[rowNum][1] = resultSet.getString("productName");
-                    locomotiveDetails[rowNum][2] = resultSet.getString("brandName");
-                    locomotiveDetails[rowNum][3] = resultSet.getString("retailPrice");
-                    locomotiveDetails[rowNum][4] = resultSet.getString("gauge");
-                    locomotiveDetails[rowNum][5] = resultSet.getString("isDigital");
-                    //locomotiveDetails[rowNum][6] = resultSet.getString("trackPieceName");
+                    productDetails[rowNum][0] = resultSet.getString("modelType");
+                    productDetails[rowNum][1] = resultSet.getString("productName");
+                    productDetails[rowNum][2] = resultSet.getString("brandName");
+                    productDetails[rowNum][3] = resultSet.getString("isDigital");
+                    productDetails[rowNum][4] = resultSet.getString("gauge");
+                    productDetails[rowNum][5] = resultSet.getString("retailPrice");
                     rowNum++;
                 }
 
@@ -267,7 +323,7 @@ public class displayInduvidualProductsUI {
                 db.closeConnection();
                 }
     
-                return locomotiveDetails;
+                return productDetails;
 
         } else if(productType.equals("Track")) {
 
@@ -300,7 +356,7 @@ public class displayInduvidualProductsUI {
                     rowCount++;
                 }
             
-                locomotiveDetails = new String[rowCount][7];
+                productDetails = new String[rowCount][7];
 
                 resultSet.beforeFirst();
 
@@ -308,12 +364,11 @@ public class displayInduvidualProductsUI {
     
                 // Process the ResultSet and populate array
                 while (resultSet.next()){
-                    locomotiveDetails[rowNum][0] = resultSet.getString("modelType"); // This needs to be done for all of the information we want to store to display to customers
-                    locomotiveDetails[rowNum][1] = resultSet.getString("productName");
-                    locomotiveDetails[rowNum][2] = resultSet.getString("brandName");
-                    locomotiveDetails[rowNum][3] = resultSet.getString("retailPrice");
-                    locomotiveDetails[rowNum][4] = resultSet.getString("gauge");
-                    //locomotiveDetails[rowNum][6] = resultSet.getString("trackPieceName");
+                    productDetails[rowNum][0] = resultSet.getString("modelType");
+                    productDetails[rowNum][1] = resultSet.getString("productName");
+                    productDetails[rowNum][2] = resultSet.getString("brandName");
+                    productDetails[rowNum][3] = resultSet.getString("gauge");
+                    productDetails[rowNum][4] = resultSet.getString("retailPrice");
                     rowNum++;
                 }
 
@@ -325,7 +380,7 @@ public class displayInduvidualProductsUI {
                 db.closeConnection();
                 }
     
-                return locomotiveDetails;
+                return productDetails;
 
         } else if(productType.equals("Rolling Stock")) {
 
@@ -362,7 +417,7 @@ public class displayInduvidualProductsUI {
                     rowCount++;
                 }
             
-                locomotiveDetails = new String[rowCount][9];
+                productDetails = new String[rowCount][9];
 
                 resultSet.beforeFirst();
 
@@ -370,14 +425,14 @@ public class displayInduvidualProductsUI {
     
                 // Process the ResultSet and populate array
                 while (resultSet.next()){
-                    locomotiveDetails[rowNum][0] = resultSet.getString("modelType"); // This needs to be done for all of the information we want to store to display to customers
-                    locomotiveDetails[rowNum][1] = resultSet.getString("productName");
-                    locomotiveDetails[rowNum][2] = resultSet.getString("brandName");
-                    locomotiveDetails[rowNum][3] = resultSet.getString("retailPrice");
-                    locomotiveDetails[rowNum][4] = resultSet.getString("gauge");
-                    locomotiveDetails[rowNum][6] = resultSet.getString("historicalEra");
-                    locomotiveDetails[rowNum][7] = resultSet.getString("markType");
-                    locomotiveDetails[rowNum][8] = resultSet.getString("carriageType");
+                    productDetails[rowNum][0] = resultSet.getString("modelType");
+                    productDetails[rowNum][1] = resultSet.getString("productName");
+                    productDetails[rowNum][2] = resultSet.getString("brandName");
+                    productDetails[rowNum][3] = resultSet.getString("carriageType");
+                    productDetails[rowNum][4] = resultSet.getString("markeType");
+                    productDetails[rowNum][6] = resultSet.getString("gauge");
+                    productDetails[rowNum][7] = resultSet.getString("historicalEra");
+                    productDetails[rowNum][8] = resultSet.getString("retailPrice");
                     rowNum++;
                 }
 
@@ -389,13 +444,13 @@ public class displayInduvidualProductsUI {
                 db.closeConnection();
                 }
     
-                return locomotiveDetails;
+                return productDetails;
 
         } else { 
             
             // Return and empty array
-            locomotiveDetails = new String[0][0];
-            return locomotiveDetails;
+            productDetails = new String[0][0];
+            return productDetails;
         } 
     }
 }
