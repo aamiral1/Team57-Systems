@@ -2,15 +2,16 @@ package main.gui;
 import main.db.DatabaseConnectionHandler;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 public class displayInduvidualProductsUI {
 
-    /* public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> createAndShowGUI(getLocomotives()));
-    } */
+    private static ArrayList<String[]> cart = new ArrayList<>();
 
     public static void createAndShowGUI(String[][] locomotiveDetails) {
         JFrame frame = new JFrame("Product Details");
@@ -27,14 +28,12 @@ public class displayInduvidualProductsUI {
 
         // View Cart Button
         JButton viewCartButton = new JButton("View Cart");
-        viewCartButton.addActionListener(e -> {
-            // TODO: Implement the view cart functionality
-        });
+        viewCartButton.addActionListener(e -> viewCart()); //calls viewCart() method
 
         // Main Panel for product details
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-
+  
         for (String[] details : locomotiveDetails) {
             JPanel productPanel = createProductPanel(details);
             mainPanel.add(productPanel);
@@ -54,6 +53,18 @@ public class displayInduvidualProductsUI {
         frame.setLocationRelativeTo(null); // Center the frame
         frame.setVisible(true);
     }
+
+//-----------------------------------------------------------------------------------------------------------------------
+
+    private static void viewCart() {
+        // Implement the code to display the cart contents (cart variable)
+        // For simplicity, just printing the cart contents here
+        for (String[] product : cart) {
+            System.out.println("Product: " + product[1] + ", Quantity: " + product[product.length - 1]);
+        }
+    }
+
+//-----------------------------------------------------------------------------------------------------------------------
 
     private static JPanel createProductPanel(String[] details) {
         JPanel productPanel = new JPanel();
@@ -75,8 +86,16 @@ public class displayInduvidualProductsUI {
     
         // Add to Cart Button
         JButton addToCartButton = new JButton("Add to Cart");
-        addToCartButton.addActionListener(e -> {
-            //  Get the details of the product row the button is on and add to cart data structure
+        addToCartButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Get the details of the product row the button is on and add to the cart data structure
+                String[] productDetails = getProductDetailsFromPanel((JPanel) addToCartButton.getParent());
+                int quantity = (int) quantitySpinner.getValue();
+
+                // Add the product details and quantity to the cart
+                addToCart(productDetails, quantity);
+            }
         });
 
         productPanel.add(addToCartButton);
@@ -88,7 +107,39 @@ public class displayInduvidualProductsUI {
     
         return productPanel;
     }
-    
+
+    // Method to add prodcuts to cart
+    private static void addToCart(String[] productDetails, int quantity) {
+        // Create a copy of the product details array with the quantity
+        String[] productWithQuantity = new String[productDetails.length + 1];
+        System.arraycopy(productDetails, 0, productWithQuantity, 0, productDetails.length);
+        productWithQuantity[productDetails.length] = String.valueOf(quantity);
+
+        // Add the product to the cart
+        cart.add(productWithQuantity);
+
+        // You can optionally display a message to the user confirming the addition to the cart
+        JOptionPane.showMessageDialog(null, "Product added to cart!");
+    }
+
+    // Method to get product details from current panel
+    private static String[] getProductDetailsFromPanel(JPanel productPanel) {
+        int componentCount = productPanel.getComponentCount();
+        String[] details = new String[componentCount - 2]; // Exclude quantity spinner and button
+
+        for (int i = 0; i < componentCount - 2; i++) {
+            Component component = productPanel.getComponent(i);
+            if (component instanceof JLabel) {
+            details[i] = ((JLabel) component).getText();
+            } else {
+                // Handle the case when the component is not a JLabel (e.g., JSpinner)
+                // You may want to adjust this part based on the actual components in your panel
+                details[i] = "N/A";
+            }
+        }
+
+        return details;
+    }   
 
     public static String[][] getLocomotives(String productType) {
         // Open a connection to the database
@@ -106,7 +157,7 @@ public class displayInduvidualProductsUI {
 
                 // Execute the query
                 String sqlQuery = "SELECT " +
-                     "Product.productCode, " +
+                    "Product.productCode, " +
                     "Product.brandName, " +
                     "Product.productName, " +
                     "Product.retailPrice, " +
