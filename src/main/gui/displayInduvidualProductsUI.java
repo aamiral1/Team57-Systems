@@ -1,6 +1,7 @@
 package main.gui;
 import main.db.DatabaseConnectionHandler;
 import javax.swing.*;
+import javax.swing.border.Border;
 
 //import Categories.Locomotives;
 
@@ -73,7 +74,7 @@ public class displayInduvidualProductsUI {
                 window.setLocationRelativeTo(null);
                 window.setVisible(true);
                 frame.dispose(); // Closes the current window
-                
+
             }
         });
 
@@ -115,11 +116,35 @@ public class displayInduvidualProductsUI {
         JButton backButton = new JButton("Back"); // Action Listener for back button
         backButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                goBackToProductDetailsPage(cartFrame); // Implement this method
+                goBackToProductDetailsPage(cartFrame); 
             }
         });
 
-        cartFrame.add(backButton, BorderLayout.SOUTH);
+        JButton confirmButton = new JButton("Proceed to checkout");
+        confirmButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Perform actions when Confirm & Pay button is clicked
+                // Add logic to process payment details
+
+                // Close the current window
+                cartFrame.dispose();
+
+                // Open a new instance of PaymentWindow
+                SwingUtilities.invokeLater(() -> {
+                    PaymentWindow newPaymentWindow = new PaymentWindow();
+                });
+            }
+        });
+
+
+        JPanel buttonsPanel = new JPanel();
+        buttonsPanel.setLayout(new BorderLayout());
+
+        buttonsPanel.add(backButton, BorderLayout.NORTH);
+        buttonsPanel.add(confirmButton, BorderLayout.CENTER);
+
+        cartFrame.add(buttonsPanel, BorderLayout.SOUTH);
 
         cartFrame.pack();
         cartFrame.setLocationRelativeTo(null);
