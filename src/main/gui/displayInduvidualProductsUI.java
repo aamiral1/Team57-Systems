@@ -1,6 +1,9 @@
-//package main.gui;
+package main.gui;
 import main.db.DatabaseConnectionHandler;
 import javax.swing.*;
+
+//import Categories.Locomotives;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,10 +11,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+//import main.gui.customerUI;
 
 public class displayInduvidualProductsUI {
     // Array list to store items added to cart ---> Needs to be saved not just from the page that it is one - should be global
     private static ArrayList<String[]> cart = new ArrayList<>();
+
+    private static String currentProductType = ""; // global variable to store page information for back button
 
     // Method to create and show the GUI
     public static void createAndShowGUI(String[][] productDetails) {
@@ -53,6 +59,29 @@ public class displayInduvidualProductsUI {
         topPanel.add(viewCartButton);
         northPanel.add(topPanel, BorderLayout.CENTER);
 
+        JPanel westPanel = new JPanel();
+        JButton homeButton = new JButton("Home"); 
+        homeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                CustomerUI instance = new CustomerUI();
+
+                JFrame window = new JFrame("Categories Page");
+                window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                window.setSize(1000, 700); // Adjust the size to accommodate title and labels
+                window.add(instance);
+                window.setLocationRelativeTo(null);
+                window.setVisible(true);
+                frame.dispose(); // Closes the current window
+                
+            }
+        });
+
+
+
+        westPanel.add(homeButton);
+        northPanel.add(westPanel, BorderLayout.WEST);
+
         frame.add(northPanel, BorderLayout.NORTH);
 
         frame.pack();
@@ -83,13 +112,28 @@ public class displayInduvidualProductsUI {
         JLabel pageTitle = new JLabel("Your cart");
         cartFrame.add(pageTitle, BorderLayout.NORTH);
         
-        JButton backButton = new JButton("Back");
+        JButton backButton = new JButton("Back"); // Action Listener for back button
+        backButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                goBackToProductDetailsPage(cartFrame); // Implement this method
+            }
+        });
+
         cartFrame.add(backButton, BorderLayout.SOUTH);
 
         cartFrame.pack();
         cartFrame.setLocationRelativeTo(null);
         cartFrame.setVisible(true);
 
+    }
+
+    // Method to go back to previous category page
+    private static void goBackToProductDetailsPage(JFrame cartFrame) {
+        // Dispose the current cart frame
+        cartFrame.dispose();
+    
+        String[][] productDetails = getProducts(currentProductType);
+        createAndShowGUI(productDetails);
     }
 
     // Method that creates cart
@@ -206,6 +250,8 @@ public class displayInduvidualProductsUI {
         String[][] productDetails = null;
 
         if (productType.equals("Locomotives")){
+
+            currentProductType = "Locomotives";
     
             try {
 
@@ -268,6 +314,8 @@ public class displayInduvidualProductsUI {
 
         } else if(productType.equals("Controllers")) {
 
+            currentProductType = "Controllers";
+
             try {
 
                 // Create a statement
@@ -327,6 +375,8 @@ public class displayInduvidualProductsUI {
 
         } else if(productType.equals("Track")) {
 
+            currentProductType = "Track";
+
             try {
 
                 // Create a statement
@@ -383,6 +433,8 @@ public class displayInduvidualProductsUI {
                 return productDetails;
 
         } else if(productType.equals("Rolling Stock")) {
+
+            currentProductType = "Rolling Stock";
 
             try {
 
