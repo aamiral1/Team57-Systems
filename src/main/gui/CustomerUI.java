@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.net.URL;
 //import main.gui.displayInduvidualProductsUI;
 import main.store.Users.*;
-import main.db.DatabaseOperations;
-import main.misc.*;
+//import main.db.DatabaseOperations;
+//import main.misc.*;
 
 public class CustomerUI extends JPanel {
 
