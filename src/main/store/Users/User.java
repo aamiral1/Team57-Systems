@@ -41,6 +41,12 @@ public class User {
     public String getUsername() {
         return this.username;
     }
+    public String getUserID() {
+        return this.userID;
+    }
+    public String getSalt(){
+        return this.salt;
+    }
 
     public Boolean lockUser() {
         this.accountLocked = true;
@@ -105,7 +111,21 @@ public class User {
         };
 
         return attributes;
+    }
+
+    // Update user details in database
+    public boolean updateDetails(String userID, String username, String name, String enteredPassword, String emailString,
+    String houseNumber, String cityName, String roadName, String postCode, String salt){
+        Boolean updateStatus;
         
+        // open db connection
+        DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+        db.openConnection();
+
+        updateStatus = DatabaseOperations.saveUserEditDetails(db.con, userID, username, name, enteredPassword, emailString, houseNumber,
+        cityName, roadName, postCode, salt);
+
+        return updateStatus;
     }
 
 }

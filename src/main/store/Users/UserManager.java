@@ -26,7 +26,11 @@ public class UserManager {
         else {System.out.println("setCurrentUser failed. A User already exists in the system.");}
     }
     public static User getCurrentUser() {
-        return UserManager.currentUser;
+        if (uniqueUserInstance){
+            return UserManager.currentUser;
+        } else {
+            System.out.println("Current user does not exist");            return null;
+        } 
     };
 
 }

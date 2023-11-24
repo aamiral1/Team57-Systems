@@ -9,7 +9,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 //import main.gui.displayInduvidualProductsUI;
-//import main.store.Users.*;
+import main.store.Users.*;
+import main.db.DatabaseOperations;
+import main.misc.*;
 
 public class CustomerUI extends JPanel {
 
@@ -51,8 +53,140 @@ public class CustomerUI extends JPanel {
         // Add edit details button
         JButton editDetailsButton = new JButton("Edit Details");
         editDetailsButton.addActionListener(e -> {
-            // Handle edit details action
-            // Add your code here
+            // Create pop up dialog box
+            JDialog dialog = new JDialog();
+            dialog.setTitle("Edit Personal Details");
+            dialog.setSize(300,400);
+            dialog.setLayout(new GridLayout(0, 2));
+
+            // Retrieve current user's details
+            User currentUser = UserManager.getCurrentUser();
+            Object[] attributes = currentUser.getAttributes();
+
+            // Labels and text fields for user input
+            // Create labels and text fields for user input
+            JLabel usernameLabel = new JLabel("Username:");
+            JTextField usernameField = new JTextField(attributes[1].toString());
+            JLabel nameLabel = new JLabel("Name:");
+            JTextField nameField = new JTextField(attributes[2].toString());
+            JLabel passwordLabel = new JLabel("Password:");
+            JPasswordField passwordField = new JPasswordField();
+            JLabel confirmPasswordLabel = new JLabel("Confirm password:");
+            JPasswordField confirmPasswordField = new JPasswordField();
+            JLabel emailLabel = new JLabel("Email Address:");
+            JTextField emailField = new JTextField(attributes[4].toString());
+            JLabel houseNumberLabel = new JLabel("House Number:");
+            JTextField houseNumberField = new JTextField(attributes[5].toString());
+            JLabel cityNameLabel = new JLabel("City Name:");
+            JTextField cityNameField = new JTextField(attributes[6].toString());
+            JLabel roadNameLabel = new JLabel("Road Name:");
+            JTextField roadNameField = new JTextField(attributes[7].toString());
+            JLabel postcodeLabel = new JLabel("Postcode:");
+            JTextField postcodeField = new JTextField(attributes[8].toString());
+        
+            // Set default close operation
+            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+            // Add the labels and text fields to the dialog
+            dialog.add(usernameLabel);
+            dialog.add(usernameField);
+            dialog.add(nameLabel);
+            dialog.add(nameField);
+            dialog.add(passwordLabel);
+            dialog.add(passwordField);
+            dialog.add(confirmPasswordLabel);
+            dialog.add(confirmPasswordField);
+            dialog.add(emailLabel);
+            dialog.add(emailField);
+            dialog.add(houseNumberLabel);
+            dialog.add(houseNumberField);
+            dialog.add(cityNameLabel);
+            dialog.add(cityNameField);
+            dialog.add(roadNameLabel);
+            dialog.add(roadNameField);
+            dialog.add(postcodeLabel);
+            dialog.add(postcodeField);
+
+            // set initial focus
+            usernameField.requestFocusInWindow();
+
+            // Add a button for submitting edited details
+            JButton submitButton = new JButton("Submit");
+            dialog.setVisible(true);
+
+            submitButton.addActionListener(ev -> {
+                // Validate input
+                // flag for validation
+                Boolean isValid = true;
+
+                // Validate username
+                if (usernameField.getText().trim().isEmpty() || usernameField.getText().trim().length() < 3){
+                    JOptionPane.showMessageDialog(dialog, "Username must be atleast 3 characters");
+                    isValid = false;
+                }
+                // Validate name
+                if (nameField.getText().trim().isEmpty()){
+                    JOptionPane.showMessageDialog(dialog, "Name cannot be empty");
+                    isValid = false;
+                }
+                // Validate password if empty
+                if (new String(passwordField.getPassword()).trim().isEmpty() || new String(confirmPasswordField.getPassword()).trim().isEmpty()){
+                    JOptionPane.showMessageDialog(dialog, "Password cannot be empty");
+                    isValid = false;
+                }
+                // Validate if passwords match
+                if (!new String(passwordField.getPassword()).trim().equals(new String(confirmPasswordField.getPassword()).trim())){
+                    JOptionPane.showMessageDialog(dialog, "Entered passwords do not match");
+                    isValid = false;
+                }
+
+                // Validate email adddress
+                String emailPattern = "^(.+)@(.+)$";
+                if (!emailField.getText().matches(emailPattern)) {
+                    JOptionPane.showMessageDialog(dialog, "Email address is not valid.");
+                    isValid = false;
+                }
+
+                // Vallidate house number
+                if (houseNumberField.getText().trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(dialog, "House number cannot be empty.");
+                    isValid = false;
+                }
+
+                // Validate City Name
+                if (cityNameField.getText().trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(dialog, "City name cannot be empty.");
+                    isValid = false;
+                }
+                // Validate Road Name
+                if (roadNameField.getText().trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(dialog, "Road name cannot be empty.");
+                    isValid = false;
+                }
+                // Validate Post Code
+                if (postcodeField.getText().trim().isEmpty() ||postcodeField.getText().trim().length() < 5) {
+                    JOptionPane.showMessageDialog(dialog, "Post Code must be atleast 5 characters long");
+                    isValid = false;
+                }
+
+                // Update user details if validation is passed
+                if (isValid){
+                    String userID = currentUser.getUserID();
+                    String salt = currentUser.getSalt();
+                    Boolean updateStatus = currentUser.updateDetails(userID, usernameField.getText(), nameField.getText(), new String(confirmPasswordField.getPassword()), emailField.getText(), houseNumberField.getText(),
+                    cityNameField.getText(),roadNameField.getText(), postcodeField.getText(), salt);
+                
+                    // Show success/failure message
+                    if (updateStatus){
+                        JOptionPane.showMessageDialog(dialog, "Details updated succesfully!");
+                        dialog.dispose();
+                    } else {
+                        JOptionPane.showMessageDialog(dialog, "Details update error!");
+                        dialog.dispose();
+                    }
+                }
+
+            });
         });
         navBarPanel.add(editDetailsButton);
 

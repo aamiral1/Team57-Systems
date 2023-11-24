@@ -217,4 +217,35 @@ public class DatabaseOperations {
         }
         return isExists;
     }
+
+    public static Boolean saveUserEditDetails(Connection connection, String userID, String username, String name, String enteredPassword, String emailString,
+    String houseNumber, String cityName, String roadName, String postCode, String salt){
+
+        // Find user in database and update details
+        try{
+            String updateQuery = "UPDATE User SET username=?, name=?, hashed_password=?, email=?, house_number=?, city_name=?, road_name=?, " +
+            "post_code=? WHERE user_id=?";
+
+            PreparedStatement pstmt = connection.prepareStatement(updateQuery);
+            pstmt.setString(1, username);
+            pstmt.setString(2, name);
+            // encrypt password with existing salt
+            String hashedPassword=null;
+            try{hashedPassword = Encryption.encrypt(enteredPassword, salt);}
+            catch (Exception e) {e.printStackTrace();}
+            pstmt.setString(3, hashedPassword);
+            pstmt.setString(4, emailString);
+            pstmt.setString(5, houseNumber);
+            pstmt.setString(6, cityName);
+            pstmt.setString(7, roadName);
+            pstmt.setString(8, postCode);
+
+            // pass in current User's userid
+            pstmt.setString(9, userID);
+            pstmt.executeUpdate();
+        } catch (SQLException ex){
+            ex.printStackTrace();
+        }
+        return false;
+    }
 }
