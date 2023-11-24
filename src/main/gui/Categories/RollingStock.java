@@ -169,16 +169,30 @@ public class RollingStock extends JPanel {
                 pstmtIndividual.executeUpdate();
             }
     
-            // Insert into RollingStock table
-            String insertRollingStockSQL = "INSERT INTO RollingStock (productCode, carriageType, wagonType, historicalEra, markType) VALUES (?, ?, ?, ?, ?)";
-            try (PreparedStatement pstmtRollingStock = db.con.prepareStatement(insertRollingStockSQL)) {
-                pstmtRollingStock.setString(1, textFieldMap.get("Product Code").getText());
-                pstmtRollingStock.setString(2, textFieldMap.get("Carriage Type").getText());
-                pstmtRollingStock.setString(3, textFieldMap.get("Wagon Type").getText()); // Assuming the Wagon Type can be null
-                pstmtRollingStock.setString(4, textFieldMap.get("Historical Era").getText());
-                pstmtRollingStock.setString(5, textFieldMap.get("Mark Type").getText());
-                pstmtRollingStock.executeUpdate();
+        // Insert into RollingStock table
+        String insertRollingStockSQL = "INSERT INTO RollingStock (productCode, carriageType, wagonType, historicalEra, markType) VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmtRollingStock = db.con.prepareStatement(insertRollingStockSQL)) {
+            pstmtRollingStock.setString(1, textFieldMap.get("Product Code").getText().trim());
+
+            // Check carriageType and wagonType, set one as null if it's empty
+            String carriageTypeInput = textFieldMap.get("Carriage Type").getText().trim();
+            if (carriageTypeInput.isEmpty()) {
+                pstmtRollingStock.setNull(2, Types.VARCHAR); // set carriageType as NULL
+            } else {
+                pstmtRollingStock.setString(2, carriageTypeInput); // set the actual carriageType value
             }
+
+            String wagonTypeInput = textFieldMap.get("Wagon Type").getText().trim();
+            if (wagonTypeInput.isEmpty()) {
+                pstmtRollingStock.setNull(3, Types.VARCHAR); // set wagonType as NULL
+            } else {
+                pstmtRollingStock.setString(3, wagonTypeInput); // set the actual wagonType value
+            }
+
+            pstmtRollingStock.setString(4, textFieldMap.get("Historical Era").getText().trim());
+            pstmtRollingStock.setString(5, textFieldMap.get("Mark Type").getText().trim());
+            pstmtRollingStock.executeUpdate();
+        }
     
             db.con.commit(); // Commit transaction
             success = true; // if we reached this point, everything went well
@@ -282,37 +296,36 @@ public class RollingStock extends JPanel {
         return rollingStocks;
     }
 
-    private JPanel createBox(String[] rollingStockData) {
+    private JPanel createBox(String[] RollingStockData) {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(0, 1));
         panel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         panel.setBackground(Color.WHITE);
-    
-        // Assuming rollingStockData contains only the values in the correct order
-        for (String data : rollingStockData) {
+
+        for (String data : RollingStockData) {
             JLabel label = new JLabel(data);
             label.setFont(new Font("SansSerif", Font.PLAIN, 12));
             label.setForeground(Color.BLACK);
             label.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             panel.add(label);
         }
-    
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
-        buttonPanel.setBackground(Color.WHITE);
-    
+        buttonPanel.setBackground(Color.WHITE); // Setting background color to white
+
         JButton deleteButton = new JButton("Delete");
         styleButton(deleteButton, new Color(255, 99, 71)); // Tomato color
-        String productCode = rollingStockData[0]; // Assumes productCode is the first element
+        String productCode = RollingStockData[0].split(": ")[1];
         deleteButton.addActionListener(e -> deleteRollingStock(productCode));
         buttonPanel.add(deleteButton);
-    
+
         JButton editButton = new JButton("Edit");
         styleButton(editButton, new Color(144, 238, 144)); // Light green color
-        editButton.addActionListener(e -> openEditDialog(rollingStockData));
+        editButton.addActionListener(e -> openEditDialog(RollingStockData));
         buttonPanel.add(editButton);
-    
+
         panel.add(buttonPanel);
-    
+
         return panel;
     }
 
@@ -377,55 +390,94 @@ public class RollingStock extends JPanel {
     private boolean updateRollingStock(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap, String productCode) throws SQLException {
         boolean success = false; // default to false, will be set to true if updates succeed
         db.con.setAutoCommit(false); // Begin transaction
-
+    
         try {
             // Update Product table
             String updateProductSQL = "UPDATE Product SET brandName = ?, productName = ?, retailPrice = ?, productQuantity = ? WHERE productCode = ?";
             try (PreparedStatement pstmtProduct = db.con.prepareStatement(updateProductSQL)) {
-                pstmtProduct.setString(1, textFieldMap.get("Brand Name").getText());
-                pstmtProduct.setString(2, textFieldMap.get("Product Name").getText());
-                String retailPriceText = textFieldMap.get("Retail Price").getText().replaceAll("[^\\d.]", ""); // Remove non-numeric characters.
-                pstmtProduct.setFloat(3, Float.parseFloat(retailPriceText));
-                pstmtProduct.setInt(4, Integer.parseInt(textFieldMap.get("Product Quantity").getText()));
+                pstmtProduct.setString(1, textFieldMap.get("Brand Name").getText().trim());
+                pstmtProduct.setString(2, textFieldMap.get("Product Name").getText().trim());
+    
+                // Check and parse retail price
+                String retailPriceText = textFieldMap.get("Retail Price").getText().trim().replaceAll("[^\\d.]", ""); // Remove non-numeric characters
+                if (retailPriceText.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Retail Price cannot be empty.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return false; // Return early or throw an exception
+                }
+                try {
+                    pstmtProduct.setFloat(3, Float.parseFloat(retailPriceText));
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(null, "Invalid number format for Retail Price.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return false; // Return early or throw an exception
+                }
+    
+                // Check and parse product quantity
+                String productQuantityText = textFieldMap.get("Product Quantity").getText().trim();
+                if (productQuantityText.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Product Quantity cannot be empty.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
+                try {
+                    pstmtProduct.setInt(4, Integer.parseInt(productQuantityText));
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(null, "Invalid number format for Product Quantity.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
+    
                 pstmtProduct.setString(5, productCode);
                 pstmtProduct.executeUpdate();
             }
-
+    
             // Update Individual table
             String updateIndividualSQL = "UPDATE Individual SET modelType = ?, gauge = ? WHERE productCode = ?";
             try (PreparedStatement pstmtIndividual = db.con.prepareStatement(updateIndividualSQL)) {
-                pstmtIndividual.setString(1, textFieldMap.get("Model Type").getText());
-                pstmtIndividual.setString(2, textFieldMap.get("Gauge").getText());
+                pstmtIndividual.setString(1, textFieldMap.get("Model Type").getText().trim());
+                pstmtIndividual.setString(2, textFieldMap.get("Gauge").getText().trim());
                 pstmtIndividual.setString(3, productCode);
                 pstmtIndividual.executeUpdate();
             }
-
+    
             // Update RollingStock table
             String updateRollingStockSQL = "UPDATE RollingStock SET carriageType = ?, wagonType = ?, historicalEra = ?, markType = ? WHERE productCode = ?";
             try (PreparedStatement pstmtRollingStock = db.con.prepareStatement(updateRollingStockSQL)) {
-                pstmtRollingStock.setString(1, textFieldMap.get("Carriage Type").getText());
-                pstmtRollingStock.setString(2, textFieldMap.get("Wagon Type").getText());
-                pstmtRollingStock.setString(3, textFieldMap.get("Historical Era").getText());
-                pstmtRollingStock.setString(4, textFieldMap.get("Mark Type").getText());
+                String carriageTypeInput = textFieldMap.get("Carriage Type").getText().trim();
+                carriageTypeInput = "null".equalsIgnoreCase(carriageTypeInput) ? "" : carriageTypeInput;
+                if (carriageTypeInput.isEmpty()) {
+                    pstmtRollingStock.setNull(1, Types.VARCHAR);
+                } else {
+                    pstmtRollingStock.setString(1, carriageTypeInput);
+                }
+    
+                String wagonTypeInput = textFieldMap.get("Wagon Type").getText().trim();
+                wagonTypeInput = "null".equalsIgnoreCase(wagonTypeInput) ? "" : wagonTypeInput;
+                if (wagonTypeInput.isEmpty()) {
+                    pstmtRollingStock.setNull(2, Types.VARCHAR);
+                } else {
+                    pstmtRollingStock.setString(2, wagonTypeInput);
+                }
+    
+                pstmtRollingStock.setString(3, textFieldMap.get("Historical Era").getText().trim());
+                pstmtRollingStock.setString(4, textFieldMap.get("Mark Type").getText().trim());
                 pstmtRollingStock.setString(5, productCode);
                 pstmtRollingStock.executeUpdate();
             }
-
+    
             db.con.commit(); // Commit transaction
             success = true; // if we reached this point, everything went well
-
+    
         } catch (SQLException e) {
             db.con.rollback(); // Roll back transaction if anything goes wrong
-            throw e; // Rethrow the exception after rolling back to handle it in the calling method
+            JOptionPane.showMessageDialog(null, "An error occurred during the update: " + e.getMessage(), "Update Error", JOptionPane.ERROR_MESSAGE);
+            return false; // Return early or throw an exception
         } finally {
             db.con.setAutoCommit(true); // Restore default behavior
         }
-
+    
         return success; // return the status of the update operation
     }
 
 
-    private void saveRollingStockChanges(Map<String, JTextField> textFieldMap, String productCode) {
+    private void saveLocomotiveChanges(Map<String, JTextField> textFieldMap, String productCode) {
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         boolean isUpdated = false;
     
@@ -434,7 +486,7 @@ public class RollingStock extends JPanel {
             isUpdated = updateRollingStock(db, textFieldMap, productCode);
     
             if (isUpdated) {
-                JOptionPane.showMessageDialog(this, "Rolling Stock updated successfully!"); // Updated message to reflect 'Rolling Stock' instead of 'Locomotive'
+                JOptionPane.showMessageDialog(this, "Locomotive updated successfully!");
             } else {
                 JOptionPane.showMessageDialog(this, "Update failed, no changes were made.");
             }
@@ -453,12 +505,12 @@ public class RollingStock extends JPanel {
         }
     
         if (isUpdated) {
-            refreshRollingStock(); // Refresh the UI only if the update was successful
+            refreshRollingStock();
         }
     }
 
     private void openEditDialog(String[] rollingStockData) {
-        JDialog editDialog = new JDialog(parentFrame, "Edit Rolling Stock", true); // Corrected title
+        JDialog editDialog = new JDialog(parentFrame, "Edit Rolling stock", true);
         editDialog.setLayout(new BorderLayout());
         editDialog.setSize(500, 400);
         editDialog.setLocationRelativeTo(parentFrame);
@@ -466,7 +518,7 @@ public class RollingStock extends JPanel {
         JPanel fieldsPanel = new JPanel(new GridLayout(0, 2, 10, 10));
         Map<String, JTextField> textFieldMap = new HashMap<>();
     
-        // Create text fields pre-filled with RollingStock data
+        // Create text fields pre-filled with Rolling stock data
         for (String data : rollingStockData) {
             String[] splitData = data.split(":\\s+");
             if (splitData.length == 2) {
@@ -481,7 +533,7 @@ public class RollingStock extends JPanel {
 
     JButton saveButton = new JButton("Save Changes");
     saveButton.addActionListener(e -> {
-        saveRollingStockChanges(textFieldMap, rollingStockData[0].split(": ")[1]);
+        saveLocomotiveChanges(textFieldMap, rollingStockData[0].split(": ")[1]);
         editDialog.dispose();
     });
 
