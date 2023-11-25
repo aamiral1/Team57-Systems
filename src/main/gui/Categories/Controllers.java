@@ -28,7 +28,7 @@ public class Controllers extends JPanel {
         });
         northPanel.add(returnButton, BorderLayout.WEST);
 
-        JLabel titleLabel = new JLabel("LOCOMOTIVES PAGE", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("CONTROLLERS PAGE", SwingConstants.CENTER);
         titleLabel.setFont(new Font("SansSerif", Font.BOLD, 24)); // Setting font
         titleLabel.setForeground(Color.BLACK); // Text color
         northPanel.add(titleLabel, BorderLayout.CENTER);
@@ -43,7 +43,7 @@ public class Controllers extends JPanel {
 
         JButton refreshButton = new JButton("Refresh");
         styleButton(refreshButton, new Color(30, 144, 255)); // Dodger blue color
-        refreshButton.addActionListener(e -> refreshLocomotives());
+        refreshButton.addActionListener(e -> refreshController());
         rightPanel.add(refreshButton);
 
         northPanel.add(rightPanel, BorderLayout.EAST);
@@ -54,7 +54,7 @@ public class Controllers extends JPanel {
         boxesPanel = new JPanel();
         boxesPanel.setLayout(new BoxLayout(boxesPanel, BoxLayout.Y_AXIS));
         boxesPanel.setBackground(Color.WHITE); // Setting background color to white
-        refreshLocomotives();
+        refreshController();
 
         JScrollPane scrollPane = new JScrollPane(boxesPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -62,11 +62,11 @@ public class Controllers extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
-    private void refreshLocomotives() {
+    private void refreshController() {
         boxesPanel.removeAll();
-        java.util.List<String[]> locomotives = getLocomotives();
-        for (String[] locomotive : locomotives) {
-            JPanel boxPanel = createBox(locomotive);
+        java.util.List<String[]> Controllers = getController();
+        for (String[] Controller : Controllers) {
+            JPanel boxPanel = createBox(Controller);
             boxesPanel.add(boxPanel);
             boxesPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         }
@@ -76,7 +76,7 @@ public class Controllers extends JPanel {
 
     // Call this method when the Add button is clicked
     private void openAddDialog() {
-        JDialog addDialog = new JDialog(parentFrame, "Add New Locomotive", true);
+        JDialog addDialog = new JDialog(parentFrame, "Add New Controller", true);
         addDialog.setLayout(new BorderLayout());
         addDialog.setSize(400, 300);
         addDialog.setLocationRelativeTo(parentFrame);
@@ -84,10 +84,10 @@ public class Controllers extends JPanel {
         JPanel fieldsPanel = new JPanel(new GridLayout(0, 2, 10, 10));
         Map<String, JTextField> textFieldMap = new HashMap<>();
 
-        // Define the fields for the new locomotive details
+        // Define the fields for the new Controller details
         String[] fields = {
             "Product Code", "Brand Name", "Product Name", "Retail Price",
-            "Product Quantity", "Model Type", "Gauge", "Historical Era", "DCC Code"
+            "Product Quantity", "Model Type", "Gauge", "isDigital"
         };
 
         // Create labels and text fields for each field
@@ -99,9 +99,9 @@ public class Controllers extends JPanel {
             textFieldMap.put(field, textField);
         }
 
-        JButton saveButton = new JButton("Save New Locomotive");
+        JButton saveButton = new JButton("Save New Controller");
         saveButton.addActionListener(e -> {
-            saveNewLocomotive(textFieldMap);
+            saveController(textFieldMap);
             addDialog.dispose();
         });
 
@@ -117,7 +117,8 @@ public class Controllers extends JPanel {
         addDialog.setVisible(true);
     }
 
-    private boolean insertLocomotive(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap) throws SQLException {
+
+    private boolean insertController(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap) throws SQLException {
         boolean success = false; // default to false, will be set to true if inserts succeed
         db.con.setAutoCommit(false); // Begin transaction
     
@@ -166,14 +167,23 @@ public class Controllers extends JPanel {
                 pstmtIndividual.setString(3, textFieldMap.get("Gauge").getText());
                 pstmtIndividual.executeUpdate();
             }
-    
-            // Insert into Locomotives table
-            String insertLocomotivesSQL = "INSERT INTO Locomotives (productCode, historicalEra, DCCCode) VALUES (?, ?, ?)";
-            try (PreparedStatement pstmtLocomotives = db.con.prepareStatement(insertLocomotivesSQL)) {
-                pstmtLocomotives.setString(1, textFieldMap.get("Product Code").getText());
-                pstmtLocomotives.setString(2, textFieldMap.get("Historical Era").getText());
-                pstmtLocomotives.setString(3, textFieldMap.get("DCC Code").getText());
-                pstmtLocomotives.executeUpdate();
+
+            String insertControllersSQL = "INSERT INTO Controller (productCode, isDigital) VALUES (?, ?)";
+            try (PreparedStatement pstmtControllers = db.con.prepareStatement(insertControllersSQL)) {
+                pstmtControllers.setString(1, textFieldMap.get("Product Code").getText());
+                JTextField isDigitalField = textFieldMap.get("isDigital");
+                if (isDigitalField == null) {
+                    System.out.println("The 'isDigital' field is missing.");
+                    return false;
+                }
+                String isDigitalText = isDigitalField.getText().trim();
+                int isDigitalValue = "Yes".equalsIgnoreCase(isDigitalText) ? 1 : "No".equalsIgnoreCase(isDigitalText) ? 0 : -1;
+                
+                if (isDigitalValue == -1) {
+                    JOptionPane.showMessageDialog(null, "Invalid input for 'isDigital'. Must be 'Yes' or 'No'.");
+                    return false;
+                }                pstmtControllers.setInt(2, Integer.parseInt(isDigitalText)); // Convert to integer
+                pstmtControllers.executeUpdate();
             }
     
             db.con.commit(); // Commit transaction
@@ -181,7 +191,7 @@ public class Controllers extends JPanel {
     
         } catch (SQLException e) {
             db.con.rollback(); // Roll back transaction if anything goes wrong
-            throw e; // Rethrow the exception after rolling back to handle it in the calling method
+            throw e; 
         } finally {
             db.con.setAutoCommit(true); // Restore default behavior
         }
@@ -189,16 +199,16 @@ public class Controllers extends JPanel {
         return success; // return the status of the insert operation
     }
     
-    private void saveNewLocomotive(Map<String, JTextField> textFieldMap) {
+    private void saveController(Map<String, JTextField> textFieldMap) {
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         boolean isInserted = false;
     
         try {
             db.openConnection();
-            isInserted = insertLocomotive(db, textFieldMap);
+            isInserted = insertController(db, textFieldMap);
     
             if (isInserted) {
-                JOptionPane.showMessageDialog(this, "New locomotive added successfully!");
+                JOptionPane.showMessageDialog(this, "New Controller added successfully!");
             } else {
                 JOptionPane.showMessageDialog(this, "Insert failed, no changes were made.");
             }
@@ -217,13 +227,12 @@ public class Controllers extends JPanel {
         }
     
         if (isInserted) {
-            refreshLocomotives();
+            refreshController();
         }
     }
 
-
-    private java.util.List<String[]> getLocomotives() {
-        java.util.List<String[]> locomotives = new java.util.ArrayList<>();
+    private java.util.List<String[]> getController() {
+        java.util.List<String[]> Controllers = new java.util.ArrayList<>();
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         db.openConnection();
         String sqlQuery = "SELECT " +
@@ -234,12 +243,11 @@ public class Controllers extends JPanel {
                 "Product.productQuantity, " +
                 "Individual.modelType, " +
                 "Individual.gauge, " +
-                "Locomotives.historicalEra, " +
-                "Locomotives.DCCCode " +
+                "Controller.isDigital " +
                 "FROM Product " +
                 "INNER JOIN Individual ON Product.productCode = Individual.productCode " +
-                "INNER JOIN Locomotives ON Individual.productCode = Locomotives.productCode;";
-
+                "INNER JOIN Controller ON Individual.productCode = Controller.productCode;";
+    
         try (PreparedStatement pstmt = db.con.prepareStatement(sqlQuery);
              ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
@@ -250,10 +258,9 @@ public class Controllers extends JPanel {
                 int productQuantity = rs.getInt("productQuantity");
                 String modelType = rs.getString("modelType");
                 String gauge = rs.getString("gauge");
-                String historicalEra = rs.getString("historicalEra");
-                String dccCode = rs.getString("DCCCode");
-
-                locomotives.add(new String[]{
+                boolean isDigital = rs.getBoolean("isDigital");
+    
+                Controllers.add(new String[]{
                         "Product Code: " + productCode,
                         "Brand Name: " + brandName,
                         "Product Name: " + productName,
@@ -261,8 +268,7 @@ public class Controllers extends JPanel {
                         "Product Quantity: " + productQuantity,
                         "Model Type: " + modelType,
                         "Gauge: " + gauge,
-                        "Historical Era: " + historicalEra,
-                        "DCC Code: " + dccCode
+                        "IsDigital: " + (isDigital ? "Yes" : "No")
                 });
             }
         } catch (SQLException e) {
@@ -270,16 +276,16 @@ public class Controllers extends JPanel {
         } finally {
             db.closeConnection();
         }
-        return locomotives;
+        return Controllers;
     }
 
-    private JPanel createBox(String[] locomotiveData) {
+    private JPanel createBox(String[] ControllerData) {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(0, 1));
         panel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         panel.setBackground(Color.WHITE);
 
-        for (String data : locomotiveData) {
+        for (String data : ControllerData) {
             JLabel label = new JLabel(data);
             label.setFont(new Font("SansSerif", Font.PLAIN, 12));
             label.setForeground(Color.BLACK);
@@ -292,13 +298,13 @@ public class Controllers extends JPanel {
 
         JButton deleteButton = new JButton("Delete");
         styleButton(deleteButton, new Color(255, 99, 71)); // Tomato color
-        String productCode = locomotiveData[0].split(": ")[1];
-        deleteButton.addActionListener(e -> deleteLocomotive(productCode));
+        String productCode = ControllerData[0].split(": ")[1];
+        deleteButton.addActionListener(e -> deleteController(productCode));
         buttonPanel.add(deleteButton);
 
         JButton editButton = new JButton("Edit");
         styleButton(editButton, new Color(144, 238, 144)); // Light green color
-        editButton.addActionListener(e -> openEditDialog(locomotiveData));
+        editButton.addActionListener(e -> openEditDialog(ControllerData));
         buttonPanel.add(editButton);
 
         panel.add(buttonPanel);
@@ -307,117 +313,148 @@ public class Controllers extends JPanel {
     }
 
 
-    private void deleteLocomotive(String productCode) {
+    private void deleteController(String productCode) {
         int confirm = JOptionPane.showConfirmDialog(
                 this,
-                "Are you sure you want to delete this locomotive?",
+                "Are you sure you want to delete this Controller?",
                 "Delete Confirmation",
                 JOptionPane.YES_NO_OPTION);
-
+    
         if (confirm == JOptionPane.YES_OPTION) {
             DatabaseConnectionHandler db = new DatabaseConnectionHandler();
             db.openConnection();
             try {
-                db.con.setAutoCommit(false);
+                db.con.setAutoCommit(false); // Start transaction
 
-                String deleteLocomotivesSQL = "DELETE FROM Locomotives WHERE productCode = ?";
-                try (PreparedStatement pstmtLocomotives = db.con.prepareStatement(deleteLocomotivesSQL)) {
-                    pstmtLocomotives.setString(1, productCode);
-                    pstmtLocomotives.executeUpdate();
+                String deleteControllersSQL = "DELETE FROM Controller WHERE productCode = ?";
+                try (PreparedStatement pstmtControllers = db.con.prepareStatement(deleteControllersSQL)) {
+                    pstmtControllers.setString(1, productCode);
+                    pstmtControllers.executeUpdate();
                 }
-
+    
+                // Delete from Individual table
                 String deleteIndividualSQL = "DELETE FROM Individual WHERE productCode = ?";
                 try (PreparedStatement pstmtIndividual = db.con.prepareStatement(deleteIndividualSQL)) {
                     pstmtIndividual.setString(1, productCode);
                     pstmtIndividual.executeUpdate();
                 }
-
+    
+                // Delete from Product table
                 String deleteProductSQL = "DELETE FROM Product WHERE productCode = ?";
                 try (PreparedStatement pstmtProduct = db.con.prepareStatement(deleteProductSQL)) {
                     pstmtProduct.setString(1, productCode);
                     pstmtProduct.executeUpdate();
                 }
-
-                db.con.commit();
+    
+                db.con.commit(); // Commit transaction
+    
             } catch (SQLException e) {
                 try {
-                    db.con.rollback();
+                    db.con.rollback(); // If there's an error, roll back the transaction
                 } catch (SQLException e2) {
                     e2.printStackTrace();
                 }
                 e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Delete error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             } finally {
                 try {
-                    db.con.setAutoCommit(true);
+                    db.con.setAutoCommit(true); // Restore default auto-commit behavior
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-                db.closeConnection();
+                db.closeConnection(); // Close the database connection
             }
-
-            refreshLocomotives();
+    
+            refreshController(); // Refresh the display to show that the Controller has been deleted
         }
     }
 
-    private boolean updateLocomotive(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap, String productCode) throws SQLException {
+    private boolean updateController(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap, String productCode) throws SQLException {
         boolean success = false; // default to false, will be set to true if updates succeed
         db.con.setAutoCommit(false); // Begin transaction
-
+    
         try {
             // Update Product table
             String updateProductSQL = "UPDATE Product SET brandName = ?, productName = ?, retailPrice = ?, productQuantity = ? WHERE productCode = ?";
             try (PreparedStatement pstmtProduct = db.con.prepareStatement(updateProductSQL)) {
-                pstmtProduct.setString(1, textFieldMap.get("Brand Name").getText());
-                pstmtProduct.setString(2, textFieldMap.get("Product Name").getText());
-                String retailPriceText = textFieldMap.get("Retail Price").getText().replaceAll("[^\\d.]", ""); // Remove non-numeric characters.
-                pstmtProduct.setFloat(3, Float.parseFloat(retailPriceText));
-                pstmtProduct.setInt(4, Integer.parseInt(textFieldMap.get("Product Quantity").getText()));
+                pstmtProduct.setString(1, textFieldMap.get("Brand Name").getText().trim());
+                pstmtProduct.setString(2, textFieldMap.get("Product Name").getText().trim());
+    
+                // Check and parse retail price
+                String retailPriceText = textFieldMap.get("Retail Price").getText().trim().replaceAll("[^\\d.]", ""); // Remove non-numeric characters
+                if (retailPriceText.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Retail Price cannot be empty.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return false; // Return early or throw an exception
+                }
+                try {
+                    pstmtProduct.setFloat(3, Float.parseFloat(retailPriceText));
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(null, "Invalid number format for Retail Price.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return false; // Return early or throw an exception
+                }
+    
+                // Check and parse product quantity
+                String productQuantityText = textFieldMap.get("Product Quantity").getText().trim();
+                if (productQuantityText.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Product Quantity cannot be empty.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
+                try {
+                    pstmtProduct.setInt(4, Integer.parseInt(productQuantityText));
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(null, "Invalid number format for Product Quantity.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
+    
                 pstmtProduct.setString(5, productCode);
                 pstmtProduct.executeUpdate();
             }
-
+    
             // Update Individual table
             String updateIndividualSQL = "UPDATE Individual SET modelType = ?, gauge = ? WHERE productCode = ?";
             try (PreparedStatement pstmtIndividual = db.con.prepareStatement(updateIndividualSQL)) {
-                pstmtIndividual.setString(1, textFieldMap.get("Model Type").getText());
-                pstmtIndividual.setString(2, textFieldMap.get("Gauge").getText());
+                pstmtIndividual.setString(1, textFieldMap.get("Model Type").getText().trim());
+                pstmtIndividual.setString(2, textFieldMap.get("Gauge").getText().trim());
                 pstmtIndividual.setString(3, productCode);
                 pstmtIndividual.executeUpdate();
             }
 
-            // Update Locomotives table
-            String updateLocomotivesSQL = "UPDATE Locomotives SET historicalEra = ?, DCCCode = ? WHERE productCode = ?";
-            try (PreparedStatement pstmtLocomotives = db.con.prepareStatement(updateLocomotivesSQL)) {
-                pstmtLocomotives.setString(1, textFieldMap.get("Historical Era").getText());
-                pstmtLocomotives.setString(2, textFieldMap.get("DCC Code").getText());
-                pstmtLocomotives.setString(3, productCode);
-                pstmtLocomotives.executeUpdate();
+            String updateControllersSQL = "UPDATE Controller SET isDigital = ? WHERE productCode = ?";
+            try (PreparedStatement pstmtController = db.con.prepareStatement(updateControllersSQL)) {
+                String isDigitalText = textFieldMap.get("isDigital").getText().trim();
+                System.out.println(isDigitalText);
+                // Assuming 'Yes' means true (1) and anything else means false (0)
+                int isDigitalValue = "Yes".equalsIgnoreCase(isDigitalText) ? 1 : 0;
+                pstmtController.setInt(1, isDigitalValue); // Set as integer since the database uses tinyint(1)
+                pstmtController.setString(2, productCode);
+                pstmtController.executeUpdate();
             }
 
             db.con.commit(); // Commit transaction
             success = true; // if we reached this point, everything went well
-
+    
         } catch (SQLException e) {
             db.con.rollback(); // Roll back transaction if anything goes wrong
-            throw e; // Rethrow the exception after rolling back to handle it in the calling method
+            JOptionPane.showMessageDialog(null, "An error occurred during the update: " + e.getMessage(), "Update Error", JOptionPane.ERROR_MESSAGE);
+            return false; // Return early or throw an exception
         } finally {
             db.con.setAutoCommit(true); // Restore default behavior
         }
-
+    
         return success; // return the status of the update operation
     }
 
 
-    private void saveLocomotiveChanges(Map<String, JTextField> textFieldMap, String productCode) {
+    private void saveControllerChanges(Map<String, JTextField> textFieldMap, String productCode) {
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         boolean isUpdated = false;
     
         try {
             db.openConnection();
-            isUpdated = updateLocomotive(db, textFieldMap, productCode);
+            isUpdated = updateController(db, textFieldMap, productCode);
     
             if (isUpdated) {
-                JOptionPane.showMessageDialog(this, "Locomotive updated successfully!");
+                JOptionPane.showMessageDialog(this, "Controller updated successfully!");
             } else {
                 JOptionPane.showMessageDialog(this, "Update failed, no changes were made.");
             }
@@ -436,12 +473,12 @@ public class Controllers extends JPanel {
         }
     
         if (isUpdated) {
-            refreshLocomotives();
+            refreshController();
         }
     }
 
-    private void openEditDialog(String[] locomotiveData) {
-        JDialog editDialog = new JDialog(parentFrame, "Edit Locomotive", true);
+    private void openEditDialog(String[] ControllerData) {
+        JDialog editDialog = new JDialog(parentFrame, "Edit Controllers", true);
         editDialog.setLayout(new BorderLayout());
         editDialog.setSize(400, 300);
         editDialog.setLocationRelativeTo(parentFrame);
@@ -449,8 +486,8 @@ public class Controllers extends JPanel {
         JPanel fieldsPanel = new JPanel(new GridLayout(0, 2, 10, 10));
         Map<String, JTextField> textFieldMap = new HashMap<>();
     
-        // Create text fields pre-filled with locomotive data
-        for (String data : locomotiveData) {
+        // Create text fields pre-filled with Controller data
+        for (String data : ControllerData) {
             String[] splitData = data.split(":\\s+");
             if (splitData.length == 2) {
                 JLabel label = new JLabel(splitData[0].trim());
@@ -462,23 +499,23 @@ public class Controllers extends JPanel {
             }
         }
 
-    JButton saveButton = new JButton("Save Changes");
-    saveButton.addActionListener(e -> {
-        saveLocomotiveChanges(textFieldMap, locomotiveData[0].split(": ")[1]);
-        editDialog.dispose();
-    });
+        JButton saveButton = new JButton("Save Changes");
+        saveButton.addActionListener(e -> {
+            saveControllerChanges(textFieldMap, ControllerData[0].split(": ")[1]);
+            editDialog.dispose();
+        });
 
-    JButton cancelButton = new JButton("Cancel");
-    cancelButton.addActionListener(e -> editDialog.dispose());
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(e -> editDialog.dispose());
 
-    JPanel buttonPanel = new JPanel();
-    buttonPanel.add(saveButton);
-    buttonPanel.add(cancelButton);
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(saveButton);
+        buttonPanel.add(cancelButton);
 
-    editDialog.add(fieldsPanel, BorderLayout.CENTER);
-    editDialog.add(buttonPanel, BorderLayout.SOUTH);
-    editDialog.setVisible(true);
-}
+        editDialog.add(fieldsPanel, BorderLayout.CENTER);
+        editDialog.add(buttonPanel, BorderLayout.SOUTH);
+        editDialog.setVisible(true);
+    }
 
      private void styleButton(JButton button, Color color) {
         button.setFont(new Font("SansSerif", Font.PLAIN, 12));

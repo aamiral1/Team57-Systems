@@ -477,7 +477,7 @@ public class RollingStock extends JPanel {
     }
 
 
-    private void saveLocomotiveChanges(Map<String, JTextField> textFieldMap, String productCode) {
+    private void saveRollingStock(Map<String, JTextField> textFieldMap, String productCode) {
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         boolean isUpdated = false;
     
@@ -486,7 +486,7 @@ public class RollingStock extends JPanel {
             isUpdated = updateRollingStock(db, textFieldMap, productCode);
     
             if (isUpdated) {
-                JOptionPane.showMessageDialog(this, "Locomotive updated successfully!");
+                JOptionPane.showMessageDialog(this, "Rolling Stock updated successfully!");
             } else {
                 JOptionPane.showMessageDialog(this, "Update failed, no changes were made.");
             }
@@ -533,7 +533,7 @@ public class RollingStock extends JPanel {
 
     JButton saveButton = new JButton("Save Changes");
     saveButton.addActionListener(e -> {
-        saveLocomotiveChanges(textFieldMap, rollingStockData[0].split(": ")[1]);
+        saveRollingStock(textFieldMap, rollingStockData[0].split(": ")[1]);
         editDialog.dispose();
     });
 
