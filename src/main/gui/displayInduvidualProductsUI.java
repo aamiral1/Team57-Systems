@@ -1,4 +1,4 @@
-package main.gui;
+//package main.gui;
 import main.db.DatabaseConnectionHandler;
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -521,6 +521,88 @@ public class displayInduvidualProductsUI {
                 db.closeConnection();
                 }
     
+                return productDetails;
+
+        } else if(productType.equals("Track Packs")) {
+
+            currentProductType = "Track Packs";
+            Statement statement = null;
+            ResultSet resultSet = null;
+
+            try {
+                // Create a statement
+                statement = db.con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+
+                // Execute the query
+                String sqlQuery = "SELECT " +
+                        "bsc.boxedSetId, " + // Assuming you still want to know which BoxedSet each content belongs to
+                        "bsc.individual_productCode, " + // This might be the primary key in BoxedSetContents
+                        "bsc.quantity, " + // The quantity of each individual product in the boxed set
+                        "i.modelType, " +
+                        "i.gauge, " +
+                        "p.brandName, " +
+                        "p.productName, " +
+                        "p.retailPrice, " +
+                        "p.productQuantity " +
+                        "FROM BoxedSetContents bsc " +
+                        "INNER JOIN Individual i ON bsc.individual_productCode = i.productCode " +
+                        "INNER JOIN Product p ON i.productCode = p.productCode " +
+                        "LEFT JOIN BoxedSet bs ON bsc.boxedSetId = bs.boxedSetId;"; // LEFT JOIN in case you have contents without a boxed set
+
+                resultSet = statement.executeQuery(sqlQuery);
+
+                // Move to the last row to get the row count
+                int rowCount = 0; 
+
+                while (resultSet.next()) {
+                
+                    rowCount++;
+                }
+            
+                productDetails = new String[rowCount][9];
+
+                resultSet.beforeFirst();
+
+                int rowNum = 0;
+
+                    // Process the ResultSet and populate the array
+                while (resultSet.next()) {
+                    productDetails[rowNum][0] = resultSet.getString("boxedSetId");
+                    productDetails[rowNum][1] = resultSet.getString("quantity");
+                    productDetails[rowNum][2] = resultSet.getString("individual_productCode");
+                    productDetails[rowNum][3] = resultSet.getString("modelType");
+                    productDetails[rowNum][4] = resultSet.getString("gauge");
+                    productDetails[rowNum][5] = resultSet.getString("brandName"); // Correct index for brandName
+                    productDetails[rowNum][6] = resultSet.getString("productName"); // Correct index for productName
+                    productDetails[rowNum][7] = resultSet.getString("retailPrice"); // Correct index for retailPrice
+                    //productDetails[rowNum][8] = resultSet.getString("productQuantity"); // Correct index for productQuantity
+                    rowNum++;
+                }
+                
+
+                } catch (SQLException e) {
+                    // Handle the exception appropriately in your application
+                    e.printStackTrace();
+                } finally {
+                    // Close resources
+                    //try {
+                        //if (statement != null && !statement.isClosed()) statement.close();
+                        // Only close the connection if you are done with all database operations
+                        //if (db != null) db.closeConnection();
+                    //} catch (SQLException e) {
+                        //e.printStackTrace();
+                    //}
+                    // Close resources
+                    try {
+                        if (resultSet != null && !resultSet.isClosed()) resultSet.close();
+                        if (statement != null && !statement.isClosed()) statement.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                    // Only close the connection if you are done with all database operations
+                    if (db != null) db.closeConnection();
+                }
+
                 return productDetails;
 
         } else { 

@@ -1,4 +1,4 @@
-package main.gui;
+//package main.gui;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -254,6 +254,9 @@ public class CustomerUI extends JPanel {
                     } else if (buttonText.equals("Rolling Stock")) {
                         String[][] rollingStockDetails = displayInduvidualProductsUI.getProducts("Rolling Stock");
                         displayInduvidualProductsUI.createAndShowGUI(rollingStockDetails);
+                    } else if (buttonText.equals("Track Packs")) {
+                        String[][] trackPackDetails = displayInduvidualProductsUI.getProducts("Track Packs");
+                        displayInduvidualProductsUI.createAndShowGUI(trackPackDetails);
                     }
 
                 });
