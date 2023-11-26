@@ -1,24 +1,24 @@
 //package main.gui;
 import main.db.DatabaseConnectionHandler;
 import javax.swing.*;
-import javax.swing.border.Border;
-
-//import Categories.Locomotives;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-//import main.gui.customerUI;
+import java.util.HashMap;
+import java.util.List;
 
 public class displayInduvidualProductsUI {
     // Array list to store items added to cart ---> Needs to be saved not just from the page that it is one - should be global
     private static ArrayList<String[]> cart = new ArrayList<>();
 
     private static String currentProductType = ""; // global variable to store page information for back button
+
+    //-----------------------------------------------------------------------------------------------------------------------
 
     // Method to create and show the GUI
     public static void createAndShowGUI(String[][] productDetails) {
@@ -35,6 +35,7 @@ public class displayInduvidualProductsUI {
 
         // View Cart Button
         JButton viewCartButton = new JButton("View Cart");
+
         viewCartButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -89,6 +90,136 @@ public class displayInduvidualProductsUI {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
+
+//-----------------------------------------------------------------------------------------------------------------------
+
+
+    public static void createAndShowGroupedGUI(HashMap<String, List<String[]>> groupedProductDetails) {
+
+        System.out.println("createAndShowGroupedGUI method has been called succesfully");
+
+        JFrame frame = new JFrame("Grouped Product Details");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
+
+        JPanel northPanel = new JPanel(new BorderLayout());
+        JLabel headerLabel = new JLabel("Grouped Product Details Page", SwingConstants.CENTER);
+
+        headerLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        northPanel.add(headerLabel, BorderLayout.NORTH);
+
+        // Main Panel for grouped product details
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+
+        // Iterate over the HashMap and create UI components for each group
+        for (String boxedSetId : groupedProductDetails.keySet()) {
+
+            // Panel for each boxed set group
+            JPanel boxedSetPanel = new JPanel();
+            boxedSetPanel.setLayout(new BoxLayout(boxedSetPanel, BoxLayout.Y_AXIS));
+            boxedSetPanel.setBorder(BorderFactory.createTitledBorder("Boxed Set ID: " + boxedSetId));
+
+            // Retrieve the list of product details for the current boxed set
+            List<String[]> products = groupedProductDetails.get(boxedSetId);
+
+            // Create a panel for each product and add it to the boxed set panel
+            for (String[] details : products) {
+                JPanel productPanel = createBoxProductPanel(details); // Assume createProductPanel is a method that creates a JPanel with product details
+                boxedSetPanel.add(productPanel);
+            }
+
+            mainPanel.add(boxedSetPanel); // Add each grouped panel to the main panel
+        }
+
+        JScrollPane scrollPane = new JScrollPane(mainPanel);
+        frame.add(scrollPane, BorderLayout.CENTER);
+
+        // Add a button to navigate back to home or other parts of the UI
+        // ...
+
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+    }
+
+    //--------------------------------------------------------------------------------------------------------------
+
+    // This method should create a JPanel with product details.
+    // You will need to implement this method according to your application's requirements.
+
+    private static JPanel createBoxProductPanel(String[] details) {
+
+        System.out.println("createBoxProductPanel method has been called successfully");
+
+        // Assuming 'details' contains: quantity, productCode, modelType, gauge, brandName, productName, retailPrice
+        JPanel productPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 2, 2, 2); // Provides some spacing between components
+        gbc.anchor = GridBagConstraints.WEST;
+    
+        // Add product details to the panel
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        productPanel.add(new JLabel("Product Code:"), gbc);
+        gbc.gridx = 1;
+        productPanel.add(new JLabel(details[1]), gbc);
+    
+        gbc.gridx = 0;
+        gbc.gridy++;
+        productPanel.add(new JLabel("Model Type:"), gbc);
+        gbc.gridx = 1;
+        productPanel.add(new JLabel(details[2]), gbc);
+    
+        gbc.gridx = 0;
+        gbc.gridy++;
+        productPanel.add(new JLabel("Gauge:"), gbc);
+        gbc.gridx = 1;
+        productPanel.add(new JLabel(details[3]), gbc);
+    
+        gbc.gridx = 0;
+        gbc.gridy++;
+        productPanel.add(new JLabel("Brand Name:"), gbc);
+        gbc.gridx = 1;
+        productPanel.add(new JLabel(details[4]), gbc);
+    
+        gbc.gridx = 0;
+        gbc.gridy++;
+        productPanel.add(new JLabel("Product Name:"), gbc);
+        gbc.gridx = 1;
+        productPanel.add(new JLabel(details[5]), gbc);
+    
+        gbc.gridx = 0;
+        gbc.gridy++;
+        productPanel.add(new JLabel("Retail Price:"), gbc);
+        gbc.gridx = 1;
+        productPanel.add(new JLabel(details[6]), gbc);
+    
+        gbc.gridx = 0;
+        gbc.gridy++;
+        productPanel.add(new JLabel("Quantity:"), gbc);
+        gbc.gridx = 1;
+        productPanel.add(new JLabel(details[0]), gbc);
+    
+        // Add 'Add to Cart' button
+        /* JButton addToCartButton = new JButton("Add to Cart");
+        addToCartButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+               // addToCart(details); // Implement this method to handle adding the product to the cart
+            }
+        });
+        gbc.gridx = 0;
+        gbc.gridy++;
+        gbc.gridwidth = 2; // The button will span two columns
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        productPanel.add(addToCartButton, gbc); */
+    
+        productPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Sets a border for the product panel
+    
+        return productPanel;
+    }
+
 
 //-----------------------------------------------------------------------------------------------------------------------
 
@@ -152,6 +283,8 @@ public class displayInduvidualProductsUI {
 
     }
 
+    //-----------------------------------------------------------------------------------------------------------------------
+
     // Method to go back to previous category page
     private static void goBackToProductDetailsPage(JFrame cartFrame) {
         // Dispose the current cart frame
@@ -161,7 +294,10 @@ public class displayInduvidualProductsUI {
         createAndShowGUI(productDetails);
     }
 
+    //-----------------------------------------------------------------------------------------------------------------------
+
     // Method that creates cart
+
     private static JPanel createProductCart(String[] productDetails) {
 
         JPanel productPanel = new JPanel();
@@ -178,8 +314,7 @@ public class displayInduvidualProductsUI {
         return productPanel;
     }
 
-
-//-----------------------------------------------------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------------------------------------------------
 
 
     // Method that creates a product panel depending on which product category is selected
@@ -230,6 +365,8 @@ public class displayInduvidualProductsUI {
         return productPanel;
     }
 
+    //-----------------------------------------------------------------------------------------------------------------------
+
     // Method to add products to cart
 
     private static void addToCart(String[] productDetails, int quantity) {
@@ -245,6 +382,8 @@ public class displayInduvidualProductsUI {
         // Displays a message to the user confirming the addition to the cart
         JOptionPane.showMessageDialog(null, "Product added to cart!");
     }
+
+    //-----------------------------------------------------------------------------------------------------------------------
 
     // Method to get product details from current panel
 
@@ -265,6 +404,8 @@ public class displayInduvidualProductsUI {
 
         return details;
     }   
+
+    //-----------------------------------------------------------------------------------------------------------------------
 
     public static String[][] getProducts(String productType) {
 
@@ -523,93 +664,107 @@ public class displayInduvidualProductsUI {
     
                 return productDetails;
 
-        } else if(productType.equals("Track Packs")) {
-
-            currentProductType = "Track Packs";
-            Statement statement = null;
-            ResultSet resultSet = null;
-
-            try {
-                // Create a statement
-                statement = db.con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-
-                // Execute the query
-                String sqlQuery = "SELECT " +
-                        "bsc.boxedSetId, " + // Assuming you still want to know which BoxedSet each content belongs to
-                        "bsc.individual_productCode, " + // This might be the primary key in BoxedSetContents
-                        "bsc.quantity, " + // The quantity of each individual product in the boxed set
-                        "i.modelType, " +
-                        "i.gauge, " +
-                        "p.brandName, " +
-                        "p.productName, " +
-                        "p.retailPrice, " +
-                        "p.productQuantity " +
-                        "FROM BoxedSetContents bsc " +
-                        "INNER JOIN Individual i ON bsc.individual_productCode = i.productCode " +
-                        "INNER JOIN Product p ON i.productCode = p.productCode " +
-                        "LEFT JOIN BoxedSet bs ON bsc.boxedSetId = bs.boxedSetId;"; // LEFT JOIN in case you have contents without a boxed set
-
-                resultSet = statement.executeQuery(sqlQuery);
-
-                // Move to the last row to get the row count
-                int rowCount = 0; 
-
-                while (resultSet.next()) {
-                
-                    rowCount++;
-                }
-            
-                productDetails = new String[rowCount][9];
-
-                resultSet.beforeFirst();
-
-                int rowNum = 0;
-
-                    // Process the ResultSet and populate the array
-                while (resultSet.next()) {
-                    productDetails[rowNum][0] = resultSet.getString("boxedSetId");
-                    productDetails[rowNum][1] = resultSet.getString("quantity");
-                    productDetails[rowNum][2] = resultSet.getString("individual_productCode");
-                    productDetails[rowNum][3] = resultSet.getString("modelType");
-                    productDetails[rowNum][4] = resultSet.getString("gauge");
-                    productDetails[rowNum][5] = resultSet.getString("brandName"); // Correct index for brandName
-                    productDetails[rowNum][6] = resultSet.getString("productName"); // Correct index for productName
-                    productDetails[rowNum][7] = resultSet.getString("retailPrice"); // Correct index for retailPrice
-                    //productDetails[rowNum][8] = resultSet.getString("productQuantity"); // Correct index for productQuantity
-                    rowNum++;
-                }
-                
-
-                } catch (SQLException e) {
-                    // Handle the exception appropriately in your application
-                    e.printStackTrace();
-                } finally {
-                    // Close resources
-                    //try {
-                        //if (statement != null && !statement.isClosed()) statement.close();
-                        // Only close the connection if you are done with all database operations
-                        //if (db != null) db.closeConnection();
-                    //} catch (SQLException e) {
-                        //e.printStackTrace();
-                    //}
-                    // Close resources
-                    try {
-                        if (resultSet != null && !resultSet.isClosed()) resultSet.close();
-                        if (statement != null && !statement.isClosed()) statement.close();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                    // Only close the connection if you are done with all database operations
-                    if (db != null) db.closeConnection();
-                }
-
-                return productDetails;
-
         } else { 
             
             // Return and empty array
             productDetails = new String[0][0];
             return productDetails;
+        } 
+    }
+
+    //-------------------------------------------------------------------------------------------------
+
+    public static HashMap<String,List<String[]>> getBoxedProducts(String productType) {
+
+        // Open a connection to the database
+        DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+        db.openConnection();
+
+        HashMap<String, List<String[]>> groupedProductDetails = null;
+
+        System.out.println("getBoxedProducts method has been called successfully");
+
+        if(productType.equals("Track Packs")) {
+
+            currentProductType = "Track Packs";
+            Statement statement = null;
+            ResultSet resultSet = null;
+            groupedProductDetails = new HashMap<>();
+        
+            try {
+
+                // Create a statement
+                statement = db.con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+        
+                // Execute the query to get boxed sets
+                String sqlQueryBoxedSets = "SELECT DISTINCT bsc.boxedSetId FROM BoxedSetContents bsc;";
+                resultSet = statement.executeQuery(sqlQueryBoxedSets);
+        
+                // Loop through each boxedSetId
+                while (resultSet.next()) {
+
+                    String boxedSetId = resultSet.getString("boxedSetId");
+                    groupedProductDetails.put(boxedSetId, new ArrayList<>());
+        
+                    // Now, get the individual product details for each boxedSetId
+                    String sqlQueryProductDetails = "SELECT " +
+                            "bsc.boxedSetId, " + 
+                            "bsc.individual_productCode, " + 
+                            "bsc.quantity, " + 
+                            "i.modelType, " +
+                            "i.gauge, " +
+                            "p.brandName, " +
+                            "p.productName, " +
+                            "p.retailPrice, " +
+                            "p.productQuantity " +
+                            "FROM BoxedSetContents bsc " +
+                            "INNER JOIN Individual i ON bsc.individual_productCode = i.productCode " +
+                            "INNER JOIN Product p ON i.productCode = p.productCode " +
+                            "WHERE bsc.boxedSetId = ?;"; // Use a prepared statement for the parameter
+        
+                    PreparedStatement preparedStatement = db.con.prepareStatement(sqlQueryProductDetails);
+                    preparedStatement.setString(1, boxedSetId);
+                    ResultSet resultSetProductDetails = preparedStatement.executeQuery();
+        
+                    // Process the ResultSet for product details
+                    while (resultSetProductDetails.next()) {
+                        String[] details = new String[8]; // Adjust the size based on the number of fields
+                        details[0] = resultSetProductDetails.getString("quantity");
+                        details[1] = resultSetProductDetails.getString("individual_productCode");
+                        details[2] = resultSetProductDetails.getString("modelType");
+                        details[3] = resultSetProductDetails.getString("gauge");
+                        details[4] = resultSetProductDetails.getString("brandName");
+                        details[5] = resultSetProductDetails.getString("productName"); 
+                        details[6] = resultSetProductDetails.getString("retailPrice"); 
+                        
+                        groupedProductDetails.get(boxedSetId).add(details);
+                    }
+
+                    resultSetProductDetails.close();
+                    preparedStatement.close();
+                }
+        
+            } catch (SQLException e) {
+                // Handle the exception appropriately in your application
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (resultSet != null && !resultSet.isClosed()) resultSet.close();
+                    if (statement != null && !statement.isClosed()) statement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                // Only close the connection if you are done with all database operations
+                if (db != null) db.closeConnection();
+            }
+        
+            return groupedProductDetails;
+        
+        } else { 
+            
+            // Return and empty array
+            return groupedProductDetails;
+
         } 
     }
 }

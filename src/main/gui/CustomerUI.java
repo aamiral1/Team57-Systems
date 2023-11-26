@@ -7,6 +7,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
+
 //import main.gui.displayInduvidualProductsUI;
 import main.store.Users.*;
 //import main.db.DatabaseOperations;
@@ -256,8 +259,8 @@ public class CustomerUI extends JFrame {
                         String[][] rollingStockDetails = displayInduvidualProductsUI.getProducts("Rolling Stock");
                         displayInduvidualProductsUI.createAndShowGUI(rollingStockDetails);
                     } else if (buttonText.equals("Track Packs")) {
-                        String[][] trackPackDetails = displayInduvidualProductsUI.getProducts("Track Packs");
-                        displayInduvidualProductsUI.createAndShowGUI(trackPackDetails);
+                        HashMap<String,List<String[]>>  trackPackDetails = displayInduvidualProductsUI.getBoxedProducts("Track Packs");
+                        displayInduvidualProductsUI.createAndShowGroupedGUI(trackPackDetails);
                     }
 
                 });
