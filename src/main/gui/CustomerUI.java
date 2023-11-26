@@ -1,4 +1,4 @@
-package main.gui;
+// package main.gui;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -7,15 +7,15 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
+import java.util.HashMap; // ADDED
+import java.util.List; // ADDED
 
 //import main.gui.displayInduvidualProductsUI;
 import main.store.Users.*;
 //import main.db.DatabaseOperations;
 //import main.misc.*;
 
-public class CustomerUI extends JFrame {
+public class CustomerUI extends JPanel {
 
     private static final String[] LABEL_TEXTS = {
             "Train Sets", "Track Packs", "Locomotives",
