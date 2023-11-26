@@ -259,8 +259,8 @@ public class CustomerUI extends JPanel {
                         String[][] rollingStockDetails = displayInduvidualProductsUI.getProducts("Rolling Stock");
                         displayInduvidualProductsUI.createAndShowGUI(rollingStockDetails);
                     } else if (buttonText.equals("Track Packs")) {
-                        HashMap<String,List<String[]>>  trackPackDetails = displayInduvidualProductsUI.getBoxedProducts("Track Packs");
-                        displayInduvidualProductsUI.createAndShowGroupedGUI(trackPackDetails);
+                        HashMap<String,List<String[]>>  trackPackDetails = displayingBoxedProductsUI.getBoxedProducts("Track Packs");
+                        displayingBoxedProductsUI.createAndShowGroupedGUI(trackPackDetails);
                     }
 
                 });
