@@ -1,5 +1,9 @@
-//package main.gui;
+package main.gui;
 import main.db.DatabaseConnectionHandler;
+import main.db.DatabaseOperations;
+import main.store.Users.User;
+import main.store.Users.UserManager;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -257,14 +261,37 @@ public class displayInduvidualProductsUI {
             public void actionPerformed(ActionEvent e) {
                 // Perform actions when Confirm & Pay button is clicked
                 // Add logic to process payment details
+                // open Database connection
+                DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+                db.openConnection();
 
+                User currentUser = UserManager.getCurrentUser();
+                ArrayList<String> bankDetails = (ArrayList<String>) DatabaseOperations.getCard(currentUser, db.con);
+
+                // if no bank details present with the current user
+                if (bankDetails.isEmpty()){
+                    System.out.println("No Bank Detail Exist");
+
+                    // open payment window
+                    SwingUtilities.invokeLater(() -> {
+                        PaymentWindow newPaymentWindow = new PaymentWindow();
+                    });
+                }
+                // Bank Details exist for current user 
+                else{
+                    // Pop Up to confirm existing payment
+                    int confirmationResult = JOptionPane.showConfirmDialog(null, "Do you want to use this card for payment? \n" + bankDetails.get(0), 
+                    "Payment Confirmation", JOptionPane.YES_NO_OPTION);
+
+                    if (confirmationResult == JOptionPane.YES_OPTION) {
+                        // PLACE ORDER HERE
+                        JOptionPane.showMessageDialog(null, "Payment confirmed!");
+                    }
+                }
                 // Close the current window
                 cartFrame.dispose();
-
                 // Open a new instance of PaymentWindow
-                SwingUtilities.invokeLater(() -> {
-                    PaymentWindow newPaymentWindow = new PaymentWindow();
-                });
+                
             }
         });
 

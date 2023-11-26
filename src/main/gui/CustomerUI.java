@@ -1,4 +1,4 @@
-// package main.gui;
+package main.gui;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -243,7 +243,7 @@ public class CustomerUI extends JPanel {
                     String buttonText = ((JButton) e.getSource()).getText();
 
                     // Close the current window
-                    Window currentWindow = SwingUtilities.windowForComponent(this);
+                    Window currentWindow = SwingUtilities.getWindowAncestor((Component) e.getSource());
                     currentWindow.dispose();
 
                     if (buttonText.equals("Locomotives")) {

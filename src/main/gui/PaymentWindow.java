@@ -1,9 +1,16 @@
-//package main.gui;
+package main.gui;
 
 import javax.swing.*;
+
+import main.db.DatabaseConnectionHandler;
+import main.db.DatabaseOperations;
+import main.store.Users.User;
+import main.store.Users.UserManager;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 
 public class PaymentWindow extends JFrame {
@@ -63,7 +70,8 @@ public class PaymentWindow extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 // Perform actions when Confirm & Pay button is clicked
                 // Add logic to process payment details
-                JOptionPane.showMessageDialog(null, "Payment confirmed!");
+                System.out.println("Confirm and pay button clicked");
+                
             }
         });
 

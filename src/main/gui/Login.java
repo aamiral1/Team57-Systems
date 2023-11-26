@@ -82,17 +82,27 @@ public class Login extends JFrame {
                 }
 
                 if (loginStatus) {
-                    // open customer dashboard if login is successful
-                    Login.this.setVisible(false); // or Login.this.dispose();
+                     // Hide the login panel
+                    Login.this.setVisible(false);
 
-                    // Open the CustomerUI window
+                    // Create the main JFrame
+                    JFrame frame = new JFrame("Customer Dashboard");
+                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    frame.setSize(800, 600);  // Set the size of the frame
+                    frame.setLocationRelativeTo(null);
+
+                    // Add the CustomerUI instance to the frame
                     CustomerUI customerUI = new CustomerUI();
-                    // Configure board settings
-                    customerUI.setTitle("Customer Dashboard");
-                    customerUI.setLocationRelativeTo(null); // Center on screen
-                    customerUI.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                    customerUI.setMinimumSize(new Dimension(800, 600));
-                    customerUI.setVisible(true);
+                    frame.add(customerUI);
+
+                    // Make the frame visible
+                    frame.setVisible(true);
+
+                    // customerUI.setTitle("Customer Dashboard");
+                    // customerUI.setLocationRelativeTo(null); // Center on screen
+                    // customerUI.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    // customerUI.setMinimumSize(new Dimension(800, 600));
+                    // customerUI.setVisible(true);
                 }
 
                 db.closeConnection();

@@ -1,10 +1,14 @@
 package main.db;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+
 import main.misc.*;
 import main.store.Users.*;
 
 import java.net.http.HttpResponse.ResponseInfo;
+import main.misc.Encryption;
 import java.sql.*;
 
 public class DatabaseOperations {
@@ -268,5 +272,62 @@ public class DatabaseOperations {
             ex.printStackTrace();
         }
         return false;
+    }
+
+    /*
+     * Checks if given user contains a card. If yes, returns the card details in a String[]. If not, returns null
+     */
+    public static List<String> getCard(User myUser, Connection con){
+        // Check if card exists
+        List<String> cardDetails = new ArrayList<>();
+        String userID = myUser.getUserID(); // get current user's id
+        PreparedStatement pstmt = null;
+        ResultSet res = null;
+
+        try{
+            // Check if card exists        
+            String query = "SELECT * FROM BankingDetails WHERE user_id=?";
+            pstmt = con.prepareStatement(query);
+            pstmt.setString(1, userID);
+            res = pstmt.executeQuery();
+
+            // if card exists for user
+            if (res.next()){
+                String salt = res.getString("salt");
+                try{
+                    String cardName = Encryption.decrypt(res.getString("card_name"), salt); 
+                    String cardNumber = Encryption.decrypt(res.getString("card_number"), salt);
+                    String expiryDate = Encryption.decrypt(res.getString("expiry_date"), salt);
+                    String cvv = Encryption.decrypt(String.valueOf(res.getInt("cvv")), salt);
+
+                    // add details to array
+                    cardDetails.add(cardNumber);
+                    cardDetails.add(cardName);
+                    cardDetails.add(expiryDate);
+                    cardDetails.add(cvv);
+
+                }  catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+
+        } catch (SQLException se){
+            se.printStackTrace();
+        } finally{
+            // close resources if applicable
+            try {
+                if (res != null){
+                    res.close();
+                }
+                if (pstmt != null){
+                    pstmt.close();
+                }
+            } catch (SQLException se){
+                se.printStackTrace();
+            }
+        }
+
+        return cardDetails;
     }
 }
