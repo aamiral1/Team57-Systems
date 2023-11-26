@@ -138,7 +138,7 @@ public class DatabaseOperations {
             for (int n = 1; n <= 4; n++) {
                 apstmt.setString(n, userAttributes[n + 4].toString());
             }
-
+            
             apstmt.executeUpdate();
 
             // Pass in sql query to sign up user to User table
@@ -162,6 +162,15 @@ public class DatabaseOperations {
 
             // execute Query
             pstmt.executeUpdate();
+
+            // update user ID now in address table
+            String addressQuery2 = "UPDATE Address SET user_id=? WHERE house_number=? AND city_name=? AND road_name=? AND post_code=?";
+            PreparedStatement qstmt = db.con.prepareStatement(addressQuery2);
+            qstmt.setString(1, signUpUser.getUserID());
+            qstmt.setString(2, userAttributes[5].toString());
+            qstmt.setString(3, userAttributes[6].toString());
+            qstmt.setString(4, userAttributes[7].toString());
+            qstmt.setString(5, userAttributes[8].toString());
             flag = true;
             System.out.println("Signed up successfully");
 
@@ -223,6 +232,18 @@ public class DatabaseOperations {
 
         // Find user in database and update details
         try{
+
+            // update address changes in address table
+            String addressQuery = "UPDATE Address SET house_number=?, road_name=?, city_name=?, post_code=? WHERE user_id=? ";
+            PreparedStatement astmt = connection.prepareStatement(addressQuery);
+            astmt.setString(1, houseNumber);
+            astmt.setString(2, roadName);
+            astmt.setString(3, cityName);
+            astmt.setString(4, postCode);
+            astmt.setString(5, userID);
+
+            astmt.executeUpdate();
+            // Update User Table
             String updateQuery = "UPDATE User SET username=?, name=?, hashed_password=?, email=?, house_number=?, city_name=?, road_name=?, " +
             "post_code=? WHERE user_id=?";
 
@@ -235,7 +256,6 @@ public class DatabaseOperations {
             catch (Exception e) {e.printStackTrace();}
             pstmt.setString(3, hashedPassword);
             pstmt.setString(4, emailString);
-            pstmt.setString(5, houseNumber);
             pstmt.setString(6, cityName);
             pstmt.setString(7, roadName);
             pstmt.setString(8, postCode);
@@ -243,6 +263,7 @@ public class DatabaseOperations {
             // pass in current User's userid
             pstmt.setString(9, userID);
             pstmt.executeUpdate();
+            return true;
         } catch (SQLException ex){
             ex.printStackTrace();
         }

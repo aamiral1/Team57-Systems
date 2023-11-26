@@ -1,4 +1,4 @@
-//package main.gui;
+package main.gui;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -12,7 +12,7 @@ import main.store.Users.*;
 //import main.db.DatabaseOperations;
 //import main.misc.*;
 
-public class CustomerUI extends JPanel {
+public class CustomerUI extends JFrame {
 
     private static final String[] LABEL_TEXTS = {
             "Train Sets", "Track Packs", "Locomotives",
@@ -52,6 +52,7 @@ public class CustomerUI extends JPanel {
         // Add edit details button
         JButton editDetailsButton = new JButton("Edit Details");
         editDetailsButton.addActionListener(e -> {
+            System.out.println("Edit button clicked");
             // Create pop up dialog box
             JDialog dialog = new JDialog();
             dialog.setTitle("Edit Personal Details");
@@ -82,7 +83,8 @@ public class CustomerUI extends JPanel {
             JTextField roadNameField = new JTextField(attributes[7].toString());
             JLabel postcodeLabel = new JLabel("Postcode:");
             JTextField postcodeField = new JTextField(attributes[8].toString());
-        
+            JButton submitButton = new JButton("Submit");   // Add a button for submitting edited details
+
             // Set default close operation
             dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
@@ -105,12 +107,11 @@ public class CustomerUI extends JPanel {
             dialog.add(roadNameField);
             dialog.add(postcodeLabel);
             dialog.add(postcodeField);
+            dialog.add(submitButton);
 
             // set initial focus
             usernameField.requestFocusInWindow();
 
-            // Add a button for submitting edited details
-            JButton submitButton = new JButton("Submit");
             dialog.setVisible(true);
 
             submitButton.addActionListener(ev -> {

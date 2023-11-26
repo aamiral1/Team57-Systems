@@ -1,3 +1,5 @@
+package main.gui;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -56,20 +58,40 @@ public class Login extends JFrame {
                 db.openConnection();
 
                 // verify login
-                if (password != null){
+                if (password != null) {
                     loginStatus = DatabaseOperations.verifyLogin(db.con, usernameInput, password);
-                }
-                else{
+                    if (loginStatus) {
+                        // Open customer UI
+                        System.out.println("Opening Customer View");
+                        new CustomerUI().setVisible(true);
+                        // dispose login view
+                        Login.this.dispose();
+                        // JFrame customerFrame = new JFrame("Customer Dashboard");
+                        // customerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                        // customerFrame.setSize(300,200);
+
+                        // CustomerUI customerUI = new CustomerUI();
+                        // customerFrame.add(customerUI);
+
+                        // // Make the frame visible
+                        // customerFrame.setVisible(true);
+                    }
+                } else {
                     // show error box
-                    JOptionPane.showMessageDialog(Login.this, "Password cannot be empty");
+                    JOptionPane.showMessageDialog(Login.this, "Invalid Credentials");
                 }
-                
-                if (loginStatus){
+
+                if (loginStatus) {
                     // open customer dashboard if login is successful
                     Login.this.setVisible(false); // or Login.this.dispose();
-            
+
                     // Open the CustomerUI window
                     CustomerUI customerUI = new CustomerUI();
+                    // Configure board settings
+                    customerUI.setTitle("Customer Dashboard");
+                    customerUI.setLocationRelativeTo(null); // Center on screen
+                    customerUI.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    customerUI.setMinimumSize(new Dimension(800, 600));
                     customerUI.setVisible(true);
                 }
 

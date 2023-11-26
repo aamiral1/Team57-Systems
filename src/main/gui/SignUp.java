@@ -91,7 +91,7 @@ public class SignUp extends JPanel {
                 String roadName = roadNameBox.getText();
                 String cityName = cityNameBox.getText();
                 String postcode = postcodeBox.getText();
-                String role = "User";
+                String role = "Moderator";
                 String salt = Encryption.generateSalt();
                 
                 // store date of sign up
