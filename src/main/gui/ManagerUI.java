@@ -1,6 +1,12 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+
+import main.db.DatabaseConnectionHandler;
+
 import java.awt.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class ManagerUI extends JFrame {
     private JTable staffTable;
@@ -11,6 +17,9 @@ public class ManagerUI extends JFrame {
     public ManagerUI() {
         initializeComponents();
         setUpLayout();
+        initializeComponents();
+        setUpLayout();
+        displayStaff();
     }
 
     private void initializeComponents() {
@@ -43,6 +52,38 @@ public class ManagerUI extends JFrame {
         setLocationRelativeTo(null); // Center the window
         setVisible(true);
     }
+    
+
+    private void displayStaff() {
+        DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+        db.openConnection();
+        
+        String sql = "SELECT email, name, username FROM User WHERE role = 'Moderator'";
+        try {
+            PreparedStatement pstmt = db.con.prepareStatement(sql); // 'conn' should be an active connection
+            ResultSet rs = pstmt.executeQuery();
+            DefaultTableModel model = (DefaultTableModel) staffTable.getModel();
+            model.setRowCount(0); // Clear existing data
+
+            while (rs.next()) {
+                String email = rs.getString("email");
+                String name = rs.getString("name"); // Assuming 'name' is the forename
+                String username = rs.getString("username"); // Assuming 'username' could serve as a surname
+                model.addRow(new Object[]{email, name, username});
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle potential SQLException
+        }
+
+    }
+
+
+
+    
+        
+
+    
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
