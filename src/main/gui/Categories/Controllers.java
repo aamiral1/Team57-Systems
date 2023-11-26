@@ -4,7 +4,6 @@ import java.awt.*;
 import javax.swing.*;
 import main.db.DatabaseConnectionHandler;
 import java.sql.*;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
