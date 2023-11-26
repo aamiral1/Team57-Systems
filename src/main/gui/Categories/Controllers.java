@@ -4,6 +4,7 @@ import java.awt.*;
 import javax.swing.*;
 import main.db.DatabaseConnectionHandler;
 import java.sql.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,7 +88,7 @@ public class Controllers extends JPanel {
         // Define the fields for the new Controller details
         String[] fields = {
             "Product Code", "Brand Name", "Product Name", "Retail Price",
-            "Product Quantity", "Model Type", "Gauge", "isDigital"
+            "Product Quantity", "Model Type", "Gauge", "IsDigital"
         };
 
         // Create labels and text fields for each field
@@ -97,6 +98,7 @@ public class Controllers extends JPanel {
             fieldsPanel.add(label);
             fieldsPanel.add(textField);
             textFieldMap.put(field, textField);
+
         }
 
         JButton saveButton = new JButton("Save New Controller");
@@ -115,6 +117,7 @@ public class Controllers extends JPanel {
         addDialog.add(fieldsPanel, BorderLayout.CENTER);
         addDialog.add(buttonPanel, BorderLayout.SOUTH);
         addDialog.setVisible(true);
+        
     }
 
 
@@ -168,22 +171,38 @@ public class Controllers extends JPanel {
                 pstmtIndividual.executeUpdate();
             }
 
-            String insertControllersSQL = "INSERT INTO Controller (productCode, isDigital) VALUES (?, ?)";
-            try (PreparedStatement pstmtControllers = db.con.prepareStatement(insertControllersSQL)) {
-                pstmtControllers.setString(1, textFieldMap.get("Product Code").getText());
-                JTextField isDigitalField = textFieldMap.get("isDigital");
-                if (isDigitalField == null) {
-                    System.out.println("The 'isDigital' field is missing.");
-                    return false;
-                }
-                String isDigitalText = isDigitalField.getText().trim();
-                int isDigitalValue = "Yes".equalsIgnoreCase(isDigitalText) ? 1 : "No".equalsIgnoreCase(isDigitalText) ? 0 : -1;
-                
-                if (isDigitalValue == -1) {
-                    JOptionPane.showMessageDialog(null, "Invalid input for 'isDigital'. Must be 'Yes' or 'No'.");
-                    return false;
-                }                pstmtControllers.setInt(2, Integer.parseInt(isDigitalText)); // Convert to integer
-                pstmtControllers.executeUpdate();
+            // Retrieve the product code and isDigital values from the text fields
+            String productCode = textFieldMap.get("Product Code").getText().trim();
+            JTextField isDigitalField = textFieldMap.get("IsDigital"); // Capitalize 'IsDigital'
+            ;
+
+            // Check if the isDigital field is missing                  
+            if (isDigitalField == null) {
+                System.out.println("The 'isDigital' field is missing.");
+                return false;
+            }
+
+            // Normalize the isDigital input to lower case for comparison
+            String isDigitalText = isDigitalField.getText().trim().toLowerCase();
+            int isDigitalValue;
+
+            // Determine the isDigitalValue based on the input
+            if ("yes".equals(isDigitalText) || "1".equals(isDigitalText)) {
+                isDigitalValue = 1;
+            } else if ("no".equals(isDigitalText) || "0".equals(isDigitalText)) {
+                isDigitalValue = 0;
+            } else {
+                // Show an error message if the input is not recognized
+                JOptionPane.showMessageDialog(null, "Invalid input for 'isDigital'. Must be 'Yes' or 'No', or '1' or '0'.");
+                return false;
+            }
+
+            // Construct the SQL query with the checked values
+            String insertControllersSQL = "INSERT INTO Controller (productCode, isDigital) VALUES ('" + productCode + "', " + isDigitalValue + ")";
+
+            try (Statement stmtControllers = db.con.createStatement()) {
+                // Execute the update with the SQL statement
+                stmtControllers.executeUpdate(insertControllersSQL);
             }
     
             db.con.commit(); // Commit transaction
@@ -258,7 +277,7 @@ public class Controllers extends JPanel {
                 int productQuantity = rs.getInt("productQuantity");
                 String modelType = rs.getString("modelType");
                 String gauge = rs.getString("gauge");
-                boolean isDigital = rs.getBoolean("isDigital");
+                Integer isDigital = rs.getInt("isDigital");
     
                 Controllers.add(new String[]{
                         "Product Code: " + productCode,
@@ -268,7 +287,7 @@ public class Controllers extends JPanel {
                         "Product Quantity: " + productQuantity,
                         "Model Type: " + modelType,
                         "Gauge: " + gauge,
-                        "IsDigital: " + (isDigital ? "Yes" : "No")
+                        "IsDigital: " + isDigital
                 });
             }
         } catch (SQLException e) {
@@ -418,15 +437,28 @@ public class Controllers extends JPanel {
                 pstmtIndividual.setString(3, productCode);
                 pstmtIndividual.executeUpdate();
             }
+            
 
             String updateControllersSQL = "UPDATE Controller SET isDigital = ? WHERE productCode = ?";
             try (PreparedStatement pstmtController = db.con.prepareStatement(updateControllersSQL)) {
-                String isDigitalText = textFieldMap.get("isDigital").getText().trim();
-                System.out.println(isDigitalText);
-                // Assuming 'Yes' means true (1) and anything else means false (0)
-                int isDigitalValue = "Yes".equalsIgnoreCase(isDigitalText) ? 1 : 0;
-                pstmtController.setInt(1, isDigitalValue); // Set as integer since the database uses tinyint(1)
-                pstmtController.setString(2, productCode);
+                JTextField isDigitalField = textFieldMap.get("IsDigital"); // Capitalize 'IsDigital'                
+                if (isDigitalField == null) {
+                    throw new IllegalStateException("Error: 'isDigital' field is missing from the form.");
+                }
+                
+                String isDigitalText = isDigitalField.getText().trim();
+                int isDigitalValue;
+                try {
+                    isDigitalValue = Integer.parseInt(isDigitalText);
+                    if (isDigitalValue != 0 && isDigitalValue != 1) {
+                        throw new IllegalArgumentException("isDigital field must be '1' or '0'.");
+                    }
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Invalid format for 'isDigital'. Must be a valid integer '1' or '0'.");
+                }
+                
+                pstmtController.setInt(1, isDigitalValue);
+                pstmtController.setString(2, productCode);                
                 pstmtController.executeUpdate();
             }
 
@@ -490,33 +522,43 @@ public class Controllers extends JPanel {
         for (String data : ControllerData) {
             String[] splitData = data.split(":\\s+");
             if (splitData.length == 2) {
-                JLabel label = new JLabel(splitData[0].trim());
+                String key = splitData[0].trim(); // Trim the key to remove any leading/trailing whitespace
                 JTextField textField = new JTextField(splitData[1]);
-                fieldsPanel.add(label);
+                fieldsPanel.add(new JLabel(key));
                 fieldsPanel.add(textField);
-                // Remove the colon and trim the label before using it as a key
-                textFieldMap.put(splitData[0].trim(), textField);
+                textFieldMap.put(key, textField); // Use the trimmed key
             }
         }
-
+    
         JButton saveButton = new JButton("Save Changes");
         saveButton.addActionListener(e -> {
-            saveControllerChanges(textFieldMap, ControllerData[0].split(": ")[1]);
-            editDialog.dispose();
+            if (textFieldMap.containsKey("IsDigital")) {
+                String isDigitalValue = textFieldMap.get("IsDigital").getText().trim();
+                
+                if (!isDigitalValue.isEmpty()) {
+                    // Continue with saving changes
+                    saveControllerChanges(textFieldMap, ControllerData[0].split(": ")[1]);
+                    editDialog.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(editDialog, "The 'isDigital' field is empty.");
+                }
+            } else {
+                JOptionPane.showMessageDialog(editDialog, "The 'isDigital' field is missing from the form.");
+            }
         });
-
+    
         JButton cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(e -> editDialog.dispose());
-
+    
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
-
+    
         editDialog.add(fieldsPanel, BorderLayout.CENTER);
         editDialog.add(buttonPanel, BorderLayout.SOUTH);
         editDialog.setVisible(true);
     }
-
+    
      private void styleButton(JButton button, Color color) {
         button.setFont(new Font("SansSerif", Font.PLAIN, 12));
         button.setBackground(color);
