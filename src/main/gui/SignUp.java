@@ -1,5 +1,3 @@
-package main.gui;
-
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
@@ -8,10 +6,6 @@ import main.db.DatabaseOperations;
 import main.misc.Encryption;
 import main.misc.UniqueUserIDGenerator;
 import main.store.Users.*;
-import java.text.SimpleDateFormat;
-// sql
-import java.sql.*;
-import javax.sql.*;
 
 public class SignUp extends JPanel {
     private JButton sign;
