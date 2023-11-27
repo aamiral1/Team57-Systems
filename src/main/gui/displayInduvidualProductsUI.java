@@ -3,22 +3,21 @@ import main.db.DatabaseConnectionHandler;
 import main.db.DatabaseOperations;
 import main.store.Users.User;
 import main.store.Users.UserManager;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.PreparedStatement;
+//import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+//import java.util.HashMap;
+//import java.util.List;
 
 public class displayInduvidualProductsUI {
     // Array list to store items added to cart ---> Needs to be saved not just from the page that it is one - should be global
-    private static ArrayList<String[]> cart = new ArrayList<>();
+    public static ArrayList<String[]> cart = new ArrayList<>();
 
     public static String currentProductType = ""; // global variable to store page information for back button
 
