@@ -30,4 +30,17 @@ public class DatabaseConnectionHandler {
             ex.printStackTrace();
         }
     }
+
+    public Connection getConnection() {
+        // Check if connection is null or closed, then open a new connection
+        try {
+            if (con == null || con.isClosed()) {
+                openConnection();
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return con;
+    }
+
 }

@@ -35,9 +35,11 @@ public class StaffUI extends JPanel {
 
         String currentUserRole = UserManager.getCurrentUser().getRole();
 
-
-        managerPortalButton.addActionListener(e -> {
-
+        if (!(currentUserRole.equals("Admin"))) {
+            managerPortalButton.setVisible(false); // This will make the button invisible in the UI
+           }
+        else {
+            managerPortalButton.addActionListener(e -> {
             if (currentUserRole.equals("Admin")) {
                 // Create a new frame for the Manager UI
                 JFrame managerFrame = new JFrame("Manager Portal");
@@ -54,7 +56,8 @@ public class StaffUI extends JPanel {
                 currentFrame.dispose(); // This will close the current window
             }
         });
-        
+
+        }
         
         titlePanel.add(titleLabel, BorderLayout.CENTER);
     

@@ -9,7 +9,7 @@ import store.*;
 
 
 public class SignUp extends JPanel {
-    private JButton sign;
+    private JButton sign, backButton;
     private JLabel fName, sName, username, houseNumber, roadName, postcode, cityName, jcomp15, emailAddress, password;
     private JTextField roadNameBox, cityNameBox, postcodeBox, sNameBox, fNameBox, usernameBox, houseNumberBox, emailAddressBox,
             passwordBox;
@@ -72,7 +72,9 @@ public class SignUp extends JPanel {
         // Create a footer panel for the sign-up button
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         sign = new JButton("Sign up");
+        backButton = new JButton("Back");
         footerPanel.add(sign);
+        footerPanel.add(backButton);
 
         // Action listener to sign up button
         sign.addActionListener(new ActionListener() {
@@ -116,6 +118,14 @@ public class SignUp extends JPanel {
                 }
         });
 
+        // Action listener to back Button
+        backButton.addActionListener(e -> {
+            new Welcome().setVisible(true); // Directly instantiate and display Welcome frame
+        
+            JFrame currentFrame = (JFrame) SwingUtilities.getWindowAncestor((Component) e.getSource());
+            currentFrame.dispose(); // Dispose the current SignUp frame
+        });
+        
         // Add the header, center, and footer panels to the main panel
         add(headerPanel, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);

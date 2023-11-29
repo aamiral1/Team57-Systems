@@ -1,6 +1,5 @@
 package db;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -511,4 +510,60 @@ public class DatabaseOperations {
     //     }
     //     return status;
     // }
+
+    public static boolean createOrderLine(String user_id, Connection con) {
+
+        boolean status = false;
+        int unique_order_number = 1; // Increments each time a new user logs in
+    
+        try {
+            // Check if the user_id already has an order
+            if (userAlreadyHasOrder(user_id, con)) {
+                System.out.println("User already has an order. Handle this situation accordingly.");
+                return false; // You might want to return false or throw an exception here
+            }
+    
+            // Get the current date and time
+            java.sql.Date sqlDate = new java.sql.Date(System.currentTimeMillis());
+    
+            // Create a PreparedStatement to insert a new order line
+            String sqlQuery = "INSERT INTO OrderDetails (order_number, order_status, order_date, user_id) VALUES (?, ?, ?, ?)";
+            PreparedStatement preparedStatement = con.prepareStatement(sqlQuery);
+    
+            // Increment unique_order_number for the new order
+            unique_order_number++;
+    
+            // Set the values for the PreparedStatement
+            preparedStatement.setInt(1, unique_order_number);
+            preparedStatement.setString(2, "pending");
+            preparedStatement.setDate(3, sqlDate);
+            preparedStatement.setString(4, user_id);
+    
+            // Execute the PreparedStatement to insert the new order line
+            preparedStatement.executeUpdate();
+    
+            // Close the PreparedStatement
+            preparedStatement.close();
+            status = true;
+    
+            // Optionally, you can handle exceptions here if any occur during the database operation.
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle the exception as needed
+            status = false;
+        }
+    
+        return status;
+    }
+    
+    // Helper method to check if a user already has an order
+    private static boolean userAlreadyHasOrder(String user_id, Connection con) throws SQLException {
+        String query = "SELECT COUNT(*) FROM OrderDetails WHERE user_id = ?";
+        try (PreparedStatement preparedStatement = con.prepareStatement(query)) {
+            preparedStatement.setString(1, user_id);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet.next();
+            int orderCount = resultSet.getInt(1);
+            return orderCount > 0;
+        }
+    }
 }

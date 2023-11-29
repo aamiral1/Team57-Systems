@@ -3,8 +3,11 @@ package gui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.Connection;
+
 import db.*;
 import misc.*;
+import store.UserManager;
 
 public class Login extends JFrame {
     private JTextField usernameField;
@@ -55,11 +58,17 @@ public class Login extends JFrame {
 
                 // verify login
                 if (password != null) {
+
+                    Connection connection = db.getConnection();
+
                     loginStatus = DatabaseOperations.verifyLogin(db.con, usernameInput, password);
                     if (loginStatus) {
                         // Open customer UI
                         System.out.println("Opening Customer View");
                         new CustomerUI().setVisible(true);
+                        DatabaseOperations.createOrderLine(UserManager.getCurrentUser().getUserID(), connection);
+
+
                         // dispose login view
                         Login.this.dispose();
                         // JFrame customerFrame = new JFrame("Customer Dashboard");
