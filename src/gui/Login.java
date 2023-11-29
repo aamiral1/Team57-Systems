@@ -6,8 +6,12 @@ import java.awt.event.*;
 import java.sql.Connection;
 
 import db.*;
+<<<<<<< HEAD
 import misc.*;
 import store.UserManager;
+=======
+//import misc.*;
+>>>>>>> 6c0c2d3965cd732eca70678cc549b728c8ae3e9f
 
 public class Login extends JFrame {
     private JTextField usernameField;
@@ -76,7 +80,7 @@ public class Login extends JFrame {
                         // customerFrame.setSize(300,200);
 
                         // CustomerUI customerUI = new CustomerUI();
-                        // customerFrame.add(customerUI);
+                        // customerFrame.add(customerUI);ook
 
                         // // Make the frame visible
                         // customerFrame.setVisible(true);

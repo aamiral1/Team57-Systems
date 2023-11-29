@@ -43,7 +43,7 @@ public class displayingBoxedProductsUI {
                 statement = db.con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
         
                 // Execute the query to get boxed sets
-                String sqlQueryBoxedSets = "SELECT DISTINCT bsc.boxedSetId FROM BoxedSetContents bsc WHERE bsc.boxedSetId LIKE 'P%';";
+                String sqlQueryBoxedSets = "SELECT bsc.boxedSetId FROM BoxedSetContents bsc;";
 
                 resultSet = statement.executeQuery(sqlQueryBoxedSets);
         
@@ -120,8 +120,8 @@ public class displayingBoxedProductsUI {
                     statement = db.con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             
                     // Execute the query to get boxed sets
-                    //String sqlQueryBoxedSets = "SELECT DISTINCT bsc.boxedSetId FROM BoxedSetContents bsc;";
-                    String sqlQueryBoxedSets = "SELECT DISTINCT bsc.boxedSetId FROM BoxedSetContents bsc WHERE bsc.boxedSetId LIKE 'M%';";
+                    String sqlQueryBoxedSets = "SELECT bsc.boxedSetId FROM BoxedSetContents bsc;";
+                    
     
                     resultSet = statement.executeQuery(sqlQueryBoxedSets);
             

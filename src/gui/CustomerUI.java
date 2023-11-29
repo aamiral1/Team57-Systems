@@ -2,20 +2,19 @@ package gui;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.*;
 
-//import java.awt.event.ActionEvent;
-//import java.awt.event.ActionListener;
+//import db.DatabaseConnectionHandler;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap; // ADDED
-import java.util.List; // ADDED
-
-//import main.gui.displayInduvidualProductsUI;
+//import java.sql.ResultSet;
+//import java.sql.SQLException;
+//import java.sql.Statement;
+import java.util.HashMap;
+import java.util.List; 
 import store.*;
-//import main.db.DatabaseOperations;
-//import main.misc.*;
+
 
 public class CustomerUI extends JPanel {
 
@@ -28,9 +27,8 @@ public class CustomerUI extends JPanel {
     private static final int IMAGE_HEIGHT = 200;
 
     public CustomerUI() {
-        // Use BorderLayout for the main panel
+        
         setLayout(new BorderLayout());
-
 
         // Panel for organisation with BorderLayout
         JPanel navBarPanelOrganiser = new JPanel(new BorderLayout());
@@ -38,23 +36,23 @@ public class CustomerUI extends JPanel {
         // Navigation bar panel with FlowLayout
         JPanel navBarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
-        // Add browse items button
+        // Browse items button - I don't think this button is necessary 
         JButton browseItemsButton = new JButton("Browse Items");
         browseItemsButton.addActionListener(e -> {
-            // Handle browse items action
-            // Add your code here
         });
         navBarPanel.add(browseItemsButton);
 
-        // Add view recent orders button
-        JButton viewOrdersButton = new JButton("View Recent Orders");
-        viewOrdersButton.addActionListener(e -> {
-            // Handle view recent orders action
-            // Add your code here
+
+        // View orders button
+        JButton viewOrdersButton = new JButton("View Recent Orders"); 
+        viewOrdersButton.addActionListener(e -> { 
+            viewRecentOrdersUI recentOrders = new viewRecentOrdersUI();
+            recentOrders.orderViewer();
         });
+
         navBarPanel.add(viewOrdersButton);
 
-        // Add edit details button
+        // Edit details button
         JButton editDetailsButton = new JButton("Edit Details");
         editDetailsButton.addActionListener(e -> {
             System.out.println("Edit button clicked");
@@ -195,23 +193,20 @@ public class CustomerUI extends JPanel {
         });
         navBarPanel.add(editDetailsButton);
 
-        // Add logout button
+        // logout button - to be implemented
         JButton logoutButton = new JButton("Logout");
         logoutButton.addActionListener(e -> {
-            // Handle logout action
-            // Add your code here
         });
         navBarPanel.add(logoutButton);
 
-
         String currentUserRole = UserManager.getCurrentUser().getRole();
-        // Add logout button
-       JButton staffPortal = new JButton("Staff Portal");
+        
+        JButton staffPortal = new JButton("Staff Portal");
 
-       if (!(currentUserRole.equals("Moderator") || currentUserRole.equals("Admin"))) {
-        staffPortal.setVisible(false); // This will make the button invisible in the UI
-       }
-       else {
+        if (!(currentUserRole.equals("Moderator") || currentUserRole.equals("Admin"))) {
+         staffPortal.setVisible(false); // This will make the button invisible in the UI
+        }
+        else {
         staffPortal.addActionListener(e -> {
             if (currentUserRole.equals("Moderator") || currentUserRole.equals("Admin")) {
                 // Create a new frame for the Manager UI
@@ -232,14 +227,12 @@ public class CustomerUI extends JPanel {
                 System.out.println("Customer has clicked");
             }
         });
-       }       
+        }       
 
         navBarPanel.add(staffPortal);
 
         // Add the navigation bar panel to the top of the BorderLayout
         navBarPanelOrganiser.add(navBarPanel, BorderLayout.CENTER);
-
-        //String currentUser = UserManager.getCurrentUser().getName();
 
         // Title panel with FlowLayout for centering the title
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
