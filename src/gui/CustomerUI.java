@@ -203,6 +203,39 @@ public class CustomerUI extends JPanel {
         });
         navBarPanel.add(logoutButton);
 
+
+        String currentUserRole = UserManager.getCurrentUser().getRole();
+        // Add logout button
+       JButton staffPortal = new JButton("Staff Portal");
+
+       if (!(currentUserRole.equals("Moderator") || currentUserRole.equals("Admin"))) {
+        staffPortal.setVisible(false); // This will make the button invisible in the UI
+       }
+       else {
+        staffPortal.addActionListener(e -> {
+            if (currentUserRole.equals("Moderator") || currentUserRole.equals("Admin")) {
+                // Create a new frame for the Manager UI
+                JFrame managerFrame = new JFrame("Manager Portal");
+                managerFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                managerFrame.setSize(1000, 700); // Set the size as per your requirement
+                managerFrame.setLocationRelativeTo(null); // Center on screen
+                managerFrame.add(new StaffUI()); // Assuming ManagerUI is a JPanel
+            
+                // Display the new frame
+                managerFrame.setVisible(true);
+            
+                // Get the current frame to close it
+                JFrame currentFrame = (JFrame) SwingUtilities.getWindowAncestor((Component) e.getSource());
+                currentFrame.dispose(); // This will close the current window
+            }
+            else {
+                System.out.println("Customer has clicked");
+            }
+        });
+       }       
+
+        navBarPanel.add(staffPortal);
+
         // Add the navigation bar panel to the top of the BorderLayout
         navBarPanelOrganiser.add(navBarPanel, BorderLayout.CENTER);
 

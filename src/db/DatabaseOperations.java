@@ -393,7 +393,7 @@ public class DatabaseOperations {
                 try (PreparedStatement stockCheckStmt = con.prepareStatement(stockCheckQuery)) {
                     
                     // Loop through each order line
-                    while (res.next()) {
+                    if (res.next()) {
                         String productCode = res.getString(1);
                         int quantity = res.getInt(2);
     
@@ -414,6 +414,11 @@ public class DatabaseOperations {
                             con.rollback();
                             return false;
                         }
+                    }
+                
+                    else {
+                        System.out.println("No pending order exists");
+                        return false;
                     }
                 }
             }

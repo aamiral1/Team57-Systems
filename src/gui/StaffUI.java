@@ -3,6 +3,8 @@ package gui;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
+import store.UserManager;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -23,10 +25,45 @@ public class StaffUI extends JPanel {
 
     private JPanel createTitlePanel() {
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+
         JLabel titleLabel = new JLabel("CATEGORIES PAGE");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titlePanel.add(titleLabel);
+
+        JButton managerPortalButton = new JButton("Manager Portal");
+        managerPortalButton.setFont(new Font("Arial", Font.BOLD, 12));
+
+        String currentUserRole = UserManager.getCurrentUser().getRole();
+
+
+        managerPortalButton.addActionListener(e -> {
+
+            if (currentUserRole.equals("Admin")) {
+                // Create a new frame for the Manager UI
+                JFrame managerFrame = new JFrame("Manager Portal");
+                managerFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                managerFrame.setSize(1000, 700); // Set the size as per your requirement
+                managerFrame.setLocationRelativeTo(null); // Center on screen
+                managerFrame.add(new ManagerUI()); // Assuming ManagerUI is a JPanel
+            
+                // Display the new frame
+                managerFrame.setVisible(true);
+            
+                // Get the current frame to close it
+                JFrame currentFrame = (JFrame) SwingUtilities.getWindowAncestor((Component) e.getSource());
+                currentFrame.dispose(); // This will close the current window
+            }
+        });
+        
+        
+        titlePanel.add(titleLabel, BorderLayout.CENTER);
+    
+        // Add the Manager Portal button to the right
+        titlePanel.add(managerPortalButton, BorderLayout.EAST);
+        
+        // Set a border for spacing if needed
         titlePanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        
         return titlePanel;
     }
 
