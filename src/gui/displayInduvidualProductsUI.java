@@ -171,17 +171,11 @@ public class displayInduvidualProductsUI {
                     if (confirmationResult == JOptionPane.YES_OPTION) {
                         JOptionPane.showMessageDialog(null, "Order Placed Successfully");
                         // TODO: Add order to OrderLine and Orders tables in database
-                        // boolean orderConfirmedStatus = DatabaseOperations.placeOrder(currentUser);
+                        boolean orderConfirmedStatus = DatabaseOperations.placeOrder(currentUser, db.con);
                         // Show confirmation message
-                    //     JOptionPane.showMessageDialog(
-                    //             null,
-                    //             "Order Status: " + (orderConfirmedStatus ? "Confirmed" : "Rejected"),
-                    //             "Confirmation",
-                    //             JOptionPane.INFORMATION_MESSAGE);
-                    // }
-                    JOptionPane.showMessageDialog(
+                        JOptionPane.showMessageDialog(
                                 null,
-                                "Order Status: Confirmed",
+                                "Order Status: " + (orderConfirmedStatus ? "Confirmed" : "Rejected"),
                                 "Confirmation",
                                 JOptionPane.INFORMATION_MESSAGE);
                     }

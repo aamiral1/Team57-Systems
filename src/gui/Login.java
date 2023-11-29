@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import db.*;
+import misc.*;
 
 public class Login extends JFrame {
     private JTextField usernameField;
