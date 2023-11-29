@@ -53,10 +53,19 @@ public class ManagerUI extends JFrame {
     }
 
     private void setUpLayout() {
+
         setLayout(new BorderLayout());
 
         // Add the staff table inside a JScrollPane
         add(new JScrollPane(staffTable), BorderLayout.CENTER);
+
+        JButton returnToStaffUIButton = new JButton("Return");
+        returnToStaffUIButton.addActionListener(e -> {
+            dispose();
+        });
+
+        JPanel northPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        northPanel.add(returnToStaffUIButton);
 
         // Create a panel for the bottom section
         JPanel southPanel = new JPanel(new FlowLayout());
@@ -67,6 +76,8 @@ public class ManagerUI extends JFrame {
 
         // Add the south panel to the frame
         add(southPanel, BorderLayout.SOUTH);
+
+        add(northPanel, BorderLayout.NORTH);
 
         // Frame properties
         pack(); // Adjusts window to fit all components
@@ -152,6 +163,13 @@ public class ManagerUI extends JFrame {
         String surname = (nameParts.length > 1) ? nameParts[nameParts.length - 1] : ""; // Last name
         return new String[]{forename, surname};
     }
+
+    private void returnToStaffUI(){
+
+
+
+    }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new ManagerUI());

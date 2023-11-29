@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import db.*;
-import misc.*;
+//import misc.*;
 
 public class Login extends JFrame {
     private JTextField usernameField;
@@ -67,7 +67,7 @@ public class Login extends JFrame {
                         // customerFrame.setSize(300,200);
 
                         // CustomerUI customerUI = new CustomerUI();
-                        // customerFrame.add(customerUI);
+                        // customerFrame.add(customerUI);ook
 
                         // // Make the frame visible
                         // customerFrame.setVisible(true);

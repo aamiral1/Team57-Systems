@@ -33,6 +33,10 @@ public class StaffUI extends JPanel {
         JButton managerPortalButton = new JButton("Manager Portal");
         managerPortalButton.setFont(new Font("Arial", Font.BOLD, 12));
 
+        JButton returnToCustomerUIButton = new JButton("Return");
+        returnToCustomerUIButton.setFont(new Font("Arial", Font.BOLD, 12));
+        returnToCustomerUIButton.addActionListener(e -> returnToCustomerUI());
+
         String currentUserRole = UserManager.getCurrentUser().getRole();
 
 
@@ -55,16 +59,31 @@ public class StaffUI extends JPanel {
             }
         });
         
-        
         titlePanel.add(titleLabel, BorderLayout.CENTER);
     
         // Add the Manager Portal button to the right
         titlePanel.add(managerPortalButton, BorderLayout.EAST);
-        
+        titlePanel.add(returnToCustomerUIButton, BorderLayout.WEST);
         // Set a border for spacing if needed
         titlePanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         
         return titlePanel;
+    }
+
+    private void returnToCustomerUI() {
+        // Create a new frame for the Customer UI (assuming you have a CustomerUI class)
+        JFrame customerFrame = new JFrame("Customer Page");
+        customerFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        customerFrame.setSize(1000, 700);
+        customerFrame.setLocationRelativeTo(null);
+        customerFrame.add(new CustomerUI()); // Replace CustomerUI with your actual customer panel
+    
+        // Display the new frame
+        customerFrame.setVisible(true);
+    
+        // Get the current frame to close it
+        JFrame currentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        currentFrame.dispose();
     }
 
     private JPanel createGridPanel() {
