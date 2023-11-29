@@ -1,4 +1,4 @@
-package main.gui;
+// package main.gui;
 
 import javax.swing.*;
 import java.awt.*;
@@ -82,13 +82,13 @@ public class Login extends JFrame {
                 }
 
                 if (loginStatus) {
-                     // Hide the login panel
+                    // Hide the login panel
                     Login.this.setVisible(false);
 
                     // Create the main JFrame
                     JFrame frame = new JFrame("Customer Dashboard");
                     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                    frame.setSize(800, 600);  // Set the size of the frame
+                    frame.setSize(800, 600); // Set the size of the frame
                     frame.setLocationRelativeTo(null);
 
                     // Add the CustomerUI instance to the frame

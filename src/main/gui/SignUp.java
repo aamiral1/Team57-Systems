@@ -1,3 +1,5 @@
+// package main.gui;
+
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
@@ -21,6 +23,7 @@ public class SignUp extends JPanel {
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         jcomp15 = new JLabel("WELCOME TO THE SIGNUP PAGE");
         headerPanel.add(jcomp15);
+
         
         // Create a center panel with GridBagLayout for form fields
         JPanel centerPanel = new JPanel(new GridBagLayout());
@@ -100,6 +103,16 @@ public class SignUp extends JPanel {
                 User newUser = new User(userID, username, name, hashedPassword, emailAddress, houseNumber, cityName, roadName, postcode, joinDate, role, salt);
                 if (!DatabaseOperations.userExists(newUser)){
                     DatabaseOperations.signUp(newUser);
+                }
+                else{
+                    // Create an error pop-up dialog
+                JOptionPane.showMessageDialog(
+                    null,
+                    "Username Taken",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+
                 }
                 }
         });

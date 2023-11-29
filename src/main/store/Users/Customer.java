@@ -1,3 +1,5 @@
+package main.store.Users;
+
 public class Customer {
 
     Orders orderVar = new Orders();

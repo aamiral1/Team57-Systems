@@ -1,3 +1,5 @@
+package main.store.Users;
+
 public class StaffMember {
 
     OrderLine orderSepLine = new OrderLine();

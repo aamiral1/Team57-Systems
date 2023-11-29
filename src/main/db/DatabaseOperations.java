@@ -1,8 +1,10 @@
 package main.db;
 
 import java.sql.Connection;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import main.misc.*;
 import main.store.Users.*;
@@ -142,7 +144,7 @@ public class DatabaseOperations {
             for (int n = 1; n <= 4; n++) {
                 apstmt.setString(n, userAttributes[n + 4].toString());
             }
-            
+
             apstmt.executeUpdate();
 
             // Pass in sql query to sign up user to User table
@@ -206,14 +208,14 @@ public class DatabaseOperations {
         return flag;
     }
 
-    public static Boolean userExists(User myUser){
-        Boolean isExists=false;
+    public static Boolean userExists(User myUser) {
+        Boolean isExists = false;
         String username;
         // open db connection
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         db.openConnection();
 
-        try{
+        try {
             String query = "SELECT 1 FROM User WHERE username=?";
             PreparedStatement pstmt = db.con.prepareStatement(query);
 
@@ -221,21 +223,22 @@ public class DatabaseOperations {
             pstmt.setString(1, myUser.getUsername());
             ResultSet matchedUsers = pstmt.executeQuery();
 
-            if (matchedUsers.next()){
-                isExists=true; // a user with entered username already exists
+            if (matchedUsers.next()) {
+                isExists = true; // a user with entered username already exists
             }
-            
-        } catch (SQLException se){
+
+        } catch (SQLException se) {
             se.printStackTrace();
         }
         return isExists;
     }
 
-    public static Boolean saveUserEditDetails(Connection connection, String userID, String username, String name, String enteredPassword, String emailString,
-    String houseNumber, String cityName, String roadName, String postCode, String salt){
+    public static Boolean saveUserEditDetails(Connection connection, String userID, String username, String name,
+            String enteredPassword, String emailString,
+            String houseNumber, String cityName, String roadName, String postCode, String salt) {
 
         // Find user in database and update details
-        try{
+        try {
 
             // update address changes in address table
             String addressQuery = "UPDATE Address SET house_number=?, road_name=?, city_name=?, post_code=? WHERE user_id=? ";
@@ -248,16 +251,20 @@ public class DatabaseOperations {
 
             astmt.executeUpdate();
             // Update User Table
-            String updateQuery = "UPDATE User SET username=?, name=?, hashed_password=?, email=?, house_number=?, city_name=?, road_name=?, " +
-            "post_code=? WHERE user_id=?";
+            String updateQuery = "UPDATE User SET username=?, name=?, hashed_password=?, email=?, house_number=?, city_name=?, road_name=?, "
+                    +
+                    "post_code=? WHERE user_id=?";
 
             PreparedStatement pstmt = connection.prepareStatement(updateQuery);
             pstmt.setString(1, username);
             pstmt.setString(2, name);
             // encrypt password with existing salt
-            String hashedPassword=null;
-            try{hashedPassword = Encryption.encrypt(enteredPassword, salt);}
-            catch (Exception e) {e.printStackTrace();}
+            String hashedPassword = null;
+            try {
+                hashedPassword = Encryption.encrypt(enteredPassword, salt);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             pstmt.setString(3, hashedPassword);
             pstmt.setString(4, emailString);
             pstmt.setString(6, cityName);
@@ -268,66 +275,104 @@ public class DatabaseOperations {
             pstmt.setString(9, userID);
             pstmt.executeUpdate();
             return true;
-        } catch (SQLException ex){
+        } catch (SQLException ex) {
             ex.printStackTrace();
         }
         return false;
     }
 
     /*
-     * Checks if given user contains a card. If yes, returns the card details in a String[]. If not, returns null
+     * Checks if given user contains a card. If yes, returns the card details in a
+     * String[]. If not, returns null
      */
-    public static List<String> getCard(User myUser, Connection con){
+    public static List<String> getCard(User myUser, Connection con) {
         // Check if card exists
         List<String> cardDetails = new ArrayList<>();
         String userID = myUser.getUserID(); // get current user's id
         PreparedStatement pstmt = null;
         ResultSet res = null;
 
-        try{
-            // Check if card exists        
+        try {
+            // Check if card exists
             String query = "SELECT * FROM BankingDetails WHERE user_id=?";
             pstmt = con.prepareStatement(query);
             pstmt.setString(1, userID);
             res = pstmt.executeQuery();
 
             // if card exists for user
-            if (res.next()){
+            if (res.next()) {
                 String salt = res.getString("salt");
-                try{
-                    String cardName = Encryption.decrypt(res.getString("card_name"), salt); 
+                try {
+                    // String cardName = Encryption.decrypt(res.getString("card_name"), salt);
                     String cardNumber = Encryption.decrypt(res.getString("card_number"), salt);
-                    String expiryDate = Encryption.decrypt(res.getString("expiry_date"), salt);
-                    String cvv = Encryption.decrypt(String.valueOf(res.getInt("cvv")), salt);
+                    // Format and decrypt date properly
+                    // Date expiryDate = res.getDate("expiry_date");
+                    // SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    // String decryptedDate = Encryption.decrypt(dateFormat.format(expiryDate), salt);
+                    // String cvv = Encryption.decrypt(String.valueOf(res.getInt("cvv")), salt);
 
                     // add details to array
                     cardDetails.add(cardNumber);
-                    cardDetails.add(cardName);
-                    cardDetails.add(expiryDate);
-                    cardDetails.add(cvv);
+                    // cardDetails.add(cardName);
+                    // cardDetails.add(decryptedDate);
+                    // cardDetails.add(cvv);
 
-                }  catch (Exception ex) {
+                    System.out.println("User's existing card details being added: " + cardNumber);
+
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
 
-
-        } catch (SQLException se){
+        } catch (SQLException se) {
             se.printStackTrace();
-        } finally{
+        } finally {
             // close resources if applicable
             try {
-                if (res != null){
+                if (res != null) {
                     res.close();
                 }
-                if (pstmt != null){
+                if (pstmt != null) {
                     pstmt.close();
                 }
-            } catch (SQLException se){
+            } catch (SQLException se) {
                 se.printStackTrace();
             }
         }
 
         return cardDetails;
     }
+
+    public static Boolean addBankDetail(User myUser, BankDetail bankDetail, Connection con) {
+        boolean isAdded = false;
+
+        try {
+            // Prepare SQL Query with bank detail parameters
+            String query = "INSERT INTO BankingDetails (user_id, card_name, card_number, expiry_date, cvv, valid_status, salt) VALUES (?,?,?,?,?,?,?)";
+            PreparedStatement pstmt = con.prepareStatement(query);
+
+            pstmt.setString(1, myUser.getUserID());
+            pstmt.setString(2, bankDetail.getCardName());
+            pstmt.setString(3, bankDetail.getCardNumber());
+            pstmt.setDate(4, bankDetail.getExpiryDate());
+            pstmt.setString(5, bankDetail.getCVV());
+            pstmt.setBoolean(6, true);
+            pstmt.setString(7, bankDetail.getBankSalt());
+
+            // Run the sql query
+            pstmt.executeUpdate();
+
+            System.out.println("Bank Details Updated for User " + myUser.getUserID() + " successfully!");
+            isAdded = true;
+
+        } catch (SQLException se) {
+            System.out.println("Failed to add bank details for user  " + myUser.getUserID() + " " + bankDetail.getCardNumber());
+            se.printStackTrace();
+            isAdded = false;
+        }
+
+        return isAdded;
+    }
+
+
 }

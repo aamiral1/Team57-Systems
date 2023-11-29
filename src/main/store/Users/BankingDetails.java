@@ -1,3 +1,5 @@
+package main.store.Users;
+
 import java.sql.Date;
 
 public class BankingDetails {

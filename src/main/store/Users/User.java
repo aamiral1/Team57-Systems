@@ -47,6 +47,9 @@ public class User {
     public String getSalt(){
         return this.salt;
     }
+    public String getRole(){
+        return this.role;
+    }
 
     public Boolean lockUser() {
         this.accountLocked = true;

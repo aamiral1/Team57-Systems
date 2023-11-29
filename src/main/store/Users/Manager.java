@@ -1,6 +1,8 @@
+package main.store.Users;
+
 public class Manager {
     
-    User userdata = new User();
+    // User userdata = new User();
 
     public Boolean promoteRegisteredUser(int userID) {
         return false;

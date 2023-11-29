@@ -1,3 +1,5 @@
+package main.store.Users;
+
 public class OrderLine {
     int productCode;
     int quantity;
