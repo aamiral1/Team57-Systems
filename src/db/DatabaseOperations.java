@@ -373,50 +373,137 @@ public class DatabaseOperations {
         return isAdded;
     }
 
-    public static Boolean placeOrder(User myUser, Connection con){
+    public static Boolean placeOrder(User myUser, Connection con) {
         boolean status = false;
-        
+    
         try {
+            // Start transaction
+            con.setAutoCommit(false);
+    
             // get the pending order of the current user
-            String query = "SELECT ol.productCode, ol.Quantity FROM OrderLine ol INNER JOIN OrderDetails od ON ol.order_number = od.order_number WHERE od.order_status = 'pending' AND od.user_id = ?;";
-            PreparedStatement pstmt = con.prepareStatement(query);
-            pstmt.setString(1, myUser.getUserID());
-
-            ResultSet res = pstmt.executeQuery();
-
-            // Loop through each order line and check if selected quantity is valid
-            while (res.next()){
-                String productCode = res.getString(1);
-                int quantity = res.getInt(2);
-
-                // get selected product code's current stock quantity
-                try {
-                    String newQuery = "SELECT productQuantity FROM Product WHERE productCode=?";
-                    PreparedStatement astmt = con.prepareStatement(newQuery);
-                    astmt.setString(1, productCode);
-                    ResultSet result = astmt.executeQuery();
-
-                    if(result.next()){
-                        int productDbQuantity = result.getInt(1);
-                        // Check if selected order quantity is less than available stock quantity
-                        if (quantity<productDbQuantity){
-                            // ORDER VALID
-                            status=true;
+            String query = "SELECT ol.productCode, ol.Quantity FROM OrderLine ol "
+                         + "INNER JOIN OrderDetails od ON ol.order_number = od.order_number "
+                         + "WHERE od.order_status = 'pending' AND od.user_id = ?;";
+            try (PreparedStatement pstmt = con.prepareStatement(query)) {
+                pstmt.setString(1, myUser.getUserID());
+                ResultSet res = pstmt.executeQuery();
+    
+                // Prepare statement for checking stock outside of loop
+                String stockCheckQuery = "SELECT productQuantity FROM Product WHERE productCode = ?";
+                try (PreparedStatement stockCheckStmt = con.prepareStatement(stockCheckQuery)) {
+                    
+                    // Loop through each order line
+                    while (res.next()) {
+                        String productCode = res.getString(1);
+                        int quantity = res.getInt(2);
+    
+                        // Check stock
+                        stockCheckStmt.setString(1, productCode);
+                        ResultSet stockResult = stockCheckStmt.executeQuery();
+    
+                        if (stockResult.next()) {
+                            int productDbQuantity = stockResult.getInt(1);
+    
+                            if (quantity >= productDbQuantity) {
+                                System.out.println("Invalid Quantity Selected");
+                                con.rollback();
+                                return false;
+                            }
+                        } else {
+                            System.out.println("Product Quantity does not exist for chosen product. Database bug.");
+                            con.rollback();
+                            return false;
                         }
                     }
-                    else {
-                        System.out.println("Product Quantity does not exist for chosen product. Database bug.");
-                    }
-                } catch (SQLException e) {
-                    System.out.println("Selected product does not exist in the inventory. Please reload the system.");
-                    e.printStackTrace();
                 }
             }
     
+            // If all quantities are valid, update order status
+            String changeOrderStatus = "UPDATE OrderDetails SET order_status = 'confirmed' WHERE user_id = ? AND order_status = 'pending'";
+            try (PreparedStatement qstmt = con.prepareStatement(changeOrderStatus)) {
+                qstmt.setString(1, myUser.getUserID());
+                qstmt.executeUpdate();
+                con.commit();
+                status = true;
+            }
+    
         } catch (SQLException se) {
-            System.out.println("Inner Join Query Issue");
+            System.out.println("SQL Exception occurred");
             se.printStackTrace();
+            try {
+                con.rollback();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return false;
+        } finally {
+            try {
+                con.setAutoCommit(true);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
+    
         return status;
     }
+    
+    // public static Boolean placeOrder(User myUser, Connection con){
+    //     boolean status = false;
+        
+    //     try {
+    //         // get the pending order of the current user
+    //         String query = "SELECT ol.productCode, ol.Quantity FROM OrderLine ol INNER JOIN OrderDetails od ON ol.order_number = od.order_number WHERE od.order_status = 'pending' AND od.user_id = ?;";
+    //         PreparedStatement pstmt = con.prepareStatement(query);
+    //         pstmt.setString(1, myUser.getUserID());
+
+    //         ResultSet res = pstmt.executeQuery();
+
+    //         // Loop through each order line and check if selected quantity is valid
+    //         while (res.next()){
+    //             String productCode = res.getString(1);
+    //             int quantity = res.getInt(2);
+
+    //             // get selected product code's current stock quantity
+    //             try {
+    //                 String newQuery = "SELECT productQuantity FROM Product WHERE productCode=?";
+    //                 PreparedStatement astmt = con.prepareStatement(newQuery);
+    //                 astmt.setString(1, productCode);
+    //                 ResultSet result = astmt.executeQuery();
+
+    //                 if(result.next()){
+    //                     int productDbQuantity = result.getInt(1);
+    //                     // Check if selected order quantity is less than available stock quantity
+    //                     if (quantity<productDbQuantity){
+    //                         try {
+    //                             // ORDER VALID
+    //                             status=true;
+    //                             // Update order status
+    //                             String changeOrderStatus = "UPDATE OrderDetails SET order_status='confirmed' WHERE user_id=? AND order_status='pending";
+    //                             PreparedStatement qstmt = con.prepareStatement(changeOrderStatus);
+    //                             qstmt.setString(1, myUser.getUserID());
+    //                             qstmt.executeUpdate();
+    //                         } catch (SQLException e) {
+    //                             System.out.println("Update Status SQL Query Error");
+    //                             e.printStackTrace();
+    //                         }
+    //                     }
+    //                     else {
+    //                         System.out.println("Invalid Quantity Selected")
+    //                     }
+    //                 }
+    //                 else {
+    //                     System.out.println("Product Quantity does not exist for chosen product. Database bug.");
+    //                 }
+    //             } catch (SQLException e) {
+    //                 System.out.println("Selected product does not exist in the inventory. Please reload the system.");
+    //                 e.printStackTrace();
+    //             }
+    //         }
+    
+    //     } catch (SQLException se) {
+    //         System.out.println("Inner Join Query Issue");
+    //         se.printStackTrace();
+    //     }
+    //     return status;
+    // }
 }
