@@ -1,8 +1,9 @@
 import java.awt.*;
 import javax.swing.*;
-
+import java.util.List;
 import main.db.DatabaseConnectionHandler;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,7 +43,7 @@ public class TrainSets extends JPanel {
 
         JButton refreshButton = new JButton("Refresh");
         styleButton(refreshButton, new Color(30, 144, 255)); // Dodger blue color
-        refreshButton.addActionListener(e -> refreshLocomotives());
+        refreshButton.addActionListener(e -> refreshBoxedSets());
         rightPanel.add(refreshButton);
 
         northPanel.add(rightPanel, BorderLayout.EAST);
@@ -53,7 +54,7 @@ public class TrainSets extends JPanel {
         boxesPanel = new JPanel();
         boxesPanel.setLayout(new BoxLayout(boxesPanel, BoxLayout.Y_AXIS));
         boxesPanel.setBackground(Color.WHITE); // Setting background color to white
-        refreshLocomotives();
+        refreshBoxedSets();
 
         JScrollPane scrollPane = new JScrollPane(boxesPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -61,17 +62,28 @@ public class TrainSets extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
-    private void refreshLocomotives() {
+    private void refreshBoxedSets() {
         boxesPanel.removeAll();
-        java.util.List<String[]> locomotives = getLocomotives();
-        for (String[] locomotive : locomotives) {
-            JPanel boxPanel = createBox(locomotive);
+        java.util.List<String[]> boxedSetsData = getBoxedSetContents(); // Fetch the boxed set contents
+
+        // Group the data by BoxedSetID
+        Map<String, List<String[]>> groupedData = new HashMap<>();
+        for (String[] data : boxedSetsData) {
+            String setId = data[0].split(": ")[1]; // Extract Boxed Set ID
+            groupedData.computeIfAbsent(setId, k -> new ArrayList<>()).add(data);
+        }
+
+        // Create a box for each grouped set of details
+        for (List<String[]> group : groupedData.values()) {
+            JPanel boxPanel = createBox(group);
             boxesPanel.add(boxPanel);
             boxesPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         }
+
         boxesPanel.revalidate();
         boxesPanel.repaint();
     }
+
 
     // Call this method when the Add button is clicked
     private void openAddDialog() {
@@ -216,56 +228,52 @@ public class TrainSets extends JPanel {
         }
     
         if (isInserted) {
-            refreshLocomotives();
+            refreshBoxedSets();
         }
     }
 
 
-    private java.util.List<String[]> getLocomotives() {
-        
-        // HashMap<String,List<String[]>>  trackPackDetails = displayingBoxedProductsUI.getBoxedProducts("Track Packs");
-        // displayingBoxedProductsUI.createAndShowGroupedGUI(trackPackDetails);
-
-        java.util.List<String[]> locomotives = new java.util.ArrayList<>();
+    private java.util.List<String[]> getBoxedSetContents() {
+        java.util.List<String[]> boxedSetContents = new java.util.ArrayList<>();
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         db.openConnection();
         String sqlQuery = "SELECT " +
-                "Product.productCode, " +
+                "BoxedSetContents.boxedSetId, " +
+                "BoxedSetContents.individual_productCode, " +
+                "BoxedSetContents.quantity, " +
+                "Individual.modelType, " +
+                "Individual.gauge, " +
                 "Product.brandName, " +
                 "Product.productName, " +
                 "Product.retailPrice, " +
-                "Product.productQuantity, " +
-                "Individual.modelType, " +
-                "Individual.gauge, " +
-                "Locomotives.historicalEra, " +
-                "Locomotives.DCCCode " +
-                "FROM Product " +
-                "INNER JOIN Individual ON Product.productCode = Individual.productCode " +
-                "INNER JOIN Locomotives ON Individual.productCode = Locomotives.productCode;";
-
+                "Product.productQuantity " +
+                "FROM BoxedSetContents " +
+                "INNER JOIN Individual ON BoxedSetContents.individual_productCode = Individual.productCode " +
+                "INNER JOIN Product ON Individual.productCode = Product.productCode;";
+    
         try (PreparedStatement pstmt = db.con.prepareStatement(sqlQuery);
              ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                String productCode = rs.getString("productCode");
+                String boxedSetId = rs.getString("boxedSetId");
+                String individualProductCode = rs.getString("individual_productCode");
+                int quantity = rs.getInt("quantity");
+                String modelType = rs.getString("modelType");
+                String gauge = rs.getString("gauge");
                 String brandName = rs.getString("brandName");
                 String productName = rs.getString("productName");
                 float retailPrice = rs.getFloat("retailPrice");
                 int productQuantity = rs.getInt("productQuantity");
-                String modelType = rs.getString("modelType");
-                String gauge = rs.getString("gauge");
-                String historicalEra = rs.getString("historicalEra");
-                String dccCode = rs.getString("DCCCode");
-
-                locomotives.add(new String[]{
-                        "Product Code: " + productCode,
+    
+                boxedSetContents.add(new String[]{
+                        "Boxed Set ID: " + boxedSetId,
+                        "Individual Product Code: " + individualProductCode,
+                        "Quantity: " + quantity,
+                        "Model Type: " + modelType,
+                        "Gauge: " + gauge,
                         "Brand Name: " + brandName,
                         "Product Name: " + productName,
                         "Retail Price: $" + retailPrice,
-                        "Product Quantity: " + productQuantity,
-                        "Model Type: " + modelType,
-                        "Gauge: " + gauge,
-                        "Historical Era: " + historicalEra,
-                        "DCC Code: " + dccCode
+                        "Product Quantity: " + productQuantity
                 });
             }
         } catch (SQLException e) {
@@ -273,43 +281,101 @@ public class TrainSets extends JPanel {
         } finally {
             db.closeConnection();
         }
-        return locomotives;
+        return boxedSetContents;
     }
 
-    private JPanel createBox(String[] locomotiveData) {
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(0, 1));
-        panel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-        panel.setBackground(Color.WHITE);
-
-        for (String data : locomotiveData) {
-            JLabel label = new JLabel(data);
-            label.setFont(new Font("SansSerif", Font.PLAIN, 12));
-            label.setForeground(Color.BLACK);
-            label.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            panel.add(label);
+    private JPanel createBox(List<String[]> boxedSetContents) {
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbcMain = new GridBagConstraints();
+        gbcMain.fill = GridBagConstraints.HORIZONTAL;
+        gbcMain.gridx = 0;
+        gbcMain.gridy = 0;
+    
+        String lastBoxedSetId = "";
+    
+        for (int i = 0; i < boxedSetContents.size(); i++) {
+            String[] productDetails = boxedSetContents.get(i);
+            String currentBoxedSetId = productDetails[0].split(": ")[1];
+    
+            if (!currentBoxedSetId.equals(lastBoxedSetId)) {
+                // Reset the gridx for a new Boxed Set ID
+                gbcMain.gridx = 0;
+    
+                // Boxed Set ID label
+                JLabel setIdLabel = new JLabel("Boxed Set ID: " + currentBoxedSetId);
+                setIdLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+                JPanel setIdPanel = new JPanel(new GridBagLayout());
+                setIdPanel.add(setIdLabel);
+                gbcMain.gridwidth = GridBagConstraints.REMAINDER; // Span across all columns
+                mainPanel.add(setIdPanel, gbcMain); // Add the label panel to the main panel
+    
+                // Move to the next row to start adding product details
+                gbcMain.gridy++;
+                lastBoxedSetId = currentBoxedSetId;
+            }
+    
+            // Product details panel
+            JPanel productPanel = new JPanel();
+            productPanel.setLayout(new BoxLayout(productPanel, BoxLayout.PAGE_AXIS));
+            for (int j = 1; j < productDetails.length; j++) { // Skip the Boxed Set ID
+                JLabel label = new JLabel(productDetails[j]);
+                label.setFont(new Font("SansSerif", Font.PLAIN, 12));
+                productPanel.add(label);
+            }
+    
+            // Add the product panel to the main panel
+            gbcMain.gridwidth = 1; // Each product detail panel takes up one column
+            gbcMain.fill = GridBagConstraints.BOTH;
+            gbcMain.weightx = 1.0;
+            mainPanel.add(productPanel, gbcMain);
+    
+            // Check if this is the last item in the boxed set
+            boolean isLastItemInSet = (i == boxedSetContents.size() - 1) || 
+                                      (!boxedSetContents.get(i + 1)[0].split(": ")[1].equals(currentBoxedSetId));
+            if (isLastItemInSet) {
+                // Increment the row position for the buttons
+                gbcMain.gridy++;
+    
+                // Create a panel to hold the edit and delete buttons
+                JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER)); // Center the buttons
+                JButton editButton = new JButton("Edit");
+                JButton deleteButton = new JButton("Delete");
+                buttonPanel.add(editButton);
+                styleButton(editButton, new Color(144, 238, 144)); // Light green color
+                buttonPanel.add(deleteButton);
+                styleButton(deleteButton, new Color(255, 99, 71)); // Tomato color
+    
+                // Set the weightx for button panel to stretch across the grid width
+                gbcMain.weightx = 1.0;
+                gbcMain.fill = GridBagConstraints.HORIZONTAL;
+    
+                // Set insets for the button panel to add space between it and the product details
+                gbcMain.insets = new Insets(50, 0, 0, 0); // Top padding
+    
+                // Add the button panel to the main panel, spanning the remaining columns
+                gbcMain.gridwidth = GridBagConstraints.REMAINDER;
+                mainPanel.add(buttonPanel, gbcMain);
+    
+                // Reset insets and weightx for the next components
+                gbcMain.insets = new Insets(0, 0, 0, 0);
+                gbcMain.weightx = 0;
+    
+                // Prepare for the next set of products
+                gbcMain.gridy++;
+                gbcMain.gridx = 0;
+            } else {
+                // Prepare for the next product panel in the same set
+                gbcMain.gridx++;
+            }
         }
-
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
-        buttonPanel.setBackground(Color.WHITE); // Setting background color to white
-
-        JButton deleteButton = new JButton("Delete");
-        styleButton(deleteButton, new Color(255, 99, 71)); // Tomato color
-        String productCode = locomotiveData[0].split(": ")[1];
-        deleteButton.addActionListener(e -> deleteLocomotive(productCode));
-        buttonPanel.add(deleteButton);
-
-        JButton editButton = new JButton("Edit");
-        styleButton(editButton, new Color(144, 238, 144)); // Light green color
-        editButton.addActionListener(e -> openEditDialog(locomotiveData));
-        buttonPanel.add(editButton);
-
-        panel.add(buttonPanel);
-
-        return panel;
+    
+        // Add glue at the end to push everything to the top
+        gbcMain.weighty = 1; // Assign remaining vertical space to the glue
+        mainPanel.add(Box.createVerticalGlue(), gbcMain);
+    
+        return mainPanel;
     }
-
-
+    
     private void deleteLocomotive(String productCode) {
         int confirm = JOptionPane.showConfirmDialog(
                 this,
@@ -358,7 +424,7 @@ public class TrainSets extends JPanel {
                 db.closeConnection();
             }
 
-            refreshLocomotives();
+            refreshBoxedSets();
         }
     }
 
@@ -439,7 +505,7 @@ public class TrainSets extends JPanel {
         }
     
         if (isUpdated) {
-            refreshLocomotives();
+            refreshBoxedSets();
         }
     }
 
