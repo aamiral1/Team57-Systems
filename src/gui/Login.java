@@ -6,7 +6,7 @@ import java.awt.event.*;
 import java.sql.Connection;
 
 import db.*;
-import misc.*;
+// import misc.*;
 import store.UserManager;
 
 public class Login extends JFrame {
