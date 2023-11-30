@@ -3,6 +3,8 @@ package gui;
 import javax.swing.*;
 import db.DatabaseConnectionHandler;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.PreparedStatement;
@@ -88,6 +90,21 @@ public class AllOrders extends JPanel {
         JFrame frame = new JFrame("Order Details with Products");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
+
+        JButton returnButton = new JButton("Return");
+        returnButton.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            frame.dispose();
+        }
+    });
+
+        // Create a panel to hold the return button
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT)); // Left aligns the button
+        topPanel.add(returnButton);
+
+        // Add the top panel to the frame
+        frame.add(topPanel, BorderLayout.NORTH);
 
         // Maps to hold panels and order details
         Map<String, JPanel> orderPanelsMap = new HashMap<>();
