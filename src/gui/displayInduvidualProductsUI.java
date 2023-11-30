@@ -2,6 +2,7 @@ package gui;
 
 import db.DatabaseConnectionHandler;
 import db.DatabaseOperations;
+import misc.UniqueUserIDGenerator;
 import store.*;
 
 import javax.swing.*;
@@ -9,6 +10,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
 //import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -99,33 +102,96 @@ public class displayInduvidualProductsUI {
 
     // Method to view items added to cart
     private static void viewCart() {
-
         JFrame cartFrame = new JFrame("View Cart");
         cartFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        cartFrame.setLayout(new BorderLayout());
-
+        cartFrame.setLayout(new BorderLayout(10, 10));
+        
+        // Header Panel
+        JPanel headerPanel = new JPanel(new GridLayout(1, 4, 10, 10));
+        headerPanel.add(new JLabel("Order Number"));
+        headerPanel.add(new JLabel("Product Code"));
+        headerPanel.add(new JLabel("Quantity"));
+        headerPanel.add(new JLabel("Line Cost"));
+        
+        // Display Panel
         JPanel displayCartPanel = new JPanel();
         displayCartPanel.setLayout(new BoxLayout(displayCartPanel, BoxLayout.Y_AXIS));
-
-        for (String[] product : cart) {
-            JPanel productPanel = createProductCart(product);
-            displayCartPanel.add(productPanel);
-        }
-
+        displayCartPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        displayCartPanel.add(headerPanel);
+    
+        // Scroll Pane
         JScrollPane scrollPane = new JScrollPane(displayCartPanel);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         cartFrame.add(scrollPane, BorderLayout.CENTER);
-
-        JLabel pageTitle = new JLabel("Your cart");
-        cartFrame.add(pageTitle, BorderLayout.NORTH);
-
-        JButton backButton = new JButton("Back"); // Action Listener for back button
-        backButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                goBackToProductDetailsPage(cartFrame);
+        
+        // Database Connection
+        DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+        db.openConnection();
+        User currentUserRole = UserManager.getCurrentUser();
+        String usersID = currentUserRole.getUserID();
+    
+        try {
+            PreparedStatement pstmt = db.con.prepareStatement(
+                "SELECT OrderLine.order_number, OrderLine.productCode, OrderLine.Quantity, OrderLine.Line_cost " +
+                "FROM OrderLine INNER JOIN OrderDetails ON OrderLine.order_number = OrderDetails.order_number " +
+                "WHERE OrderDetails.user_id = ? AND OrderDetails.order_status = 'pending'");
+            pstmt.setString(1, usersID);
+    
+            ResultSet rs = pstmt.executeQuery();
+            
+            // Process ResultSet
+            while (rs.next()) {
+                String orderNumber = rs.getString("order_number");
+                String productCode = rs.getString("productCode");
+                int quantity = rs.getInt("Quantity");
+                BigDecimal lineCost = rs.getBigDecimal("Line_cost");
+            
+                JPanel productPanel = new JPanel(new GridLayout(1, 5, 5, 5)); // 1 row, 5 columns, to accommodate the delete button
+                productPanel.add(new JLabel(orderNumber));
+                productPanel.add(new JLabel(productCode));
+                productPanel.add(new JLabel(String.valueOf(quantity)));
+                productPanel.add(new JLabel(lineCost.toPlainString()));
+            
+                // Create a delete button and add it to the row
+                JButton deleteButton = new JButton("Delete");
+                deleteButton.addActionListener(e -> {
+                    // Delete the row from the database
+                    deleteRowFromDatabase(orderNumber, productCode);
+                    // Remove the product panel from the display
+                    displayCartPanel.remove(productPanel);
+                    displayCartPanel.revalidate();
+                    displayCartPanel.repaint();
+                });
+            
+                productPanel.add(deleteButton); // Add the delete button to the product panel
+                displayCartPanel.add(productPanel);
             }
+        } catch (SQLException sqlException) {
+            sqlException.printStackTrace();
+        } finally {
+            db.closeConnection();
+        }
+    
+        // Buttons Panel
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JButton backButton = new JButton("Back");
+        backButton.addActionListener(e -> {
+            goBackToProductDetailsPage(cartFrame);
         });
 
         JButton confirmButton = new JButton("Proceed to checkout");
+        buttonsPanel.add(backButton);
+        buttonsPanel.add(confirmButton);
+        cartFrame.add(buttonsPanel, BorderLayout.SOUTH);
+
+
+        
+        // Display the window
+        cartFrame.pack();
+        cartFrame.setMinimumSize(new Dimension(600, 400)); // Set a minimum size for the window
+        cartFrame.setLocationRelativeTo(null);
+        cartFrame.setVisible(true);
         confirmButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -186,19 +252,27 @@ public class displayInduvidualProductsUI {
 
             }
         });
+    }
 
-        JPanel buttonsPanel = new JPanel();
-        buttonsPanel.setLayout(new BorderLayout());
-
-        buttonsPanel.add(backButton, BorderLayout.NORTH);
-        buttonsPanel.add(confirmButton, BorderLayout.CENTER);
-
-        cartFrame.add(buttonsPanel, BorderLayout.SOUTH);
-
-        cartFrame.pack();
-        cartFrame.setLocationRelativeTo(null);
-        cartFrame.setVisible(true);
-
+    private static void deleteRowFromDatabase(String orderNumber, String productCode) {
+        // Open a connection to the database
+        DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+        db.openConnection();
+        
+        try {
+            // Prepare the SQL DELETE statement
+            String sql = "DELETE FROM OrderLine WHERE order_number = ? AND productCode = ?";
+            PreparedStatement pstmt = db.con.prepareStatement(sql);
+            pstmt.setString(1, orderNumber);
+            pstmt.setString(2, productCode);
+            
+            // Execute the delete statement
+            pstmt.executeUpdate();
+        } catch (SQLException sqlException) {
+            sqlException.printStackTrace();
+        } finally {
+            db.closeConnection();
+        }
     }
 
     // -----------------------------------------------------------------------------------------------------------------------
@@ -210,26 +284,6 @@ public class displayInduvidualProductsUI {
 
         String[][] productDetails = getProducts(currentProductType);
         createAndShowGUI(productDetails);
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------------
-
-    // Method that creates cart
-
-    private static JPanel createProductCart(String[] productDetails) {
-
-        JPanel productPanel = new JPanel();
-        productPanel.setLayout(new BoxLayout(productPanel, BoxLayout.X_AXIS));
-
-        for (String detail : productDetails) {
-            JLabel label = new JLabel(detail);
-            label.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-            productPanel.add(label);
-        }
-
-        productPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        return productPanel;
     }
 
     // -----------------------------------------------------------------------------------------------------------------------
@@ -264,13 +318,66 @@ public class displayInduvidualProductsUI {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                // Gets the details of the product row the button is on using cutom method and
+                User currentUserRole = UserManager.getCurrentUser();
+                String usersID = currentUserRole.getUserID();
+                
+                DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+                db.openConnection();
+                
+                // Gets the details of the product row the button is on using custom method and
                 // adds to the cart data structure
                 String[] productDetails = getProductDetailsFromPanel((JPanel) addToCartButton.getParent());
+                
                 int quantity = (int) quantitySpinner.getValue();
-
+                
                 // Adds the product details and quantity to the cart
                 addToCart(productDetails, quantity);
+                
+                String productCode = productDetails[0];
+                
+                try {
+                    // SQL query to fetch order numbers for a specific user with 'pending' status
+                    String ord_num_query = "SELECT order_number FROM OrderDetails WHERE user_id = ? AND order_status = 'pending'";
+                    
+                    // Prepare the SQL statement for fetching order numbers
+                    PreparedStatement pstmt = db.con.prepareStatement(ord_num_query);
+                    
+                    // Set the user_id parameter to the retrieved usersID
+                    pstmt.setString(1, usersID);
+                
+                    // Execute the query and process the result set
+                    ResultSet rs = pstmt.executeQuery();
+                    
+                    String orderNumber = null;
+                    if (rs.next()) {
+                        orderNumber = rs.getString("order_number");
+                        System.out.println(orderNumber); // This will print the first order number for the given user ID
+                    }
+                    
+                    if (orderNumber != null) {
+                        // SQL query to insert a new order line
+                        String insertOrderLineSQL = "INSERT INTO OrderLine(order_number, line_id, productCode, Quantity, Line_cost) VALUES (?, ?, ?, ?, ?)";
+                
+                        // Prepare the SQL statement for inserting the new order line
+                        PreparedStatement pstmtInsert = db.con.prepareStatement(insertOrderLineSQL);
+                
+                        // Set parameters for the insert statement
+                        pstmtInsert.setString(1, orderNumber);
+                        pstmtInsert.setString(2, UniqueUserIDGenerator.generateUniqueUserID()); // Correct method name
+                        pstmtInsert.setString(3, productCode);
+                        pstmtInsert.setInt(4, quantity);
+                        pstmtInsert.setBigDecimal(5, new java.math.BigDecimal("20")); // Using BigDecimal for monetary values
+                
+                        // Execute the insert statement
+                        pstmtInsert.executeUpdate();
+                    }
+                
+                } catch (SQLException sqlException) {
+                    sqlException.printStackTrace(); // Handle any SQL exceptions here
+                } finally {
+                    db.closeConnection(); // Ensure the database connection is closed in the finally block
+                }
+
             }
         });
 
@@ -369,7 +476,7 @@ public class displayInduvidualProductsUI {
                     rowCount++;
                 }
 
-                productDetails = new String[rowCount][7];
+                productDetails = new String[rowCount][9];
 
                 resultSet.beforeFirst();
 
@@ -377,15 +484,17 @@ public class displayInduvidualProductsUI {
 
                 // Process the ResultSet and populate array
                 while (resultSet.next()) {
-                    productDetails[rowNum][0] = resultSet.getString("modelType"); // This needs to be done for all of
-                                                                                  // the information we want to store to
-                                                                                  // display to customers
+                    productDetails[rowNum][0] = resultSet.getString("productCode");
                     productDetails[rowNum][1] = resultSet.getString("productName");
                     productDetails[rowNum][2] = resultSet.getString("brandName");
                     productDetails[rowNum][3] = resultSet.getString("DCCCode");
                     productDetails[rowNum][4] = resultSet.getString("gauge");
                     productDetails[rowNum][5] = resultSet.getString("historicalEra");
                     productDetails[rowNum][6] = resultSet.getString("retailPrice");
+                    productDetails[rowNum][7] = resultSet.getString("productCode");
+                    productDetails[rowNum][8] = resultSet.getString("modelType"); // This needs to be done for all of
+                    // the information we want to store to
+                    // display to customers
                     rowNum++;
                 }
 
@@ -441,12 +550,13 @@ public class displayInduvidualProductsUI {
 
                 // Process the ResultSet and populate array
                 while (resultSet.next()) {
-                    productDetails[rowNum][0] = resultSet.getString("modelType");
+                    productDetails[rowNum][0] = resultSet.getString("productCode");
                     productDetails[rowNum][1] = resultSet.getString("productName");
                     productDetails[rowNum][2] = resultSet.getString("brandName");
                     productDetails[rowNum][3] = resultSet.getString("isDigital");
                     productDetails[rowNum][4] = resultSet.getString("gauge");
                     productDetails[rowNum][5] = resultSet.getString("retailPrice");
+                    productDetails[rowNum][6] = resultSet.getString("modelType");
                     rowNum++;
                 }
 
@@ -501,11 +611,12 @@ public class displayInduvidualProductsUI {
 
                 // Process the ResultSet and populate array
                 while (resultSet.next()) {
-                    productDetails[rowNum][0] = resultSet.getString("modelType");
+                    productDetails[rowNum][0] = resultSet.getString("productCode");
                     productDetails[rowNum][1] = resultSet.getString("productName");
                     productDetails[rowNum][2] = resultSet.getString("brandName");
                     productDetails[rowNum][3] = resultSet.getString("gauge");
                     productDetails[rowNum][4] = resultSet.getString("retailPrice");
+                    productDetails[rowNum][5] = resultSet.getString("modelType");
                     rowNum++;
                 }
 
@@ -556,7 +667,7 @@ public class displayInduvidualProductsUI {
                     rowCount++;
                 }
 
-                productDetails = new String[rowCount][9];
+                productDetails = new String[rowCount][10];
 
                 resultSet.beforeFirst();
 
@@ -564,14 +675,15 @@ public class displayInduvidualProductsUI {
 
                 // Process the ResultSet and populate array
                 while (resultSet.next()) {
-                    productDetails[rowNum][0] = resultSet.getString("modelType");
+                    productDetails[rowNum][0] = resultSet.getString("productCode");
                     productDetails[rowNum][1] = resultSet.getString("productName");
                     productDetails[rowNum][2] = resultSet.getString("brandName");
                     productDetails[rowNum][3] = resultSet.getString("carriageType");
-                    productDetails[rowNum][4] = resultSet.getString("markeType");
+                    productDetails[rowNum][4] = resultSet.getString("markType");
                     productDetails[rowNum][6] = resultSet.getString("gauge");
                     productDetails[rowNum][7] = resultSet.getString("historicalEra");
                     productDetails[rowNum][8] = resultSet.getString("retailPrice");
+                    productDetails[rowNum][9] = resultSet.getString("modelType");
                     rowNum++;
                 }
 

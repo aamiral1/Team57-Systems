@@ -60,11 +60,8 @@ public class StaffUI extends JPanel {
                 currentFrame.dispose(); // This will close the current window
             }
         });
-<<<<<<< HEAD
 
         }
-=======
->>>>>>> 6c0c2d3965cd732eca70678cc549b728c8ae3e9f
         
         titlePanel.add(titleLabel, BorderLayout.CENTER);
     
