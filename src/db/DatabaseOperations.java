@@ -21,12 +21,12 @@ public class DatabaseOperations {
      * stored password hash, the number of failed login attempts, and whether the
      * account is locked.
      */
-    public static Boolean verifyLogin(Connection connection, String username, char[] enteredPassword) {
+    public static Boolean verifyLogin(Connection connection, String email, char[] enteredPassword) {
         try {
-            String query = "SELECT * FROM User WHERE username=?";
+            String query = "SELECT * FROM User WHERE email=?";
 
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, username);
+            statement.setString(1, email);
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
@@ -35,7 +35,7 @@ public class DatabaseOperations {
                 String myUsername = resultSet.getString("username");
                 String name = resultSet.getString("name");
                 String storedPasswordHash = resultSet.getString("hashed_password");
-                String email = resultSet.getString("email");
+                String dbEmail = resultSet.getString("email");
                 String houseNumber = resultSet.getString("house_number");
                 String roadName = resultSet.getString("road_name");
                 String cityName = resultSet.getString("city_name");
@@ -59,7 +59,7 @@ public class DatabaseOperations {
                     return false;
                 } else {
                     // verify entered password against stored hashed password and username
-                    if (verifyPassword(enteredPassword, storedPasswordHash, salt) && username.equals(myUsername)) {
+                    if (verifyPassword(enteredPassword, storedPasswordHash, salt) && email.equals(dbEmail)) {
                         // Login Successful
                         query = "UPDATE User SET last_login = CURRENT_TIMESTAMP, " +
                                 "failed_login_attempts = 0 WHERE user_id = ?";
@@ -69,7 +69,7 @@ public class DatabaseOperations {
                         statement.executeUpdate();
 
                         // Create a user object and set it as current user
-                        User myUser = new User(userID, username, name, storedPasswordHash, email, houseNumber, cityName,
+                        User myUser = new User(userID, myUsername, name, storedPasswordHash, email, houseNumber, cityName,
                                 roadName, postCode, joinDate, role, salt);
 
                         // Set myUser as current user
@@ -595,8 +595,6 @@ public class DatabaseOperations {
             try {
                 if (pstmt != null)
                     pstmt.close();
-                if (con != null)
-                    con.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
