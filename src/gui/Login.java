@@ -68,7 +68,6 @@ public class Login extends JFrame {
                         new CustomerUI().setVisible(true);
                         DatabaseOperations.createOrderLine(UserManager.getCurrentUser().getUserID(), connection);
 
-
                         // dispose login view
                         Login.this.dispose();
                         // JFrame customerFrame = new JFrame("Customer Dashboard");

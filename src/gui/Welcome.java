@@ -9,6 +9,8 @@ public class Welcome extends JFrame {
     private JButton signUpButton;
 
     public Welcome() {
+        // open connection
+
         super("Welcome");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(400, 300);

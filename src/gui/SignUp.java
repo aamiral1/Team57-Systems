@@ -7,11 +7,11 @@ import db.*;
 import misc.*;
 import store.*;
 
-
 public class SignUp extends JPanel {
     private JButton sign, backButton;
     private JLabel fName, sName, username, houseNumber, roadName, postcode, cityName, jcomp15, emailAddress, password;
-    private JTextField roadNameBox, cityNameBox, postcodeBox, sNameBox, fNameBox, usernameBox, houseNumberBox, emailAddressBox,
+    private JTextField roadNameBox, cityNameBox, postcodeBox, sNameBox, fNameBox, usernameBox, houseNumberBox,
+            emailAddressBox,
             passwordBox;
 
     public SignUp() {
@@ -23,7 +23,6 @@ public class SignUp extends JPanel {
         jcomp15 = new JLabel("WELCOME TO THE SIGNUP PAGE");
         headerPanel.add(jcomp15);
 
-        
         // Create a center panel with GridBagLayout for form fields
         JPanel centerPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -50,24 +49,60 @@ public class SignUp extends JPanel {
         postcodeBox = new JTextField(20);
 
         // Add components to center panel using GridBagLayout constraints
-        gbc.gridx = 0; gbc.gridy = 0; centerPanel.add(fName, gbc);
-        gbc.gridx = 1; gbc.gridy = 0; centerPanel.add(fNameBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 1; centerPanel.add(sName, gbc);
-        gbc.gridx = 1; gbc.gridy = 1; centerPanel.add(sNameBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 2; centerPanel.add(username, gbc);
-        gbc.gridx = 1; gbc.gridy = 2; centerPanel.add(usernameBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 3; centerPanel.add(emailAddress, gbc);
-        gbc.gridx = 1; gbc.gridy = 3; centerPanel.add(emailAddressBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 4; centerPanel.add(password, gbc);
-        gbc.gridx = 1; gbc.gridy = 4; centerPanel.add(passwordBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 5; centerPanel.add(houseNumber, gbc);
-        gbc.gridx = 1; gbc.gridy = 5; centerPanel.add(houseNumberBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 6; centerPanel.add(roadName, gbc);
-        gbc.gridx = 1; gbc.gridy = 6; centerPanel.add(roadNameBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 7; centerPanel.add(cityName, gbc);
-        gbc.gridx = 1; gbc.gridy = 7; centerPanel.add(cityNameBox, gbc);
-        gbc.gridx = 0; gbc.gridy = 8; centerPanel.add(postcode, gbc);
-        gbc.gridx = 1; gbc.gridy = 8; centerPanel.add(postcodeBox, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        centerPanel.add(fName, gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        centerPanel.add(fNameBox, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        centerPanel.add(sName, gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        centerPanel.add(sNameBox, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        centerPanel.add(username, gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        centerPanel.add(usernameBox, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        centerPanel.add(emailAddress, gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        centerPanel.add(emailAddressBox, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        centerPanel.add(password, gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        centerPanel.add(passwordBox, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        centerPanel.add(houseNumber, gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 5;
+        centerPanel.add(houseNumberBox, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        centerPanel.add(roadName, gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 6;
+        centerPanel.add(roadNameBox, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        centerPanel.add(cityName, gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 7;
+        centerPanel.add(cityNameBox, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 8;
+        centerPanel.add(postcode, gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 8;
+        centerPanel.add(postcodeBox, gbc);
 
         // Create a footer panel for the sign-up button
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -81,7 +116,7 @@ public class SignUp extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Check if inputs are validated
-                if (validateInputs()){
+                if (validateInputs()) {
                     String userID = UniqueUserIDGenerator.generateUniqueUserID();
                     String username = usernameBox.getText().strip();
                     String name = fNameBox.getText() + " " + sNameBox.getText().strip();
@@ -93,43 +128,42 @@ public class SignUp extends JPanel {
                     String postcode = postcodeBox.getText().strip();
                     String role = "User"; // Default signup is customer
                     String salt = Encryption.generateSalt().strip();
-                    
+
                     // store date of sign up
                     java.util.Date utilDate = new java.util.Date();
                     java.sql.Date joinDate = new java.sql.Date(utilDate.getTime());
-    
+
                     // open database connection
                     DatabaseConnectionHandler db = new DatabaseConnectionHandler();
                     db.openConnection();
-    
+
                     // Sign Up User
-                    User newUser = new User(userID, username, name, hashedPassword, emailAddress, houseNumber, cityName, roadName, postcode, joinDate, role, salt);
-                    if (!DatabaseOperations.userExists(newUser)){
+                    User newUser = new User(userID, username, name, hashedPassword, emailAddress, houseNumber, cityName,
+                            roadName, postcode, joinDate, role, salt);
+                    if (!DatabaseOperations.userExists(newUser.getUsername())) {
                         DatabaseOperations.signUp(newUser);
-                    }
-                    else{
+                    } else {
                         // Create an error pop-up dialog
-                    JOptionPane.showMessageDialog(
-                        null,
-                        "Username Taken",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE
-                    );
-    
+                        JOptionPane.showMessageDialog(
+                                null,
+                                "Username Taken",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+
                     }
                 }
 
-                }
+            }
         });
 
         // Action listener to back Button
         backButton.addActionListener(e -> {
             new Welcome().setVisible(true); // Directly instantiate and display Welcome frame
-        
+
             JFrame currentFrame = (JFrame) SwingUtilities.getWindowAncestor((Component) e.getSource());
             currentFrame.dispose(); // Dispose the current SignUp frame
         });
-        
+
         // Add the header, center, and footer panels to the main panel
         add(headerPanel, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
@@ -137,15 +171,24 @@ public class SignUp extends JPanel {
     }
 
     private boolean validateInputs() {
-        if (!isValidInput(fNameBox, "Forename is required")) return false;
-        if (!isValidInput(sNameBox, "Surname is required")) return false;
-        if (!isValidInput(usernameBox, "Username is required")) return false;
-        if (!isValidEmail(emailAddressBox)) return false;
-        if (!isValidInput(passwordBox, "Password is required")) return false;
-        if (!isValidLength(houseNumberBox, 10, "House Number must be 10 characters or fewer")) return false;
-        if (!isValidInput(roadNameBox, "Road Name is required")) return false;
-        if (!isValidInput(cityNameBox, "City Name is required")) return false;
-        if (!isValidLength(postcodeBox, 10, "Postcode must be 10 characters or fewer")) return false;
+        if (!isValidInput(fNameBox, "Forename is required"))
+            return false;
+        if (!isValidInput(sNameBox, "Surname is required"))
+            return false;
+        if (!isValidInput(usernameBox, "Username is required"))
+            return false;
+        if (!isValidEmail(emailAddressBox))
+            return false;
+        if (!isValidInput(passwordBox, "Password is required"))
+            return false;
+        if (!isValidLength(houseNumberBox, 10, "House Number must be 10 characters or fewer"))
+            return false;
+        if (!isValidInput(roadNameBox, "Road Name is required"))
+            return false;
+        if (!isValidInput(cityNameBox, "City Name is required"))
+            return false;
+        if (!isValidLength(postcodeBox, 10, "Postcode must be 10 characters or fewer"))
+            return false;
 
         return true;
     }
@@ -177,13 +220,11 @@ public class SignUp extends JPanel {
 
     private void showErrorDialog(String message) {
         JOptionPane.showMessageDialog(
-            this,
-            message,
-            "Input Error",
-            JOptionPane.ERROR_MESSAGE
-        );
+                this,
+                message,
+                "Input Error",
+                JOptionPane.ERROR_MESSAGE);
     }
-
 
     // JTextFields are treated like Strings
     public static boolean isStringOrNot(JTextField textField) {
