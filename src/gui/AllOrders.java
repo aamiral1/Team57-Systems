@@ -8,6 +8,7 @@ import store.UserManager;
 
 import java.awt.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -112,13 +113,14 @@ public class AllOrders extends JPanel {
 
             while (rs.next()) {
                 String orderNumber = rs.getString("order_number");
-                BigDecimal lineCost = rs.getBigDecimal("Line_cost");
-                String orderStatus = rs.getString("order_status");
-
+                int quantity = rs.getInt("Quantity");
+                BigDecimal retailPrice = rs.getBigDecimal("retailPrice");
+                BigDecimal lineCost = retailPrice.multiply(new BigDecimal(quantity)); // Calculate line cost
+            
+                // Accumulate the line costs for each order number
                 BigDecimal currentTotal = orderTotalsMap.getOrDefault(orderNumber, BigDecimal.ZERO);
                 currentTotal = currentTotal.add(lineCost);
                 orderTotalsMap.put(orderNumber, currentTotal);
-                orderStatusMap.put(orderNumber, orderStatus);
 
                 JPanel orderPanel = orderPanelsMap.computeIfAbsent(orderNumber, k -> new JPanel());
                 orderPanel.setLayout(new BoxLayout(orderPanel, BoxLayout.Y_AXIS));
@@ -129,22 +131,23 @@ public class AllOrders extends JPanel {
                 productPanel.add(new JLabel(rs.getString("brandName")));
                 productPanel.add(new JLabel(rs.getString("productName")));
                 productPanel.add(new JLabel(String.valueOf(rs.getInt("Quantity"))));
-                productPanel.add(new JLabel(String.valueOf(lineCost)));
                 productPanel.add(new JLabel("$" + rs.getBigDecimal("retailPrice").toString()));
 
                 orderPanel.add(productPanel);
                 orderPanelsMap.put(orderNumber, orderPanel);
             }
 
-            // Add footer panels with total price, status, and action buttons
+            // Add footer panels with total price and status
             for (Map.Entry<String, JPanel> entry : orderPanelsMap.entrySet()) {
                 String orderNumber = entry.getKey();
                 JPanel orderPanel = entry.getValue();
-                BigDecimal totalCost = orderTotalsMap.get(orderNumber);
+                BigDecimal totalCost = orderTotalsMap.get(orderNumber).setScale(2, RoundingMode.HALF_UP); // Ensure total cost is to 2 decimal places
                 String orderStatus = orderStatusMap.get(orderNumber);
 
                 JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                footerPanel.add(new JLabel("Total Price: $" + totalCost.toString()));
+                // Display the total price for the order
+                JLabel totalPriceLabel = new JLabel("Total Price: $" + totalCost.toPlainString());
+                footerPanel.add(totalPriceLabel);
                 footerPanel.add(new JLabel(" | Order Status: " + orderStatus));
 
                 if ("confirmed".equalsIgnoreCase(orderStatus)) {

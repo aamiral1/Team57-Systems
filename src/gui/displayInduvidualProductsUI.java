@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 //import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -329,14 +330,15 @@ public class displayInduvidualProductsUI {
                 String[] productDetails = getProductDetailsFromPanel((JPanel) addToCartButton.getParent());
                 
                 int quantity = (int) quantitySpinner.getValue();
-
-                System.out.println(quantity);
                 
                 // Adds the product details and quantity to the cart
                 addToCart(productDetails, quantity);
                 
                 String productCode = productDetails[0];
-                
+                BigDecimal retailPrice = new BigDecimal(productDetails[4]);
+                BigDecimal lineCost = retailPrice.multiply(new BigDecimal(quantity))
+                                                 .setScale(2, RoundingMode.HALF_UP);
+
                 try {
                     // SQL query to fetch order numbers for a specific user with 'pending' status
                     String ord_num_query = "SELECT order_number FROM OrderDetails WHERE user_id = ? AND order_status = 'pending'";
@@ -365,11 +367,11 @@ public class displayInduvidualProductsUI {
                 
                         // Set parameters for the insert statement
                         pstmtInsert.setString(1, orderNumber);
-                        pstmtInsert.setString(2, UniqueUserIDGenerator.generateUniqueUserID()); // Correct method name
+                        pstmtInsert.setString(2, UniqueUserIDGenerator.generateUniqueUserID());
                         pstmtInsert.setString(3, productCode);
                         pstmtInsert.setInt(4, quantity);
-                        pstmtInsert.setBigDecimal(5, new java.math.BigDecimal("20")); // Using BigDecimal for monetary values
-                
+                        pstmtInsert.setBigDecimal(5, lineCost);
+                        
                         // Execute the insert statement
                         pstmtInsert.executeUpdate();
                     }
@@ -490,9 +492,9 @@ public class displayInduvidualProductsUI {
                     productDetails[rowNum][1] = resultSet.getString("productName");
                     productDetails[rowNum][2] = resultSet.getString("brandName");
                     productDetails[rowNum][3] = resultSet.getString("DCCCode");
-                    productDetails[rowNum][4] = resultSet.getString("gauge");
+                    productDetails[rowNum][4] = resultSet.getString("retailPrice");
                     productDetails[rowNum][5] = resultSet.getString("historicalEra");
-                    productDetails[rowNum][6] = resultSet.getString("retailPrice");
+                    productDetails[rowNum][6] = resultSet.getString("gauge");
                     productDetails[rowNum][7] = resultSet.getString("productCode");
                     productDetails[rowNum][8] = resultSet.getString("modelType"); // This needs to be done for all of
                     // the information we want to store to
@@ -556,8 +558,8 @@ public class displayInduvidualProductsUI {
                     productDetails[rowNum][1] = resultSet.getString("productName");
                     productDetails[rowNum][2] = resultSet.getString("brandName");
                     productDetails[rowNum][3] = resultSet.getString("isDigital");
-                    productDetails[rowNum][4] = resultSet.getString("gauge");
-                    productDetails[rowNum][5] = resultSet.getString("retailPrice");
+                    productDetails[rowNum][4] = resultSet.getString("retailPrice");
+                    productDetails[rowNum][5] = resultSet.getString("gauge");
                     productDetails[rowNum][6] = resultSet.getString("modelType");
                     rowNum++;
                 }
@@ -681,10 +683,10 @@ public class displayInduvidualProductsUI {
                     productDetails[rowNum][1] = resultSet.getString("productName");
                     productDetails[rowNum][2] = resultSet.getString("brandName");
                     productDetails[rowNum][3] = resultSet.getString("carriageType");
-                    productDetails[rowNum][4] = resultSet.getString("markType");
+                    productDetails[rowNum][4] = resultSet.getString("retailPrice");
                     productDetails[rowNum][6] = resultSet.getString("gauge");
                     productDetails[rowNum][7] = resultSet.getString("historicalEra");
-                    productDetails[rowNum][8] = resultSet.getString("retailPrice");
+                    productDetails[rowNum][8] = resultSet.getString("markType");
                     productDetails[rowNum][9] = resultSet.getString("modelType");
                     rowNum++;
                 }
