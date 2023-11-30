@@ -80,41 +80,45 @@ public class SignUp extends JPanel {
         sign.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String userID = UniqueUserIDGenerator.generateUniqueUserID();
-                String username = usernameBox.getText();
-                String name = fNameBox.getText() + " " + sNameBox.getText();
-                String hashedPassword = passwordBox.getText();
-                String emailAddress = emailAddressBox.getText();
-                String houseNumber = houseNumberBox.getText();
-                String roadName = roadNameBox.getText();
-                String cityName = cityNameBox.getText();
-                String postcode = postcodeBox.getText();
-                String role = "Moderator";
-                String salt = Encryption.generateSalt();
-                
-                // store date of sign up
-                java.util.Date utilDate = new java.util.Date();
-                java.sql.Date joinDate = new java.sql.Date(utilDate.getTime());
-
-                // open database connection
-                DatabaseConnectionHandler db = new DatabaseConnectionHandler();
-                db.openConnection();
-
-                // Sign Up User
-                User newUser = new User(userID, username, name, hashedPassword, emailAddress, houseNumber, cityName, roadName, postcode, joinDate, role, salt);
-                if (!DatabaseOperations.userExists(newUser)){
-                    DatabaseOperations.signUp(newUser);
+                // Check if inputs are validated
+                if (validateInputs()){
+                    String userID = UniqueUserIDGenerator.generateUniqueUserID();
+                    String username = usernameBox.getText().strip();
+                    String name = fNameBox.getText() + " " + sNameBox.getText().strip();
+                    String hashedPassword = passwordBox.getText().strip();
+                    String emailAddress = emailAddressBox.getText().strip();
+                    String houseNumber = houseNumberBox.getText().strip();
+                    String roadName = roadNameBox.getText().strip();
+                    String cityName = cityNameBox.getText().strip();
+                    String postcode = postcodeBox.getText().strip();
+                    String role = "User"; // Default signup is customer
+                    String salt = Encryption.generateSalt().strip();
+                    
+                    // store date of sign up
+                    java.util.Date utilDate = new java.util.Date();
+                    java.sql.Date joinDate = new java.sql.Date(utilDate.getTime());
+    
+                    // open database connection
+                    DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+                    db.openConnection();
+    
+                    // Sign Up User
+                    User newUser = new User(userID, username, name, hashedPassword, emailAddress, houseNumber, cityName, roadName, postcode, joinDate, role, salt);
+                    if (!DatabaseOperations.userExists(newUser)){
+                        DatabaseOperations.signUp(newUser);
+                    }
+                    else{
+                        // Create an error pop-up dialog
+                    JOptionPane.showMessageDialog(
+                        null,
+                        "Username Taken",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                    );
+    
+                    }
                 }
-                else{
-                    // Create an error pop-up dialog
-                JOptionPane.showMessageDialog(
-                    null,
-                    "Username Taken",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-                );
 
-                }
                 }
         });
 
@@ -131,6 +135,55 @@ public class SignUp extends JPanel {
         add(centerPanel, BorderLayout.CENTER);
         add(footerPanel, BorderLayout.SOUTH);
     }
+
+    private boolean validateInputs() {
+        if (!isValidInput(fNameBox, "Forename is required")) return false;
+        if (!isValidInput(sNameBox, "Surname is required")) return false;
+        if (!isValidInput(usernameBox, "Username is required")) return false;
+        if (!isValidEmail(emailAddressBox)) return false;
+        if (!isValidInput(passwordBox, "Password is required")) return false;
+        if (!isValidLength(houseNumberBox, 10, "House Number must be 10 characters or fewer")) return false;
+        if (!isValidInput(roadNameBox, "Road Name is required")) return false;
+        if (!isValidInput(cityNameBox, "City Name is required")) return false;
+        if (!isValidLength(postcodeBox, 10, "Postcode must be 10 characters or fewer")) return false;
+
+        return true;
+    }
+
+    private boolean isValidInput(JTextField textField, String errorMessage) {
+        if (textField.getText().trim().isEmpty()) {
+            showErrorDialog(errorMessage);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isValidEmail(JTextField textField) {
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        if (!textField.getText().matches(emailRegex)) {
+            showErrorDialog("Invalid email format");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isValidLength(JTextField textField, int maxLength, String errorMessage) {
+        if (textField.getText().strip().length() > maxLength) {
+            showErrorDialog(errorMessage);
+            return false;
+        }
+        return true;
+    }
+
+    private void showErrorDialog(String message) {
+        JOptionPane.showMessageDialog(
+            this,
+            message,
+            "Input Error",
+            JOptionPane.ERROR_MESSAGE
+        );
+    }
+
 
     // JTextFields are treated like Strings
     public static boolean isStringOrNot(JTextField textField) {
