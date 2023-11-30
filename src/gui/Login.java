@@ -133,10 +133,14 @@ public class Login extends JFrame {
 
         // Final touches on the JFrame
         setTitle("Login");
-        setSize(300, 150);
+        setSize(400, 200); // Adjust width and height as needed
+
+        // This should be placed right before setVisible(true) to ensure it takes effect correctly
+        setLocationRelativeTo(null); 
+
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
-    }
+        }
 
     public static void main(String[] args) {
 

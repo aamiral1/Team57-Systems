@@ -28,6 +28,17 @@ public class ManagerUI extends JFrame {
         demoteButton = new JButton("Demote Staff");
         promotionField = new JTextField(20);
         promoteButton = new JButton("Promote Staff");
+
+        // Create a table model that does not allow editing
+        DefaultTableModel tableModel = new DefaultTableModel(new Object[]{"Email", "Forename", "Surname"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                // This will make the table cells non-editable
+                return false;
+            }
+        };
+
+        staffTable = new JTable(tableModel);
         
         // Add action listener to the demoteButton
         demoteButton.addActionListener(e -> {
@@ -165,8 +176,6 @@ public class ManagerUI extends JFrame {
     }
 
     private void returnToStaffUI(){
-
-
 
     }
 
