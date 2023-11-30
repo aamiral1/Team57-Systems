@@ -203,12 +203,12 @@ public class CustomerUI extends JPanel {
         
         JButton staffPortal = new JButton("Staff Portal");
 
-        if (!(currentUserRole.equals("Moderator") || currentUserRole.equals("Admin"))) {
+        if (!(currentUserRole.equals("Staff") || currentUserRole.equals("Manager"))) {
          staffPortal.setVisible(false); // This will make the button invisible in the UI
         }
         else {
         staffPortal.addActionListener(e -> {
-            if (currentUserRole.equals("Moderator") || currentUserRole.equals("Admin")) {
+            if (currentUserRole.equals("Staff") || currentUserRole.equals("Manager")) {
                 // Create a new frame for the Manager UI
                 JFrame managerFrame = new JFrame("Manager Portal");
                 managerFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

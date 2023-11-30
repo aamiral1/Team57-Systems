@@ -6,7 +6,7 @@ import java.awt.event.*;
 import java.sql.Connection;
 
 import db.*;
-// import misc.*;
+
 import store.UserManager;
 
 public class Login extends JFrame {
@@ -66,8 +66,8 @@ public class Login extends JFrame {
                         // Open customer UI
                         System.out.println("Opening Customer View");
                         new CustomerUI().setVisible(true);
+                        // Check if there are no pending orders under current user id
                         DatabaseOperations.createOrderLine(UserManager.getCurrentUser().getUserID(), connection);
-
 
                         // dispose login view
                         Login.this.dispose();

@@ -518,26 +518,24 @@ public class DatabaseOperations {
     
         try {
             // Check if the user_id already has an order
-            if (userAlreadyHasOrder(user_id, con)) {
-                System.out.println("User already has an order. Handle this situation accordingly.");
+            if (userAlreadyHasPendingOrder(user_id, con)) {
+                System.out.println("User already has a pending order. Not going to open a new cart");
                 return false; // You might want to return false or throw an exception here
             }
-    
+            
+            System.out.println("Opening a new cart for " + UserManager.getCurrentUser());
             // Get the current date and time
             java.sql.Date sqlDate = new java.sql.Date(System.currentTimeMillis());
     
             // Create a PreparedStatement to insert a new order line
-            String sqlQuery = "INSERT INTO OrderDetails (order_number, order_status, order_date, user_id) VALUES (?, ?, ?, ?)";
+            String sqlQuery = "INSERT INTO OrderDetails (order_status, order_date, user_id) VALUES (?, ?, ?)";
             PreparedStatement preparedStatement = con.prepareStatement(sqlQuery);
     
-            // Increment unique_order_number for the new order
-            unique_order_number++;
     
             // Set the values for the PreparedStatement
-            preparedStatement.setInt(1, unique_order_number);
-            preparedStatement.setString(2, "pending");
-            preparedStatement.setDate(3, sqlDate);
-            preparedStatement.setString(4, user_id);
+            preparedStatement.setString(1, "pending");
+            preparedStatement.setDate(2, sqlDate);
+            preparedStatement.setString(3, user_id);
     
             // Execute the PreparedStatement to insert the new order line
             preparedStatement.executeUpdate();
@@ -556,14 +554,14 @@ public class DatabaseOperations {
     }
     
     // Helper method to check if a user already has an order
-    private static boolean userAlreadyHasOrder(String user_id, Connection con) throws SQLException {
-        String query = "SELECT COUNT(*) FROM OrderDetails WHERE user_id = ?";
+    private static boolean userAlreadyHasPendingOrder(String user_id, Connection con) throws SQLException {
+        String query = "SELECT COUNT(*) FROM OrderDetails WHERE user_id = ? AND order_status='pending'";
         try (PreparedStatement preparedStatement = con.prepareStatement(query)) {
             preparedStatement.setString(1, user_id);
             ResultSet resultSet = preparedStatement.executeQuery();
             resultSet.next();
-            int orderCount = resultSet.getInt(1);
-            return orderCount > 0;
+            int pendingOrderCount = resultSet.getInt(1);
+            return pendingOrderCount > 0;
         }
     }
 }

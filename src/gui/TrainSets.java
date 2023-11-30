@@ -240,24 +240,26 @@ public class TrainSets extends JPanel {
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         db.openConnection();
         String sqlQuery = "SELECT " +
-                "BoxedSetContents.boxedSetId, " +
-                "BoxedSetContents.individual_productCode, " +
-                "BoxedSetContents.quantity, " +
-                "Individual.modelType, " +
-                "Individual.gauge, " +
-                "Product.brandName, " +
-                "Product.productName, " +
-                "Product.retailPrice, " +
-                "Product.productQuantity " +
-                "FROM BoxedSetContents " +
-                "INNER JOIN Individual ON BoxedSetContents.individual_productCode = Individual.productCode " +
-                "INNER JOIN Product ON Individual.productCode = Product.productCode;";
+        "BoxedSetContents.boxedSetID, " +
+        "BoxedSetContents.product_productCode, " +
+        "BoxedSetContents.quantity, " +
+        "Individual.modelType, " +
+        "Individual.gauge, " +
+        "Product.brandName, " +
+        "Product.productName, " +
+        "Product.retailPrice, " +
+        "Product.productQuantity " +
+        "FROM BoxedSetContents " +
+        "INNER JOIN Product ON BoxedSetContents.productCode = Product.productCode " +
+        "LEFT JOIN Individual ON Product.productCode = Individual.productCode " +
+        "INNER JOIN BoxedSet ON BoxedSetContents.boxedSetID = BoxedSet.boxedSetID;";
+
     
         try (PreparedStatement pstmt = db.con.prepareStatement(sqlQuery);
              ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 String boxedSetId = rs.getString("boxedSetId");
-                String individualProductCode = rs.getString("individual_productCode");
+                String individualProductCode = rs.getString("product_productCode");
                 int quantity = rs.getInt("quantity");
                 String modelType = rs.getString("modelType");
                 String gauge = rs.getString("gauge");

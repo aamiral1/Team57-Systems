@@ -30,6 +30,13 @@ public class StaffUI extends JPanel {
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titlePanel.add(titleLabel);
 
+        JButton viewOrdersButton = new JButton("View Orders");
+        viewOrdersButton.setFont(new Font("Arial", Font.BOLD, 12));
+
+        viewOrdersButton.addActionListener(e -> {
+            AllOrders.createAndShowGUI();
+        });
+
         JButton managerPortalButton = new JButton("Manager Portal");
         managerPortalButton.setFont(new Font("Arial", Font.BOLD, 12));
 
@@ -39,12 +46,12 @@ public class StaffUI extends JPanel {
 
         String currentUserRole = UserManager.getCurrentUser().getRole();
 
-        if (!(currentUserRole.equals("Admin"))) {
+        if (!(currentUserRole.equals("Manager"))) {
             managerPortalButton.setVisible(false); // This will make the button invisible in the UI
            }
         else {
             managerPortalButton.addActionListener(e -> {
-            if (currentUserRole.equals("Admin")) {
+            if (currentUserRole.equals("Manager")) {
                 // Create a new frame for the Manager UI
                 JFrame managerFrame = new JFrame("Manager Portal");
                 managerFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -66,6 +73,7 @@ public class StaffUI extends JPanel {
         titlePanel.add(titleLabel, BorderLayout.CENTER);
     
         // Add the Manager Portal button to the right
+        titlePanel.add(viewOrdersButton, BorderLayout.EAST);
         titlePanel.add(managerPortalButton, BorderLayout.EAST);
         titlePanel.add(returnToCustomerUIButton, BorderLayout.WEST);
         // Set a border for spacing if needed

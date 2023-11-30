@@ -40,6 +40,9 @@ public class User {
     public String getUsername() {
         return this.username;
     }
+    public String getName() {
+        return this.name;
+    }
     public String getUserID() {
         return this.userID;
     }

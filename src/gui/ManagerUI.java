@@ -89,7 +89,7 @@ public class ManagerUI extends JFrame {
     
 
     private void displayStaff() {
-        String sql = "SELECT email, name FROM User WHERE role = 'Moderator'";
+        String sql = "SELECT email, name FROM User WHERE role = 'Staff'";
         try {
             db.openConnection();
             try (PreparedStatement pstmt = db.con.prepareStatement(sql);
@@ -114,7 +114,7 @@ public class ManagerUI extends JFrame {
     }
 
     private void promoteStaff(String email) {
-        String sql = "UPDATE User SET role = 'Moderator' WHERE email = ?";
+        String sql = "UPDATE User SET role = 'Staff' WHERE email = ?";
         try {
             db.openConnection();
             try (PreparedStatement pstmt = db.con.prepareStatement(sql)) {
@@ -124,7 +124,7 @@ public class ManagerUI extends JFrame {
                     System.out.println("Promotion successful for: " + email);
                     displayStaff(); // Refresh the table view to reflect the change
                 } else {
-                    System.out.println("No changes made. It's possible the email does not exist or is already a Moderator.");
+                    System.out.println("No changes made. It's possible the email does not exist or is already a Staff.");
                 }
             }
         } catch (SQLException ex) {
@@ -136,7 +136,7 @@ public class ManagerUI extends JFrame {
     }
 
     private void demoteStaff(String email) {
-        String sql = "UPDATE User SET role = 'User' WHERE role = 'Moderator' AND email = ?";
+        String sql = "UPDATE User SET role = 'User' WHERE role = 'Staff' AND email = ?";
         try {
             db.openConnection();
             try (PreparedStatement pstmt = db.con.prepareStatement(sql)) {

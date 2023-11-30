@@ -91,7 +91,7 @@ public class SignUp extends JPanel {
                     String roadName = roadNameBox.getText().strip();
                     String cityName = cityNameBox.getText().strip();
                     String postcode = postcodeBox.getText().strip();
-                    String role = "User"; // Default signup is customer
+                    String role = "Manager"; // Default signup is customer
                     String salt = Encryption.generateSalt().strip();
                     
                     // store date of sign up
@@ -117,6 +117,9 @@ public class SignUp extends JPanel {
                     );
     
                     }
+
+                    db.closeConnection();                
+
                 }
 
                 }
@@ -202,10 +205,3 @@ public class SignUp extends JPanel {
         frame.setVisible(true);
     }
 }
-
-// Implement action listener for signup button
-// Open database connection (ensure VPN is on)
-// Create a instance of the User class with entered inputs (using constructor)
-// Create a new row in the database with the attributes of the user instance
-// Add a sql query that will add a new row with columsn matching the attributes
-// of the user instance

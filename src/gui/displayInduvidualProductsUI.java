@@ -329,6 +329,8 @@ public class displayInduvidualProductsUI {
                 String[] productDetails = getProductDetailsFromPanel((JPanel) addToCartButton.getParent());
                 
                 int quantity = (int) quantitySpinner.getValue();
+
+                System.out.println(quantity);
                 
                 // Adds the product details and quantity to the cart
                 addToCart(productDetails, quantity);

@@ -64,6 +64,10 @@ public class PaymentWindow extends JFrame {
                 // Perform actions when Confirm & Pay button is clicked
                 // Add logic to process payment details
 
+                // open Database connection
+                DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+                db.openConnection();
+
                 // User Inputted Card Details
                 String cardName = cardNameField.getText();
                 String cardNumber = cardNumberField.getText().strip().replace(" ", "");
@@ -149,22 +153,30 @@ public class PaymentWindow extends JFrame {
                     BankDetail userBankDetail = new BankDetail(cardNameField.getText(), cardNumberField.getText(),
                             expiryDateField.getText(), cvv.getText());
 
-                    // open Database connection
-                    DatabaseConnectionHandler db = new DatabaseConnectionHandler();
-                    db.openConnection();
+                    
                     Boolean addedBankDetail = DatabaseOperations.addBankDetail(UserManager.getCurrentUser(),
                             userBankDetail, db.con);
 
                     System.out.println("Banking Detail Update Status: " + addedBankDetail);
-
+                
                     // update User's banking details in database
+                                    
 
                 } else {
                     JOptionPane.showMessageDialog(null, "Card Details are Invalid");
                 }
-
+                
+                // Place order
+                boolean orderConfirmedStatus = DatabaseOperations.placeOrder(UserManager.getCurrentUser(), db.con);
+                // Show confirmation message
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Order Status: " + (orderConfirmedStatus ? "Confirmed" : "Rejected"),
+                        "Confirmation",
+                        JOptionPane.INFORMATION_MESSAGE);
                 System.out.println("Confirm and pay button clicked");
 
+                db.closeConnection();
             }
         });
 
