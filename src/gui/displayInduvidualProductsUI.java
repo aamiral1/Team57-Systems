@@ -262,8 +262,15 @@ public class displayInduvidualProductsUI {
                 }
                 // Close the current window
                 cartFrame.dispose();
-                // Open a new instance of PaymentWindow
-
+                // Open a new instance of CustomerUI
+                SwingUtilities.invokeLater(() -> {
+                    JFrame customerFrame = new JFrame("Customer Page");
+                    customerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Adjust this as needed
+                    customerFrame.setSize(1000, 700); // Adjust the size as needed
+                    customerFrame.add(new CustomerUI());
+                    customerFrame.setLocationRelativeTo(null); // Center on screen
+                    customerFrame.setVisible(true);
+                });
             }
         });
     }
