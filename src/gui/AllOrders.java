@@ -1,11 +1,7 @@
 package gui;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
-
 import db.DatabaseConnectionHandler;
-import store.UserManager;
-
 import java.awt.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -116,11 +112,13 @@ public class AllOrders extends JPanel {
                 int quantity = rs.getInt("Quantity");
                 BigDecimal retailPrice = rs.getBigDecimal("retailPrice");
                 BigDecimal lineCost = retailPrice.multiply(new BigDecimal(quantity)); // Calculate line cost
+                String orderStatus = rs.getString("order_status");
             
                 // Accumulate the line costs for each order number
                 BigDecimal currentTotal = orderTotalsMap.getOrDefault(orderNumber, BigDecimal.ZERO);
                 currentTotal = currentTotal.add(lineCost);
                 orderTotalsMap.put(orderNumber, currentTotal);
+                orderStatusMap.put(orderNumber, orderStatus);
 
                 JPanel orderPanel = orderPanelsMap.computeIfAbsent(orderNumber, k -> new JPanel());
                 orderPanel.setLayout(new BoxLayout(orderPanel, BoxLayout.Y_AXIS));
@@ -143,6 +141,8 @@ public class AllOrders extends JPanel {
                 JPanel orderPanel = entry.getValue();
                 BigDecimal totalCost = orderTotalsMap.get(orderNumber).setScale(2, RoundingMode.HALF_UP); // Ensure total cost is to 2 decimal places
                 String orderStatus = orderStatusMap.get(orderNumber);
+
+                System.out.println(orderStatus);
 
                 JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                 // Display the total price for the order
