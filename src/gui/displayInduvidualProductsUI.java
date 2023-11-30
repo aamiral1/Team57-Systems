@@ -259,6 +259,12 @@ public class displayInduvidualProductsUI {
                                 "Confirmation",
                                 JOptionPane.INFORMATION_MESSAGE);
                     }
+                    else if (confirmationResult == JOptionPane.YES_OPTION) {
+                        JOptionPane.showMessageDialog(null, "Order Placed Unsuccessfully");
+                        viewCart(); // Calls the view cart method
+                        cartFrame.dispose(); // Closes the current window
+
+                    }
                 }
                 // Close the current window
                 cartFrame.dispose();
@@ -338,7 +344,7 @@ public class displayInduvidualProductsUI {
         addToCartButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+        
                 User currentUserRole = UserManager.getCurrentUser();
                 String usersID = currentUserRole.getUserID();
                 
@@ -351,14 +357,11 @@ public class displayInduvidualProductsUI {
                 
                 int quantity = (int) quantitySpinner.getValue();
                 
-                // Adds the product details and quantity to the cart
-                addToCart(productDetails, quantity);
-                
                 String productCode = productDetails[0];
                 BigDecimal retailPrice = new BigDecimal(productDetails[4]);
                 BigDecimal lineCost = retailPrice.multiply(new BigDecimal(quantity))
                                                  .setScale(2, RoundingMode.HALF_UP);
-
+        
                 try {
                     // SQL query to fetch order numbers for a specific user with 'pending' status
                     String ord_num_query = "SELECT order_number FROM OrderDetails WHERE user_id = ? AND order_status = 'pending'";
@@ -379,21 +382,43 @@ public class displayInduvidualProductsUI {
                     }
                     
                     if (orderNumber != null) {
-                        // SQL query to insert a new order line
-                        String insertOrderLineSQL = "INSERT INTO OrderLine(order_number, line_id, productCode, Quantity, Line_cost) VALUES (?, ?, ?, ?, ?)";
-                
-                        // Prepare the SQL statement for inserting the new order line
-                        PreparedStatement pstmtInsert = db.con.prepareStatement(insertOrderLineSQL);
-                
-                        // Set parameters for the insert statement
-                        pstmtInsert.setString(1, orderNumber);
-                        pstmtInsert.setString(2, UniqueUserIDGenerator.generateUniqueUserID());
-                        pstmtInsert.setString(3, productCode);
-                        pstmtInsert.setInt(4, quantity);
-                        pstmtInsert.setBigDecimal(5, lineCost);
+                        // Check if the order line already exists
+                        String checkLineExistsQuery = "SELECT Quantity FROM OrderLine WHERE order_number = ? AND productCode = ?";
+                        PreparedStatement pstmtCheck = db.con.prepareStatement(checkLineExistsQuery);
+                        pstmtCheck.setString(1, orderNumber);
+                        pstmtCheck.setString(2, productCode);
+                        ResultSet rsCheck = pstmtCheck.executeQuery();
                         
-                        // Execute the insert statement
-                        pstmtInsert.executeUpdate();
+                        if (rsCheck.next()) {
+                            // If the product already exists in the cart, update the quantity and line cost
+                            int existingQuantity = rsCheck.getInt("Quantity");
+                            BigDecimal newQuantity = new BigDecimal(existingQuantity + quantity);
+                            BigDecimal newLineCost = retailPrice.multiply(newQuantity).setScale(2, RoundingMode.HALF_UP);
+                            
+                            String updateOrderLineSQL = "UPDATE OrderLine SET Quantity = ?, Line_cost = ? WHERE order_number = ? AND productCode = ?";
+                            PreparedStatement pstmtUpdate = db.con.prepareStatement(updateOrderLineSQL);
+                            pstmtUpdate.setInt(1, newQuantity.intValue());
+                            pstmtUpdate.setBigDecimal(2, newLineCost);
+                            pstmtUpdate.setString(3, orderNumber);
+                            pstmtUpdate.setString(4, productCode);
+                            pstmtUpdate.executeUpdate();
+                        } else {
+                            // If the product does not exist in the cart, insert a new order line
+                            String insertOrderLineSQL = "INSERT INTO OrderLine(order_number, line_id, productCode, Quantity, Line_cost) VALUES (?, ?, ?, ?, ?)";
+                    
+                            // Prepare the SQL statement for inserting the new order line
+                            PreparedStatement pstmtInsert = db.con.prepareStatement(insertOrderLineSQL);
+                    
+                            // Set parameters for the insert statement
+                            pstmtInsert.setString(1, orderNumber);
+                            pstmtInsert.setString(2, UniqueUserIDGenerator.generateUniqueUserID());
+                            pstmtInsert.setString(3, productCode);
+                            pstmtInsert.setInt(4, quantity);
+                            pstmtInsert.setBigDecimal(5, lineCost);
+                            
+                            // Execute the insert statement
+                            pstmtInsert.executeUpdate();
+                        }
                     }
                 
                 } catch (SQLException sqlException) {
