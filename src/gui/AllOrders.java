@@ -20,6 +20,7 @@ public class AllOrders extends JPanel {
     private static void deleteOrder(DatabaseConnectionHandler db, String orderNumber, JFrame frame) {
         try {
             // Start transaction
+            db.openConnection();
             db.con.setAutoCommit(false);
 
             // Delete from OrderLine
@@ -50,6 +51,7 @@ public class AllOrders extends JPanel {
         } finally {
             try {
                 db.con.setAutoCommit(true);
+                db.closeConnection();
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }

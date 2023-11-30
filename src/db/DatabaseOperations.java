@@ -206,9 +206,8 @@ public class DatabaseOperations {
         return flag;
     }
 
-    public static Boolean userExists(User myUser) {
+    public static Boolean userExists(String username) {
         Boolean isExists = false;
-        String username;
         // open db connection
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         db.openConnection();
@@ -218,7 +217,7 @@ public class DatabaseOperations {
             PreparedStatement pstmt = db.con.prepareStatement(query);
 
             // get username
-            pstmt.setString(1, myUser.getUsername());
+            pstmt.setString(1, username);
             ResultSet matchedUsers = pstmt.executeQuery();
 
             if (matchedUsers.next()) {
@@ -306,7 +305,8 @@ public class DatabaseOperations {
                     // Format and decrypt date properly
                     // Date expiryDate = res.getDate("expiry_date");
                     // SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                    // String decryptedDate = Encryption.decrypt(dateFormat.format(expiryDate), salt);
+                    // String decryptedDate = Encryption.decrypt(dateFormat.format(expiryDate),
+                    // salt);
                     // String cvv = Encryption.decrypt(String.valueOf(res.getInt("cvv")), salt);
 
                     // add details to array
@@ -364,7 +364,8 @@ public class DatabaseOperations {
             isAdded = true;
 
         } catch (SQLException se) {
-            System.out.println("Failed to add bank details for user  " + myUser.getUserID() + " " + bankDetail.getCardNumber());
+            System.out.println(
+                    "Failed to add bank details for user  " + myUser.getUserID() + " " + bankDetail.getCardNumber());
             se.printStackTrace();
             isAdded = false;
         }
@@ -374,35 +375,35 @@ public class DatabaseOperations {
 
     public static Boolean placeOrder(User myUser, Connection con) {
         boolean status = false;
-    
+
         try {
             // Start transaction
             con.setAutoCommit(false);
-    
+
             // get the pending order of the current user
             String query = "SELECT ol.productCode, ol.Quantity FROM OrderLine ol "
-                         + "INNER JOIN OrderDetails od ON ol.order_number = od.order_number "
-                         + "WHERE od.order_status = 'pending' AND od.user_id = ?;";
+                    + "INNER JOIN OrderDetails od ON ol.order_number = od.order_number "
+                    + "WHERE od.order_status = 'pending' AND od.user_id = ?;";
             try (PreparedStatement pstmt = con.prepareStatement(query)) {
                 pstmt.setString(1, myUser.getUserID());
                 ResultSet res = pstmt.executeQuery();
-    
+
                 // Prepare statement for checking stock outside of loop
                 String stockCheckQuery = "SELECT productQuantity FROM Product WHERE productCode = ?";
                 try (PreparedStatement stockCheckStmt = con.prepareStatement(stockCheckQuery)) {
-                    
+
                     // Loop through each order line
                     if (res.next()) {
                         String productCode = res.getString(1);
                         int quantity = res.getInt(2);
-    
+
                         // Check stock
                         stockCheckStmt.setString(1, productCode);
                         ResultSet stockResult = stockCheckStmt.executeQuery();
-    
+
                         if (stockResult.next()) {
                             int productDbQuantity = stockResult.getInt(1);
-    
+
                             if (quantity >= productDbQuantity) {
                                 System.out.println("Invalid Quantity Selected");
                                 con.rollback();
@@ -414,14 +415,14 @@ public class DatabaseOperations {
                             return false;
                         }
                     }
-                
+
                     else {
                         System.out.println("No pending order exists");
                         return false;
                     }
                 }
             }
-    
+
             // If all quantities are valid, update order status
             String changeOrderStatus = "UPDATE OrderDetails SET order_status = 'confirmed' WHERE user_id = ? AND order_status = 'pending'";
             try (PreparedStatement qstmt = con.prepareStatement(changeOrderStatus)) {
@@ -430,7 +431,7 @@ public class DatabaseOperations {
                 con.commit();
                 status = true;
             }
-    
+
         } catch (SQLException se) {
             System.out.println("SQL Exception occurred");
             se.printStackTrace();
@@ -447,75 +448,80 @@ public class DatabaseOperations {
                 e.printStackTrace();
             }
         }
-    
+
         return status;
     }
-    
+
     // public static Boolean placeOrder(User myUser, Connection con){
-    //     boolean status = false;
-        
-    //     try {
-    //         // get the pending order of the current user
-    //         String query = "SELECT ol.productCode, ol.Quantity FROM OrderLine ol INNER JOIN OrderDetails od ON ol.order_number = od.order_number WHERE od.order_status = 'pending' AND od.user_id = ?;";
-    //         PreparedStatement pstmt = con.prepareStatement(query);
-    //         pstmt.setString(1, myUser.getUserID());
+    // boolean status = false;
 
-    //         ResultSet res = pstmt.executeQuery();
+    // try {
+    // // get the pending order of the current user
+    // String query = "SELECT ol.productCode, ol.Quantity FROM OrderLine ol INNER
+    // JOIN OrderDetails od ON ol.order_number = od.order_number WHERE
+    // od.order_status = 'pending' AND od.user_id = ?;";
+    // PreparedStatement pstmt = con.prepareStatement(query);
+    // pstmt.setString(1, myUser.getUserID());
 
-    //         // Loop through each order line and check if selected quantity is valid
-    //         while (res.next()){
-    //             String productCode = res.getString(1);
-    //             int quantity = res.getInt(2);
+    // ResultSet res = pstmt.executeQuery();
 
-    //             // get selected product code's current stock quantity
-    //             try {
-    //                 String newQuery = "SELECT productQuantity FROM Product WHERE productCode=?";
-    //                 PreparedStatement astmt = con.prepareStatement(newQuery);
-    //                 astmt.setString(1, productCode);
-    //                 ResultSet result = astmt.executeQuery();
+    // // Loop through each order line and check if selected quantity is valid
+    // while (res.next()){
+    // String productCode = res.getString(1);
+    // int quantity = res.getInt(2);
 
-    //                 if(result.next()){
-    //                     int productDbQuantity = result.getInt(1);
-    //                     // Check if selected order quantity is less than available stock quantity
-    //                     if (quantity<productDbQuantity){
-    //                         try {
-    //                             // ORDER VALID
-    //                             status=true;
-    //                             // Update order status
-    //                             String changeOrderStatus = "UPDATE OrderDetails SET order_status='confirmed' WHERE user_id=? AND order_status='pending";
-    //                             PreparedStatement qstmt = con.prepareStatement(changeOrderStatus);
-    //                             qstmt.setString(1, myUser.getUserID());
-    //                             qstmt.executeUpdate();
-    //                         } catch (SQLException e) {
-    //                             System.out.println("Update Status SQL Query Error");
-    //                             e.printStackTrace();
-    //                         }
-    //                     }
-    //                     else {
-    //                         System.out.println("Invalid Quantity Selected")
-    //                     }
-    //                 }
-    //                 else {
-    //                     System.out.println("Product Quantity does not exist for chosen product. Database bug.");
-    //                 }
-    //             } catch (SQLException e) {
-    //                 System.out.println("Selected product does not exist in the inventory. Please reload the system.");
-    //                 e.printStackTrace();
-    //             }
-    //         }
-    
-    //     } catch (SQLException se) {
-    //         System.out.println("Inner Join Query Issue");
-    //         se.printStackTrace();
-    //     }
-    //     return status;
+    // // get selected product code's current stock quantity
+    // try {
+    // String newQuery = "SELECT productQuantity FROM Product WHERE productCode=?";
+    // PreparedStatement astmt = con.prepareStatement(newQuery);
+    // astmt.setString(1, productCode);
+    // ResultSet result = astmt.executeQuery();
+
+    // if(result.next()){
+    // int productDbQuantity = result.getInt(1);
+    // // Check if selected order quantity is less than available stock quantity
+    // if (quantity<productDbQuantity){
+    // try {
+    // // ORDER VALID
+    // status=true;
+    // // Update order status
+    // String changeOrderStatus = "UPDATE OrderDetails SET order_status='confirmed'
+    // WHERE user_id=? AND order_status='pending";
+    // PreparedStatement qstmt = con.prepareStatement(changeOrderStatus);
+    // qstmt.setString(1, myUser.getUserID());
+    // qstmt.executeUpdate();
+    // } catch (SQLException e) {
+    // System.out.println("Update Status SQL Query Error");
+    // e.printStackTrace();
+    // }
+    // }
+    // else {
+    // System.out.println("Invalid Quantity Selected")
+    // }
+    // }
+    // else {
+    // System.out.println("Product Quantity does not exist for chosen product.
+    // Database bug.");
+    // }
+    // } catch (SQLException e) {
+    // System.out.println("Selected product does not exist in the inventory. Please
+    // reload the system.");
+    // e.printStackTrace();
+    // }
+    // }
+
+    // } catch (SQLException se) {
+    // System.out.println("Inner Join Query Issue");
+    // se.printStackTrace();
+    // }
+    // return status;
     // }
 
     public static boolean createOrderLine(String user_id, Connection con) {
 
         boolean status = false;
         int unique_order_number = 1; // Increments each time a new user logs in
-    
+
         try {
             // Check if the user_id already has an order
             if (userAlreadyHasPendingOrder(user_id, con)) {
@@ -526,7 +532,7 @@ public class DatabaseOperations {
             System.out.println("Opening a new cart for " + UserManager.getCurrentUser());
             // Get the current date and time
             java.sql.Date sqlDate = new java.sql.Date(System.currentTimeMillis());
-    
+
             // Create a PreparedStatement to insert a new order line
             String sqlQuery = "INSERT INTO OrderDetails (order_status, order_date, user_id) VALUES (?, ?, ?)";
             PreparedStatement preparedStatement = con.prepareStatement(sqlQuery);
@@ -539,20 +545,21 @@ public class DatabaseOperations {
     
             // Execute the PreparedStatement to insert the new order line
             preparedStatement.executeUpdate();
-    
+
             // Close the PreparedStatement
             preparedStatement.close();
             status = true;
-    
-            // Optionally, you can handle exceptions here if any occur during the database operation.
+
+            // Optionally, you can handle exceptions here if any occur during the database
+            // operation.
         } catch (SQLException e) {
             e.printStackTrace(); // Handle the exception as needed
             status = false;
         }
-    
+
         return status;
     }
-    
+
     // Helper method to check if a user already has an order
     private static boolean userAlreadyHasPendingOrder(String user_id, Connection con) throws SQLException {
         String query = "SELECT COUNT(*) FROM OrderDetails WHERE user_id = ? AND order_status='pending'";
@@ -564,4 +571,39 @@ public class DatabaseOperations {
             return pendingOrderCount > 0;
         }
     }
+
+    public static boolean updateField(String fieldName, String newValue, String userID, Connection con) {
+        PreparedStatement pstmt = null;
+        boolean status = false;
+
+        try {
+            String query = "UPDATE User SET " + fieldName + " = ? WHERE user_id = ?";
+            pstmt = con.prepareStatement(query);
+            pstmt.setString(1, newValue);
+            pstmt.setString(2, userID);
+
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows > 0) {
+                System.out.println("Details updated successfully!");
+                status = true;
+            }
+        } catch (SQLException e) {
+            System.out.println("Update Detail Failed");
+            e.printStackTrace();
+            status = false;
+        } finally {
+            try {
+                if (pstmt != null)
+                    pstmt.close();
+                if (con != null)
+                    con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return status;
+    }
+
+
 }
