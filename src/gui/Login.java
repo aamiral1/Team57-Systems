@@ -10,13 +10,13 @@ import db.*;
 import store.UserManager;
 
 public class Login extends JFrame {
-    private JTextField usernameField;
+    private JTextField emailField;
     private JPasswordField passwordField;
     private JButton loginButton;
 
     public Login() {
         // Create components
-        usernameField = new JTextField(15);
+        emailField = new JTextField(15);
         passwordField = new JPasswordField(15);
         loginButton = new JButton("LOGIN");
 
@@ -24,10 +24,10 @@ public class Login extends JFrame {
         setLayout(new GridLayout(3, 1));
 
         // Adding Username Panel
-        JPanel usernamePanel = new JPanel();
-        usernamePanel.add(new JLabel("Username:"));
-        usernamePanel.add(usernameField);
-        add(usernamePanel);
+        JPanel emailPanel = new JPanel();
+        emailPanel.add(new JLabel("Email:"));
+        emailPanel.add(emailField);
+        add(emailPanel);
 
         // Adding Password Panel
         JPanel passwordPanel = new JPanel();
@@ -46,10 +46,10 @@ public class Login extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 Boolean loginStatus = false;
                 // Logic to handle login
-                String usernameInput = usernameField.getText();
+                String emailInput = emailField.getText();
                 char[] password = passwordField.getPassword();
                 // For demo purposes, we just print the credentials
-                System.out.println("Username: " + usernameInput);
+                System.out.println("Email: " + emailInput);
                 System.out.println("Password: " + new String(password));
 
                 // open database connection
@@ -61,7 +61,7 @@ public class Login extends JFrame {
 
                     Connection connection = db.getConnection();
 
-                    loginStatus = DatabaseOperations.verifyLogin(db.con, usernameInput, password);
+                    loginStatus = DatabaseOperations.verifyLogin(db.con, emailInput, password);
                     if (loginStatus) {
                         // Open customer UI
                         System.out.println("Opening Customer View");

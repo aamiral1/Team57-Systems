@@ -32,5 +32,10 @@ public class UserManager {
             System.out.println("Current user does not exist");            return null;
         } 
     };
+    public static void logout(){
+        UserManager.currentUser = null;
+        UserManager.uniqueUserInstance = false;
+        System.out.println("Logged out successfully");
+    }
 
 }

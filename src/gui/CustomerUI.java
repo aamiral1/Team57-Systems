@@ -208,6 +208,19 @@ public class CustomerUI extends JPanel {
         // logout button - to be implemented
         JButton logoutButton = new JButton("Logout");
         logoutButton.addActionListener(e -> {
+            // Log out user and return to welcome screen
+            System.out.println("Log out button clicked");
+            UserManager.logout();
+
+            // Close the current JFrame that contains this JPanel
+            JFrame topLevelFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            if (topLevelFrame != null) {
+                topLevelFrame.dispose();
+            }
+
+            // Open the welcome screen
+            Welcome welcomeScreen = new Welcome();
+            welcomeScreen.setVisible(true);
         });
         navBarPanel.add(logoutButton);
 
