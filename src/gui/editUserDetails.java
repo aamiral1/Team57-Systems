@@ -172,6 +172,10 @@
                                                         updateName(con);
                                                         updatePassword(con);
                                                         updateEmail(con);
+                                                        updateHouseNumber(con);
+                                                        updateCityName(con);
+                                                        updateRoadName(con);
+                                                        updatePostCode(con);
                                                         return true;
                                                     }
                                                 } catch (SQLException e) {
@@ -222,8 +226,17 @@
 
                                             private void updateUsername(Connection con) throws SQLException {
                                                 if (!usernameField.getText().equals(currentUser.getUsername())) {
-                                                    currentUser.setUsername(usernameField.getText());
-                                                    DatabaseOperations.updateField("username", usernameField.getText(), currentUser.getUserID(), con);
+                                                    if(!DatabaseOperations.userExists(currentUser.getUsername())){
+                                                        currentUser.setUsername(usernameField.getText());
+                                                        DatabaseOperations.updateField("username", usernameField.getText(), currentUser.getUserID(), con);    
+                                                    }
+                                                    else{
+                                                        JOptionPane.showMessageDialog(
+                                                            null,
+                                                            "Username Taken",
+                                                            "Error",
+                                                            JOptionPane.ERROR_MESSAGE);
+                                                    }
                                                 }
                                             }
 
@@ -254,6 +267,29 @@
                                                     currentUser.setEmailAddress(emailAddressField.getText());
                                                     DatabaseOperations.updateField("email", emailAddressField.getText(), currentUser.getUserID(), con);
                                                 } 
-                                                
+                                            }
+                                            private void updateHouseNumber(Connection con) throws SQLException {
+                                                if (!houseNumberField.getText().equals(currentUser.getHouseNumber())) {
+                                                    currentUser.setHouseNumber(houseNumberField.getText());
+                                                    DatabaseOperations.updateField("house_number", houseNumberField.getText(), currentUser.getUserID(), con);
+                                                } 
+                                            }
+                                            private void updateCityName(Connection con) throws SQLException {
+                                                if (!cityNameField.getText().equals(currentUser.getCityName())) {
+                                                    currentUser.setCityName(cityNameField.getText());
+                                                    DatabaseOperations.updateField("city_name", cityNameField.getText(), currentUser.getUserID(), con);
+                                                } 
+                                            }
+                                            private void updateRoadName(Connection con) throws SQLException {
+                                                if (!roadNameField.getText().equals(currentUser.getRoadName())) {
+                                                    currentUser.setRoadName(roadNameField.getText());
+                                                    DatabaseOperations.updateField("road_name", roadNameField.getText(), currentUser.getUserID(), con);
+                                                } 
+                                            }
+                                            private void updatePostCode(Connection con) throws SQLException {
+                                                if (!postcodeField.getText().equals(currentUser.getPostcode())) {
+                                                    currentUser.setPostcode(postcodeField.getText());
+                                                    DatabaseOperations.updateField("post_code", postcodeField.getText(), currentUser.getUserID(), con);
+                                                } 
                                             }
                                         }

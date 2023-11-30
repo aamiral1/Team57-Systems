@@ -126,7 +126,7 @@ public class SignUp extends JPanel {
                     String roadName = roadNameBox.getText().strip();
                     String cityName = cityNameBox.getText().strip();
                     String postcode = postcodeBox.getText().strip();
-                    String role = "Manager"; // Default signup is customer
+                    String role = "Customer"; // Default signup is customer
                     String salt = Encryption.generateSalt().strip();
 
                     // store date of sign up
@@ -184,7 +184,7 @@ public class SignUp extends JPanel {
             return false;
         if (!isValidInput(passwordBox, "Password is required"))
             return false;
-        if (!isValidLength(houseNumberBox, 10, "House Number must be 10 characters or fewer"))
+        if (!isValidInput(houseNumberBox, "House Number is required"))
             return false;
         if (!isValidInput(roadNameBox, "Road Name is required"))
             return false;

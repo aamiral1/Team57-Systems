@@ -56,8 +56,29 @@ public class Login extends JFrame {
                 DatabaseConnectionHandler db = new DatabaseConnectionHandler();
                 db.openConnection();
 
+                // Throw basic error popups for empty inputs
+                String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+                boolean inputValidity=true;
+                if (emailInput.isEmpty() || !emailInput.matches(emailRegex)){
+                    JOptionPane.showMessageDialog(
+                        null,                // parent component, null makes it centered on screen
+                        "Invalid Email Format",        // the message to display
+                        "Error",             // title of the dialog
+                        JOptionPane.ERROR_MESSAGE // type of message, in this case, an error
+                    );
+                    inputValidity=false;
+                }
+                if (password.length == 0){
+                    JOptionPane.showMessageDialog(
+                        null,                // parent component, null makes it centered on screen
+                        "Password cannot be empty",        // the message to display
+                        "Error",             // title of the dialog
+                        JOptionPane.ERROR_MESSAGE // type of message, in this case, an error
+                    );
+                    inputValidity=false;
+                }
                 // verify login
-                if (password != null) {
+                if (password != null && inputValidity) {
 
                     Connection connection = db.getConnection();
 
@@ -71,20 +92,16 @@ public class Login extends JFrame {
 
                         // dispose login view
                         Login.this.dispose();
-                        // JFrame customerFrame = new JFrame("Customer Dashboard");
-                        // customerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                        // customerFrame.setSize(300,200);
-
-                        // CustomerUI customerUI = new CustomerUI();
-                        // customerFrame.add(customerUI);
-
-                        // // Make the frame visible
-                        // customerFrame.setVisible(true);
+                    } else {
+                        System.out.println("User Not Found");
+                        JOptionPane.showMessageDialog(
+                        null,                // parent component, null makes it centered on screen
+                        "User Not Found",        // the message to display
+                        "Error",             // title of the dialog
+                        JOptionPane.ERROR_MESSAGE // type of message, in this case, an error
+                    );
                     }
-                } else {
-                    // show error box
-                    JOptionPane.showMessageDialog(Login.this, "Invalid Credentials");
-                }
+                } 
 
                 if (loginStatus) {
                     // Hide the login panel

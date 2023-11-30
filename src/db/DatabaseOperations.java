@@ -98,7 +98,6 @@ public class DatabaseOperations {
             e.printStackTrace();
         }
 
-        System.out.println("User Not Found");
         return false;
     }
 
