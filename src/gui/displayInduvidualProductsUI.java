@@ -102,7 +102,7 @@ public class displayInduvidualProductsUI {
     // -----------------------------------------------------------------------------------------------------------------------
 
     // Method to view items added to cart
-    private static void viewCart() {
+    static void viewCart() {
         JFrame cartFrame = new JFrame("View Cart");
         cartFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         cartFrame.setLayout(new BorderLayout(10, 10));
@@ -178,7 +178,20 @@ public class displayInduvidualProductsUI {
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         JButton backButton = new JButton("Back");
         backButton.addActionListener(e -> {
-            goBackToProductDetailsPage(cartFrame);
+            // Dispose the current window
+            JFrame currentFrame = (JFrame) SwingUtilities.getWindowAncestor((Component) e.getSource());
+            currentFrame.dispose();
+        
+            // Create a new JFrame to hold the CustomerUI panel
+            JFrame customerFrame = new JFrame("Customer Page");
+            customerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            customerFrame.setSize(1000, 700); // Set the size according to your needs
+            customerFrame.setLocationRelativeTo(null); // Center on screen
+        
+            // Add an instance of CustomerUI to the JFrame
+            CustomerUI customerUI = new CustomerUI();
+            customerFrame.add(customerUI);
+            customerFrame.setVisible(true); // Make the JFrame visible
         });
 
         JButton confirmButton = new JButton("Proceed to checkout");

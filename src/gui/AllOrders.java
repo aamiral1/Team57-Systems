@@ -142,8 +142,6 @@ public class AllOrders extends JPanel {
                 BigDecimal totalCost = orderTotalsMap.get(orderNumber).setScale(2, RoundingMode.HALF_UP); // Ensure total cost is to 2 decimal places
                 String orderStatus = orderStatusMap.get(orderNumber);
 
-                System.out.println(orderStatus);
-
                 JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                 // Display the total price for the order
                 JLabel totalPriceLabel = new JLabel("Total Price: $" + totalCost.toPlainString());
