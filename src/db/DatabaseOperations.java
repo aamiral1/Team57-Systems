@@ -431,6 +431,8 @@ public class DatabaseOperations {
                 status = true;
             }
 
+            // Update quantity of the chosen product in database
+
         } catch (SQLException se) {
             System.out.println("SQL Exception occurred");
             se.printStackTrace();

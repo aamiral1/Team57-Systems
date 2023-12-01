@@ -258,11 +258,16 @@ public class displayInduvidualProductsUI {
                                 "Order Status: " + (orderConfirmedStatus ? "Confirmed" : "Rejected"),
                                 "Confirmation",
                                 JOptionPane.INFORMATION_MESSAGE);
+                        cartFrame.dispose(); // Closes the current window
+                        System.out.println("Opening Customer View");
+                        new CustomerUI().setVisible(true);
                     }
                     else if (confirmationResult == JOptionPane.YES_OPTION) {
                         JOptionPane.showMessageDialog(null, "Order Placed Unsuccessfully");
                         viewCart(); // Calls the view cart method
                         cartFrame.dispose(); // Closes the current window
+                        System.out.println("Opening Customer View");
+                        new CustomerUI().setVisible(true);
 
                     }
                 }
