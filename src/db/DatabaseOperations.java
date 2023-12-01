@@ -69,7 +69,8 @@ public class DatabaseOperations {
                         statement.executeUpdate();
 
                         // Create a user object and set it as current user
-                        User myUser = new User(userID, myUsername, name, storedPasswordHash, email, houseNumber, cityName,
+                        User myUser = new User(userID, myUsername, name, storedPasswordHash, email, houseNumber,
+                                cityName,
                                 roadName, postCode, joinDate, role, salt);
 
                         // Set myUser as current user
@@ -374,6 +375,8 @@ public class DatabaseOperations {
 
     public static Boolean placeOrder(User myUser, Connection con) {
         boolean status = false;
+        String productCode = null;
+        int quantity = 0;
 
         try {
             // Start transaction
@@ -392,9 +395,9 @@ public class DatabaseOperations {
                 try (PreparedStatement stockCheckStmt = con.prepareStatement(stockCheckQuery)) {
 
                     // Loop through each order line
-                    if (res.next()) {
-                        String productCode = res.getString(1);
-                        int quantity = res.getInt(2);
+                    while (res.next()) {
+                        productCode = res.getString(1);
+                        quantity = res.getInt(2);
 
                         // Check stock
                         stockCheckStmt.setString(1, productCode);
@@ -407,6 +410,15 @@ public class DatabaseOperations {
                                 System.out.println("Invalid Quantity Selected");
                                 con.rollback();
                                 return false;
+                            } else {
+                                // Update quantity of the chosen product in database
+                                String updateStockQuery = "UPDATE Product SET productQuantity = productQuantity - ? WHERE productCode = ?";
+                                try (PreparedStatement updateStockStmt = con.prepareStatement(updateStockQuery)) {
+                                    updateStockStmt.setInt(1, quantity);
+                                    updateStockStmt.setString(2, productCode);
+                                    updateStockStmt.executeUpdate();
+                                    System.out.println("Stock quantities updated successfully for product code " + productCode);
+                                }
                             }
                         } else {
                             System.out.println("Product Quantity does not exist for chosen product. Database bug.");
@@ -415,10 +427,10 @@ public class DatabaseOperations {
                         }
                     }
 
-                    else {
-                        System.out.println("No pending order exists");
-                        return false;
-                    }
+                    // else {
+                    // System.out.println("No pending order exists");
+                    // return false;
+                    // }
                 }
             }
 
@@ -432,7 +444,14 @@ public class DatabaseOperations {
             }
 
             // Update quantity of the chosen product in database
-
+            String updateStockQuery = "UPDATE Product SET productQuantity = productQuantity - ? WHERE productCode = ?";
+            try (PreparedStatement updateStockStmt = con.prepareStatement(updateStockQuery)) {
+                // Update stock
+                updateStockStmt.setInt(1, quantity);
+                updateStockStmt.setString(2, productCode);
+                updateStockStmt.executeUpdate();
+                System.out.println("Stock quantities updated succesfully");
+            }
         } catch (SQLException se) {
             System.out.println("SQL Exception occurred");
             se.printStackTrace();
@@ -453,71 +472,6 @@ public class DatabaseOperations {
         return status;
     }
 
-    // public static Boolean placeOrder(User myUser, Connection con){
-    // boolean status = false;
-
-    // try {
-    // // get the pending order of the current user
-    // String query = "SELECT ol.productCode, ol.Quantity FROM OrderLine ol INNER
-    // JOIN OrderDetails od ON ol.order_number = od.order_number WHERE
-    // od.order_status = 'pending' AND od.user_id = ?;";
-    // PreparedStatement pstmt = con.prepareStatement(query);
-    // pstmt.setString(1, myUser.getUserID());
-
-    // ResultSet res = pstmt.executeQuery();
-
-    // // Loop through each order line and check if selected quantity is valid
-    // while (res.next()){
-    // String productCode = res.getString(1);
-    // int quantity = res.getInt(2);
-
-    // // get selected product code's current stock quantity
-    // try {
-    // String newQuery = "SELECT productQuantity FROM Product WHERE productCode=?";
-    // PreparedStatement astmt = con.prepareStatement(newQuery);
-    // astmt.setString(1, productCode);
-    // ResultSet result = astmt.executeQuery();
-
-    // if(result.next()){
-    // int productDbQuantity = result.getInt(1);
-    // // Check if selected order quantity is less than available stock quantity
-    // if (quantity<productDbQuantity){
-    // try {
-    // // ORDER VALID
-    // status=true;
-    // // Update order status
-    // String changeOrderStatus = "UPDATE OrderDetails SET order_status='confirmed'
-    // WHERE user_id=? AND order_status='pending";
-    // PreparedStatement qstmt = con.prepareStatement(changeOrderStatus);
-    // qstmt.setString(1, myUser.getUserID());
-    // qstmt.executeUpdate();
-    // } catch (SQLException e) {
-    // System.out.println("Update Status SQL Query Error");
-    // e.printStackTrace();
-    // }
-    // }
-    // else {
-    // System.out.println("Invalid Quantity Selected")
-    // }
-    // }
-    // else {
-    // System.out.println("Product Quantity does not exist for chosen product.
-    // Database bug.");
-    // }
-    // } catch (SQLException e) {
-    // System.out.println("Selected product does not exist in the inventory. Please
-    // reload the system.");
-    // e.printStackTrace();
-    // }
-    // }
-
-    // } catch (SQLException se) {
-    // System.out.println("Inner Join Query Issue");
-    // se.printStackTrace();
-    // }
-    // return status;
-    // }
-
     public static boolean createOrderLine(String user_id, Connection con) {
 
         boolean status = false;
@@ -529,7 +483,7 @@ public class DatabaseOperations {
                 System.out.println("User already has a pending order. Not going to open a new cart");
                 return false; // You might want to return false or throw an exception here
             }
-            
+
             System.out.println("Opening a new cart for " + UserManager.getCurrentUser());
             // Get the current date and time
             java.sql.Date sqlDate = new java.sql.Date(System.currentTimeMillis());
@@ -537,13 +491,12 @@ public class DatabaseOperations {
             // Create a PreparedStatement to insert a new order line
             String sqlQuery = "INSERT INTO OrderDetails (order_status, order_date, user_id) VALUES (?, ?, ?)";
             PreparedStatement preparedStatement = con.prepareStatement(sqlQuery);
-    
-    
+
             // Set the values for the PreparedStatement
             preparedStatement.setString(1, "pending");
             preparedStatement.setDate(2, sqlDate);
             preparedStatement.setString(3, user_id);
-    
+
             // Execute the PreparedStatement to insert the new order line
             preparedStatement.executeUpdate();
 
@@ -603,6 +556,5 @@ public class DatabaseOperations {
 
         return status;
     }
-
 
 }

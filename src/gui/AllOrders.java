@@ -88,7 +88,7 @@ public class AllOrders extends JPanel {
     
     public static void createAndShowGUI() {
         JFrame frame = new JFrame("Order Details with Products");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
         JButton returnButton = new JButton("Return");
