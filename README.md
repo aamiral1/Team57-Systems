@@ -24,5 +24,5 @@ email: arav1@gmail.com
 pass: pass
 
 #### For Customer (with existing bank details):
-email: Mjackson1@sheffield.ac.uk
+email: mjackson1@sheffield.ac.uk
 pass: pass

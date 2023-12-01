@@ -234,47 +234,45 @@ public class TrainSets extends JPanel {
         }
     }
 
-
     private java.util.List<String[]> getBoxedSetContents() {
         java.util.List<String[]> boxedSetContents = new java.util.ArrayList<>();
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         db.openConnection();
         String sqlQuery = "SELECT " +
-        "BoxedSetContents.boxedSetID, " +
-        "BoxedSetContents.product_productCode, " +
-        "BoxedSetContents.quantity, " +
-        "Individual.modelType, " +
-        "Individual.gauge, " +
-        "Product.brandName, " +
-        "Product.productName, " +
-        "Product.retailPrice, " +
-        "Product.productQuantity " +
-        "FROM BoxedSetContents " +
-        "INNER JOIN Product ON BoxedSetContents.productCode = Product.productCode " +
-        "LEFT JOIN Individual ON Product.productCode = Individual.productCode " +
-        "INNER JOIN BoxedSet ON BoxedSetContents.boxedSetID = BoxedSet.boxedSetID;";
-
+                "BoxedSet.productCode as boxedSetID, " + // Get ProductCode as boxedSetID
+                "BoxedSetContents.quantity, " +
+                "BoxedSetContents.product_productCode, " +
+                "Individual.modelType, " +
+                "Individual.gauge, " +
+                "Product.brandName, " + // Additional details from Product table
+                "Product.productName, " +
+                "Product.retailPrice, " +
+                "Product.productQuantity " +
+                "FROM BoxedSetContents " +
+                "INNER JOIN BoxedSet ON BoxedSetContents.boxedSetID = BoxedSet.boxedSetID " +
+                "INNER JOIN Product ON BoxedSetContents.product_productCode = Product.productCode " + // Join with Product table
+                "LEFT JOIN Individual ON BoxedSetContents.product_productCode = Individual.productCode";
     
         try (PreparedStatement pstmt = db.con.prepareStatement(sqlQuery);
              ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                String boxedSetId = rs.getString("boxedSetId");
-                String individualProductCode = rs.getString("product_productCode");
+                String boxedSetID = rs.getString("boxedSetID");
                 int quantity = rs.getInt("quantity");
+                String individualProductCode = rs.getString("product_productCode");
                 String modelType = rs.getString("modelType");
                 String gauge = rs.getString("gauge");
-                String brandName = rs.getString("brandName");
+                String brandName = rs.getString("brandName"); // Retrieve additional details
                 String productName = rs.getString("productName");
                 float retailPrice = rs.getFloat("retailPrice");
                 int productQuantity = rs.getInt("productQuantity");
     
                 boxedSetContents.add(new String[]{
-                        "Boxed Set ID: " + boxedSetId,
+                        "Boxed Set ID: " + boxedSetID,
                         "Individual Product Code: " + individualProductCode,
                         "Quantity: " + quantity,
                         "Model Type: " + modelType,
                         "Gauge: " + gauge,
-                        "Brand Name: " + brandName,
+                        "Brand Name: " + brandName, // Add these details to the array
                         "Product Name: " + productName,
                         "Retail Price: $" + retailPrice,
                         "Product Quantity: " + productQuantity
@@ -287,6 +285,8 @@ public class TrainSets extends JPanel {
         }
         return boxedSetContents;
     }
+    
+    
 
     private JPanel createBox(List<String[]> boxedSetContents) {
         JPanel mainPanel = new JPanel(new GridBagLayout());
