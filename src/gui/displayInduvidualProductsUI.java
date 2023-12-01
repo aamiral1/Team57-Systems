@@ -260,15 +260,33 @@ public class displayInduvidualProductsUI {
                                 JOptionPane.INFORMATION_MESSAGE);
                         cartFrame.dispose(); // Closes the current window
                         System.out.println("Opening Customer View");
-                        new CustomerUI().setVisible(true);
-                    }
+                        JFrame frame = new JFrame("Customer Dashboard");
+                        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                        frame.setSize(800, 600); // Set the size of the frame
+                        frame.setLocationRelativeTo(null);
+    
+                        // Add the CustomerUI instance to the frame
+                        CustomerUI customerUI = new CustomerUI();
+                        frame.add(customerUI);
+    
+                        // Make the frame visible
+                        frame.setVisible(true);                    }
                     else if (confirmationResult == JOptionPane.NO_OPTION) {
                         JOptionPane.showMessageDialog(null, "Order Placed Unsuccessfully");
                         viewCart(); // Calls the view cart method
                         cartFrame.dispose(); // Closes the current window
                         System.out.println("Opening Customer View");
-                        new CustomerUI().setVisible(true);
-                    }
+                        JFrame frame = new JFrame("Customer Dashboard");
+                        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                        frame.setSize(800, 600); // Set the size of the frame
+                        frame.setLocationRelativeTo(null);
+    
+                        // Add the CustomerUI instance to the frame
+                        CustomerUI customerUI = new CustomerUI();
+                        frame.add(customerUI);
+    
+                        // Make the frame visible
+                        frame.setVisible(true);                    }
                 }
                 // Close the current window
                 cartFrame.dispose();
