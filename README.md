@@ -1,2 +1,28 @@
 # Team57-Systems
 A repository for our Systems Design Group Project.
+
+## How to Run the Program
+To get started with our system, you need to run the `Welcome.java` file which sets up the environment for different types of users based on their role. Below are the steps and credentials required for logging in.
+
+### Steps:
+1. Open `Welcome.java` file.
+2. Run this file to start the system.
+3. When prompted, enter the Login details for the role you wish to access.
+
+### Role Login Details:
+
+#### For Manager:
+email: nihal123@gmail.com
+pass: pass
+
+#### For Staff:
+email: nihal2@sheffield.ac.uk
+pass: pass2
+
+#### For Customer (without existing bank details):
+email: arav1@gmail.com
+pass: pass
+
+#### For Customer (with existing bank details):
+email: Mjackson1@sheffield.ac.uk
+pass: pass
