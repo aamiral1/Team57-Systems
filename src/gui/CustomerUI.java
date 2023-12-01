@@ -37,12 +37,6 @@ public class CustomerUI extends JPanel {
         // Navigation bar panel with FlowLayout
         JPanel navBarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
-        // Browse items button - I don't think this button is necessary
-        JButton browseItemsButton = new JButton("Browse Items");
-        browseItemsButton.addActionListener(e -> {
-        });
-        navBarPanel.add(browseItemsButton);
-
         // View orders button
         JButton viewOrdersButton = new JButton("View Recent Orders");
         viewOrdersButton.addActionListener(e -> {

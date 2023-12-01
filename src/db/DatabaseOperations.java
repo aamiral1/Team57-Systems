@@ -300,21 +300,8 @@ public class DatabaseOperations {
             if (res.next()) {
                 String salt = res.getString("salt");
                 try {
-                    // String cardName = Encryption.decrypt(res.getString("card_name"), salt);
                     String cardNumber = Encryption.decrypt(res.getString("card_number"), salt);
-                    // Format and decrypt date properly
-                    // Date expiryDate = res.getDate("expiry_date");
-                    // SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                    // String decryptedDate = Encryption.decrypt(dateFormat.format(expiryDate),
-                    // salt);
-                    // String cvv = Encryption.decrypt(String.valueOf(res.getInt("cvv")), salt);
-
-                    // add details to array
                     cardDetails.add(cardNumber);
-                    // cardDetails.add(cardName);
-                    // cardDetails.add(decryptedDate);
-                    // cardDetails.add(cvv);
-
                     System.out.println("User's existing card details being added: " + cardNumber);
 
                 } catch (Exception ex) {
