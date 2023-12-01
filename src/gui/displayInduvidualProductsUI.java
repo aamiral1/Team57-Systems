@@ -222,8 +222,8 @@ public class displayInduvidualProductsUI {
                 if (bankDetails.isEmpty()) {
                     System.out.println("CURRENT ID: " + currentUser.getUserID());
                     System.out.println("No Bank Detail Exist");
-
-                    // open payment window
+            
+                    // open payment window and wait for the user to enter details
                     SwingUtilities.invokeLater(() -> {
                         PaymentWindow newPaymentWindow = new PaymentWindow();
                     });
@@ -262,26 +262,17 @@ public class displayInduvidualProductsUI {
                         System.out.println("Opening Customer View");
                         new CustomerUI().setVisible(true);
                     }
-                    else if (confirmationResult == JOptionPane.YES_OPTION) {
+                    else if (confirmationResult == JOptionPane.NO_OPTION) {
                         JOptionPane.showMessageDialog(null, "Order Placed Unsuccessfully");
                         viewCart(); // Calls the view cart method
                         cartFrame.dispose(); // Closes the current window
                         System.out.println("Opening Customer View");
                         new CustomerUI().setVisible(true);
-
                     }
                 }
                 // Close the current window
                 cartFrame.dispose();
                 // Open a new instance of CustomerUI
-                SwingUtilities.invokeLater(() -> {
-                    JFrame customerFrame = new JFrame("Customer Page");
-                    customerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Adjust this as needed
-                    customerFrame.setSize(1000, 700); // Adjust the size as needed
-                    customerFrame.add(new CustomerUI());
-                    customerFrame.setLocationRelativeTo(null); // Center on screen
-                    customerFrame.setVisible(true);
-                });
             }
         });
     }

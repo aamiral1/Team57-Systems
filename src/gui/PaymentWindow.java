@@ -183,8 +183,15 @@ public class PaymentWindow extends JFrame {
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Perform actions when Cancel button is clicked
-                dispose(); // Close the current window
+                dispose(); 
+                SwingUtilities.invokeLater(() -> {
+                    JFrame customerFrame = new JFrame("Customer Page");
+                    customerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    customerFrame.setSize(1000, 700);
+                    customerFrame.add(new CustomerUI());
+                    customerFrame.setLocationRelativeTo(null);
+                    customerFrame.setVisible(true);
+                });
             }
         });
 
