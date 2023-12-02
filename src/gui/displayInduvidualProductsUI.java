@@ -199,8 +199,6 @@ public class displayInduvidualProductsUI {
         buttonsPanel.add(confirmButton);
         cartFrame.add(buttonsPanel, BorderLayout.SOUTH);
 
-
-        
         // Display the window
         cartFrame.pack();
         cartFrame.setMinimumSize(new Dimension(600, 400)); // Set a minimum size for the window
@@ -318,17 +316,6 @@ public class displayInduvidualProductsUI {
 
     // -----------------------------------------------------------------------------------------------------------------------
 
-    // Method to go back to previous category page
-    private static void goBackToProductDetailsPage(JFrame cartFrame) {
-        // Dispose the current cart frame
-        cartFrame.dispose();
-
-        String[][] productDetails = getProducts(currentProductType);
-        createAndShowGUI(productDetails);
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------------
-
     // Method that creates a product panel depending on which product category is
     // selected
 
@@ -416,6 +403,7 @@ public class displayInduvidualProductsUI {
                             pstmtUpdate.setString(3, orderNumber);
                             pstmtUpdate.setString(4, productCode);
                             pstmtUpdate.executeUpdate();
+                            JOptionPane.showMessageDialog(null, "Product added to cart!");
                         } else {
                             // If the product does not exist in the cart, insert a new order line
                             String insertOrderLineSQL = "INSERT INTO OrderLine(order_number, line_id, productCode, Quantity, Line_cost) VALUES (?, ?, ?, ?, ?)";
@@ -432,6 +420,7 @@ public class displayInduvidualProductsUI {
                             
                             // Execute the insert statement
                             pstmtInsert.executeUpdate();
+                            JOptionPane.showMessageDialog(null, "Product added to cart!");
                         }
                     }
                 
@@ -445,7 +434,6 @@ public class displayInduvidualProductsUI {
         });
 
         productPanel.add(addToCartButton);
-
         // This will keep the spinner and button to the right
         productPanel.add(Box.createHorizontalGlue());
 
@@ -454,23 +442,6 @@ public class displayInduvidualProductsUI {
         return productPanel;
     }
 
-    // -----------------------------------------------------------------------------------------------------------------------
-
-    // Method to add products to cart
-
-    private static void addToCart(String[] productDetails, int quantity) {
-
-        // Create a copy of the product details array with the quantity
-        String[] productWithQuantity = new String[productDetails.length + 1];
-        System.arraycopy(productDetails, 0, productWithQuantity, 0, productDetails.length);
-        productWithQuantity[productDetails.length] = String.valueOf(quantity);
-
-        // Adds the product to the cart
-        cart.add(productWithQuantity);
-
-        // Displays a message to the user confirming the addition to the cart
-        JOptionPane.showMessageDialog(null, "Product added to cart!");
-    }
 
     // -----------------------------------------------------------------------------------------------------------------------
 
