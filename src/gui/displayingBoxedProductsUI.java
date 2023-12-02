@@ -167,7 +167,7 @@ public class displayingBoxedProductsUI {
             if (currentFrame != null) {
                 currentFrame.dispose();
             }
-        
+
             // Create a new frame for the CustomerUI
             JFrame customerFrame = new JFrame("Customer Page");
             customerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -194,6 +194,17 @@ public class displayingBoxedProductsUI {
                 boxedSetPanel.add(productPanel);
             }
 
+            // Add a JSpinner for the quantity of the boxed set - user can select quantity they want, this should be stored when adding to cart.
+            SpinnerModel spinnerModel = new SpinnerNumberModel(1, 1, 100, 1); 
+            JSpinner quantitySpinner = new JSpinner(spinnerModel);
+            boxedSetPanel.add(new JLabel("Select Quantity: "));
+            boxedSetPanel.add(quantitySpinner);
+
+            JButton addToCart = new JButton("Add to cart"); // Add to cart button for boxedSets - to be implemented by Rohit
+            addToCart.addActionListener(e -> {}
+            );
+            boxedSetPanel.add(addToCart);
+
             mainPanel.add(boxedSetPanel);
         }
 
@@ -204,8 +215,6 @@ public class displayingBoxedProductsUI {
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-
-        db.closeConnection(); // Close the connection when done
     }
 
     private static String getProductCodeForBoxedSet(String boxedSetId, DatabaseConnectionHandler db) {
