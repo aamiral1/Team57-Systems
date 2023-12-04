@@ -119,12 +119,6 @@ public class Login extends JFrame {
 
                     // Make the frame visible
                     frame.setVisible(true);
-
-                    // customerUI.setTitle("Customer Dashboard");
-                    // customerUI.setLocationRelativeTo(null); // Center on screen
-                    // customerUI.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                    // customerUI.setMinimumSize(new Dimension(800, 600));
-                    // customerUI.setVisible(true);
                 }
 
                 db.closeConnection();

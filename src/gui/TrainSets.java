@@ -6,6 +6,7 @@ import java.util.List;
 import db.DatabaseConnectionHandler;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,151 +68,238 @@ public class TrainSets extends JPanel {
     private void refreshBoxedSets() {
         boxesPanel.removeAll();
         java.util.List<String[]> boxedSetsData = getBoxedSetContents(); // Fetch the boxed set contents
-
+    
         // Group the data by BoxedSetID
         Map<String, List<String[]>> groupedData = new HashMap<>();
         for (String[] data : boxedSetsData) {
             String setId = data[0].split(": ")[1]; // Extract Boxed Set ID
-            groupedData.computeIfAbsent(setId, k -> new ArrayList<>()).add(data);
+            if (setId.startsWith("M")) { // Check if the ID starts with M
+                groupedData.computeIfAbsent(setId, k -> new ArrayList<>()).add(data);
+            }
         }
-
+    
         // Create a box for each grouped set of details
         for (List<String[]> group : groupedData.values()) {
             JPanel boxPanel = createBox(group);
             boxesPanel.add(boxPanel);
             boxesPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         }
-
+    
         boxesPanel.revalidate();
         boxesPanel.repaint();
     }
 
-
     // Call this method when the Add button is clicked
     private void openAddDialog() {
-        JDialog addDialog = new JDialog(parentFrame, "Add New Locomotive", true);
+        JDialog addDialog = new JDialog(parentFrame, "Add New Train Set", true);
         addDialog.setLayout(new BorderLayout());
-        addDialog.setSize(400, 300);
+        addDialog.setSize(400, 300); // Adjust size as needed
         addDialog.setLocationRelativeTo(parentFrame);
-
+    
         JPanel fieldsPanel = new JPanel(new GridLayout(0, 2, 10, 10));
-        Map<String, JTextField> textFieldMap = new HashMap<>();
-
-        // Define the fields for the new locomotive details
-        String[] fields = {
-            "Product Code", "Brand Name", "Product Name", "Retail Price",
-            "Product Quantity", "Model Type", "Gauge", "Historical Era", "DCC Code"
-        };
-
-        // Create labels and text fields for each field
-        for (String field : fields) {
-            JLabel label = new JLabel(field);
-            JTextField textField = new JTextField(20);
-            fieldsPanel.add(label);
-            fieldsPanel.add(textField);
-            textFieldMap.put(field, textField);
-        }
-
-        JButton saveButton = new JButton("Save New Locomotive");
+    
+        fieldsPanel.add(new JLabel("BoxedSet ID:"));
+        JTextField boxedSetIdField = new JTextField(20);
+        fieldsPanel.add(boxedSetIdField);
+    
+        fieldsPanel.add(new JLabel("Locomotive Product Code:"));
+        JTextField locomotiveCodeField = new JTextField(20);
+        fieldsPanel.add(locomotiveCodeField);
+    
+        fieldsPanel.add(new JLabel("Locomotive Quantity:"));
+        JTextField locomotiveQuantityField = new JTextField(20);
+        fieldsPanel.add(locomotiveQuantityField);
+    
+        fieldsPanel.add(new JLabel("Rolling Stock Product Code:"));
+        JTextField rollingStockCodeField = new JTextField(20);
+        fieldsPanel.add(rollingStockCodeField);
+    
+        fieldsPanel.add(new JLabel("Rolling Stock Quantity:"));
+        JTextField rollingStockQuantityField = new JTextField(20);
+        fieldsPanel.add(rollingStockQuantityField);
+    
+        fieldsPanel.add(new JLabel("Track Pack Product Code:"));
+        JTextField trackPackCodeField = new JTextField(20);
+        fieldsPanel.add(trackPackCodeField);
+    
+        fieldsPanel.add(new JLabel("Track Pack Quantity:"));
+        JTextField trackPackQuantityField = new JTextField(20);
+        fieldsPanel.add(trackPackQuantityField);
+    
+        fieldsPanel.add(new JLabel("Controller Product Code:"));
+        JTextField controllerCodeField = new JTextField(20);
+        fieldsPanel.add(controllerCodeField);
+    
+        JButton saveButton = new JButton("Save New Train Set");
         saveButton.addActionListener(e -> {
-            saveNewLocomotive(textFieldMap);
+            String boxedSetId = boxedSetIdField.getText().trim();
+    
+            // Validate BoxedSetID
+            if (!boxedSetId.matches("\\d+")) {
+                JOptionPane.showMessageDialog(addDialog,
+                    "BoxedSetID must be a numeric value.",
+                    "Invalid BoxedSetID",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+    
+            if (boxedSetId.length() < 4 || Integer.parseInt(boxedSetId) % 2 != 0) {
+                JOptionPane.showMessageDialog(addDialog,
+                    "BoxedSetID should be at least 4 digits long and end in an even number, e.g., 0002",
+                    "Invalid BoxedSetID",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+    
+            // If validation passes, proceed with database insertion
+            Map<String, String> trainSetData = new HashMap<>();
+            trainSetData.put("Boxed Set ID", boxedSetId);
+            trainSetData.put("Locomotive Product Code", locomotiveCodeField.getText().trim());
+            trainSetData.put("Locomotive Quantity", locomotiveQuantityField.getText().trim());
+            trainSetData.put("Rolling Stock Product Code", rollingStockCodeField.getText().trim());
+            trainSetData.put("Rolling Stock Quantity", rollingStockQuantityField.getText().trim());
+            trainSetData.put("Track Pack Product Code", trackPackCodeField.getText().trim());
+            trainSetData.put("Track Pack Quantity", trackPackQuantityField.getText().trim());
+            trainSetData.put("Controller Product Code", controllerCodeField.getText().trim());
+        
+            // Other product codes and quantities as needed
+        
+            DatabaseConnectionHandler db = new DatabaseConnectionHandler(); // Ensure this is correctly initialized
+            try {
+                if (insertBoxedSetContents(db, trainSetData)) {
+                    JOptionPane.showMessageDialog(addDialog, "Train set added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    refreshBoxedSets(); // Refresh the data after a new entry is added
+                } else {
+                    JOptionPane.showMessageDialog(addDialog, "Failed to add train set.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(addDialog, "Database error: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+            }
+        
             addDialog.dispose();
         });
-
+    
         JButton cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(e -> addDialog.dispose());
-
+    
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
-
+    
         addDialog.add(fieldsPanel, BorderLayout.CENTER);
         addDialog.add(buttonPanel, BorderLayout.SOUTH);
         addDialog.setVisible(true);
     }
-
-    private boolean insertLocomotive(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap) throws SQLException {
-        boolean success = false; // default to false, will be set to true if inserts succeed
-        db.con.setAutoCommit(false); // Begin transaction
     
-        try {
-            // Insert into Product table
-            String insertProductSQL = "INSERT INTO Product (productCode, brandName, productName, retailPrice, productQuantity) VALUES (?, ?, ?, ?, ?)";
-            try (PreparedStatement pstmtProduct = db.con.prepareStatement(insertProductSQL)) {
-                pstmtProduct.setString(1, textFieldMap.get("Product Code").getText());
-                pstmtProduct.setString(2, textFieldMap.get("Brand Name").getText());
-                pstmtProduct.setString(3, textFieldMap.get("Product Name").getText());
-                
-                // Check and parse retail price
-                String retailPriceText = textFieldMap.get("Retail Price").getText().replaceAll("[^\\d.]", ""); // Remove non-numeric characters
-                if (retailPriceText.isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "Retail Price cannot be empty.", "Input Error", JOptionPane.ERROR_MESSAGE);
-                    return false; // Return early or throw an exception
-                }
-                try {
-                    pstmtProduct.setFloat(4, Float.parseFloat(retailPriceText));
-                } catch (NumberFormatException e) {
-                    JOptionPane.showMessageDialog(null, "Invalid number format for Retail Price.", "Input Error", JOptionPane.ERROR_MESSAGE);
-                    return false; // Return early or throw an exception
-                }
-    
-                // Check and parse product quantity
-                String productQuantityText = textFieldMap.get("Product Quantity").getText();
-                if (productQuantityText.isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "Product Quantity cannot be empty.", "Input Error", JOptionPane.ERROR_MESSAGE);
-                    return false;
-                }
-                try {
-                    pstmtProduct.setInt(5, Integer.parseInt(productQuantityText));
-                } catch (NumberFormatException e) {
-                    JOptionPane.showMessageDialog(null, "Invalid number format for Product Quantity.", "Input Error", JOptionPane.ERROR_MESSAGE);
-                    return false;
-                }
-    
-                pstmtProduct.executeUpdate();
-            }
-    
-            // Insert into Individual table
-            String insertIndividualSQL = "INSERT INTO Individual (productCode, modelType, gauge) VALUES (?, ?, ?)";
-            try (PreparedStatement pstmtIndividual = db.con.prepareStatement(insertIndividualSQL)) {
-                pstmtIndividual.setString(1, textFieldMap.get("Product Code").getText());
-                pstmtIndividual.setString(2, textFieldMap.get("Model Type").getText());
-                pstmtIndividual.setString(3, textFieldMap.get("Gauge").getText());
-                pstmtIndividual.executeUpdate();
-            }
-    
-            // Insert into Locomotives table
-            String insertLocomotivesSQL = "INSERT INTO Locomotives (productCode, historicalEra, DCCCode) VALUES (?, ?, ?)";
-            try (PreparedStatement pstmtLocomotives = db.con.prepareStatement(insertLocomotivesSQL)) {
-                pstmtLocomotives.setString(1, textFieldMap.get("Product Code").getText());
-                pstmtLocomotives.setString(2, textFieldMap.get("Historical Era").getText());
-                pstmtLocomotives.setString(3, textFieldMap.get("DCC Code").getText());
-                pstmtLocomotives.executeUpdate();
-            }
-    
-            db.con.commit(); // Commit transaction
-            success = true; // if we reached this point, everything went well
-    
-        } catch (SQLException e) {
-            db.con.rollback(); // Roll back transaction if anything goes wrong
-            throw e; // Rethrow the exception after rolling back to handle it in the calling method
-        } finally {
-            db.con.setAutoCommit(true); // Restore default behavior
+    // A method to convert boxed set IDs based on the pattern
+    private String convertBoxedSetID(String boxedSetID) {
+        // Assuming the input format is "000X"
+        int number = Integer.parseInt(boxedSetID); // Parse the number from the input
+        char prefix = 'P'; // Default prefix
+        if (number % 2 == 0) {
+            prefix = 'M'; // Change prefix to 'M' for even numbers
         }
-    
-        return success; // return the status of the insert operation
+        return String.format("%c%03d", prefix, number);
+    }
+
+    public boolean insertBoxedSetContents(DatabaseConnectionHandler db, Map<String, String> trainSetData) throws SQLException {
+        boolean success = false; // Default to false, will be set to true if inserts succeed
+        Connection conn = db.getConnection(); // Ensure this is your DatabaseConnectionHandler instance
+
+        if (conn != null) {
+            conn.setAutoCommit(false); // Begin transaction
+            try {
+                // Extract values from trainSetData
+                String boxedSetId = trainSetData.get("Boxed Set ID");
+                String locomotiveProductCode = trainSetData.get("Locomotive Product Code");
+                int locomotiveQuantity = Integer.parseInt(trainSetData.get("Locomotive Quantity"));
+                String rollingStockProductCode = trainSetData.get("Rolling Stock Product Code");
+                int rollingStockQuantity = Integer.parseInt(trainSetData.get("Rolling Stock Quantity"));
+                String trackPackProductCode = trainSetData.get("Track Pack Product Code");
+                int trackPackQuantity = Integer.parseInt(trainSetData.get("Track Pack Quantity"));
+                String controllerProductCode = trainSetData.get("Controller Product Code");
+
+                // Insert into BoxedSetContents table for Locomotive
+                String insertLocomotiveSQL = "INSERT INTO BoxedSetContents (boxedSetID, quantity, product_productCode) VALUES (?, ?, ?)";
+                try (PreparedStatement pstmtLocomotive = conn.prepareStatement(insertLocomotiveSQL)) {
+                    pstmtLocomotive.setString(1, boxedSetId);
+                    pstmtLocomotive.setInt(2, locomotiveQuantity);
+                    pstmtLocomotive.setString(3, locomotiveProductCode);
+                    pstmtLocomotive.executeUpdate();
+                }
+
+                // Insert into BoxedSetContents table for Rolling Stock
+                String insertRollingStockSQL = "INSERT INTO BoxedSetContents (boxedSetID, quantity, product_productCode) VALUES (?, ?, ?)";
+                try (PreparedStatement pstmtRollingStock = conn.prepareStatement(insertRollingStockSQL)) {
+                    pstmtRollingStock.setString(1, boxedSetId);
+                    pstmtRollingStock.setInt(2, rollingStockQuantity);
+                    pstmtRollingStock.setString(3, rollingStockProductCode);
+                    pstmtRollingStock.executeUpdate();
+                }
+
+                // Insert into BoxedSetContents table for Track Pack
+                String insertTrackPackSQL = "INSERT INTO BoxedSetContents (boxedSetID, quantity, product_productCode) VALUES (?, ?, ?)";
+                try (PreparedStatement pstmtTrackPack = conn.prepareStatement(insertTrackPackSQL)) {
+                    pstmtTrackPack.setString(1, boxedSetId);
+                    pstmtTrackPack.setInt(2, trackPackQuantity);
+                    pstmtTrackPack.setString(3, trackPackProductCode);
+                    pstmtTrackPack.executeUpdate();
+                }
+
+                // Insert into BoxedSetContents table for Controller
+                String insertControllerSQL = "INSERT INTO BoxedSetContents (boxedSetID, quantity, product_productCode) VALUES (?, ?, ?)";
+                try (PreparedStatement pstmtController = conn.prepareStatement(insertControllerSQL)) {
+                    pstmtController.setString(1, boxedSetId);
+                    pstmtController.setInt(2, 1); // Assuming there is only one controller in each boxed set
+                    pstmtController.setString(3, controllerProductCode);
+                    pstmtController.executeUpdate();
+                }
+
+                // Convert boxed set ID for BoxedSet
+                String convertedBoxedSetId = convertBoxedSetID(boxedSetId);
+
+                // Insert into BoxedSet table
+                String insertBoxedSetSQL = "INSERT INTO BoxedSet (productCode, boxedSetID) VALUES (?, ?)";
+                try (PreparedStatement pstmtBoxedSet = conn.prepareStatement(insertBoxedSetSQL)) {
+                    pstmtBoxedSet.setString(1, convertedBoxedSetId); // Use the converted value as productCode
+                    pstmtBoxedSet.setString(2, boxedSetId); // Use the original value as boxedSetID
+                    pstmtBoxedSet.executeUpdate();
+                }
+
+                conn.commit(); // Commit transaction
+                success = true; // If all inserts were successful
+            } catch (SQLException e) {
+                conn.rollback(); // Roll back transaction if anything goes wrong
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Insert error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                success = false;
+            } finally {
+                conn.setAutoCommit(true); // Restore default behavior
+            }
+        } else {
+            // Handle the scenario where conn is null, i.e., the connection could not be established
+            throw new SQLException("Unable to establish a database connection.");
+        }
+        return success;
     }
     
-    private void saveNewLocomotive(Map<String, JTextField> textFieldMap) {
-        DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+    private void saveNewTrainSet(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap) {
         boolean isInserted = false;
     
+        // Create a Map to store the String values extracted from the text fields
+        Map<String, String> trainSetData = new HashMap<>();
+        for (Map.Entry<String, JTextField> entry : textFieldMap.entrySet()) {
+            trainSetData.put(entry.getKey(), entry.getValue().getText());
+        }
+    
         try {
-            db.openConnection();
-            isInserted = insertLocomotive(db, textFieldMap);
+            isInserted = insertBoxedSetContents(db, trainSetData); // Use the new Map with String values
     
             if (isInserted) {
-                JOptionPane.showMessageDialog(this, "New locomotive added successfully!");
+                JOptionPane.showMessageDialog(this, "New train set added successfully!");
+                refreshBoxedSets(); // Refresh the UI to show the new train set
             } else {
                 JOptionPane.showMessageDialog(this, "Insert failed, no changes were made.");
             }
@@ -219,21 +307,10 @@ public class TrainSets extends JPanel {
             JOptionPane.showMessageDialog(this, "Insert error: " + e.getMessage());
             e.printStackTrace();
         } finally {
-            try {
-                if (db.con != null && !db.con.isClosed()) {
-                    db.closeConnection();
-                }
-            } catch (SQLException e) {
-                JOptionPane.showMessageDialog(this, "Error closing the database connection: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-    
-        if (isInserted) {
-            refreshBoxedSets();
+            db.closeConnection(); // We can rely on closeConnection() to check if conn is null or closed
         }
     }
-
+    
     private java.util.List<String[]> getBoxedSetContents() {
         java.util.List<String[]> boxedSetContents = new java.util.ArrayList<>();
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
@@ -286,8 +363,6 @@ public class TrainSets extends JPanel {
         return boxedSetContents;
     }
     
-    
-
     private JPanel createBox(List<String[]> boxedSetContents) {
         JPanel mainPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbcMain = new GridBagConstraints();
@@ -334,8 +409,8 @@ public class TrainSets extends JPanel {
             mainPanel.add(productPanel, gbcMain);
     
             // Check if this is the last item in the boxed set
-            boolean isLastItemInSet = (i == boxedSetContents.size() - 1) || 
-                                      (!boxedSetContents.get(i + 1)[0].split(": ")[1].equals(currentBoxedSetId));
+            boolean isLastItemInSet = (i == boxedSetContents.size() - 1) ||
+                    (!boxedSetContents.get(i + 1)[0].split(": ")[1].equals(currentBoxedSetId));
             if (isLastItemInSet) {
                 // Increment the row position for the buttons
                 gbcMain.gridy++;
@@ -343,11 +418,67 @@ public class TrainSets extends JPanel {
                 // Create a panel to hold the edit and delete buttons
                 JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER)); // Center the buttons
                 JButton editButton = new JButton("Edit");
-                JButton deleteButton = new JButton("Delete");
-                buttonPanel.add(editButton);
                 styleButton(editButton, new Color(144, 238, 144)); // Light green color
-                buttonPanel.add(deleteButton);
+
+                editButton.addActionListener(e -> {
+                    List<String> productDetailsForDialog = new ArrayList<>();
+                    for (String[] details : boxedSetContents) {
+                        String productCodeLabel = "Product Code";
+                        String productCode = details[1].split(": ")[1]; // Extracting the product code
+                        String quantityLabel = "Quantity";
+                        String quantity = details[2].split(": ")[1]; // Extracting the quantity
+                
+                        // Add the labels and values to the list
+                        productDetailsForDialog.add(productCodeLabel);
+                        productDetailsForDialog.add(productCode);
+                        productDetailsForDialog.add(quantityLabel);
+                        productDetailsForDialog.add(quantity);
+                    }
+                    // Convert the list to an array and open the dialog
+                    openEditDialog(productDetailsForDialog.toArray(new String[0]));
+                });
+                
+
+
+
+                // Style the delete button using the existing styleButton method
+                JButton deleteButton = new JButton("Delete");
                 styleButton(deleteButton, new Color(255, 99, 71)); // Tomato color
+                
+                // Retrieve the boxed set ID for the delete button
+                String boxedSetIdForDeletion = currentBoxedSetId; // Ensure this is the correct ID for the current set
+                
+                deleteButton.addActionListener(e -> {
+                    int response = JOptionPane.showConfirmDialog(
+                            null,
+                            "Are you sure you want to delete this boxed set?",
+                            "Confirm Deletion",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.QUESTION_MESSAGE
+                    );
+                    if (response == JOptionPane.YES_OPTION) {
+                        if (deleteBoxedSet(boxedSetIdForDeletion)) {
+                            JOptionPane.showMessageDialog(
+                                    null,
+                                    "Boxed Set deleted successfully.",
+                                    "Success",
+                                    JOptionPane.INFORMATION_MESSAGE
+                            );
+                            refreshBoxedSets();
+                        } else {
+                            JOptionPane.showMessageDialog(
+                                    null,
+                                    "Failed to delete the boxed set.",
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+                    }
+                });
+    
+                // Add the buttons to the button panel
+                buttonPanel.add(editButton);
+                buttonPanel.add(deleteButton);
     
                 // Set the weightx for button panel to stretch across the grid width
                 gbcMain.weightx = 1.0;
@@ -379,179 +510,109 @@ public class TrainSets extends JPanel {
     
         return mainPanel;
     }
-    
-    private void deleteLocomotive(String productCode) {
-        int confirm = JOptionPane.showConfirmDialog(
-                this,
-                "Are you sure you want to delete this locomotive?",
-                "Delete Confirmation",
-                JOptionPane.YES_NO_OPTION);
-
-        if (confirm == JOptionPane.YES_OPTION) {
-            DatabaseConnectionHandler db = new DatabaseConnectionHandler();
-            db.openConnection();
-            try {
-                db.con.setAutoCommit(false);
-
-                String deleteLocomotivesSQL = "DELETE FROM Locomotives WHERE productCode = ?";
-                try (PreparedStatement pstmtLocomotives = db.con.prepareStatement(deleteLocomotivesSQL)) {
-                    pstmtLocomotives.setString(1, productCode);
-                    pstmtLocomotives.executeUpdate();
-                }
-
-                String deleteIndividualSQL = "DELETE FROM Individual WHERE productCode = ?";
-                try (PreparedStatement pstmtIndividual = db.con.prepareStatement(deleteIndividualSQL)) {
-                    pstmtIndividual.setString(1, productCode);
-                    pstmtIndividual.executeUpdate();
-                }
-
-                String deleteProductSQL = "DELETE FROM Product WHERE productCode = ?";
-                try (PreparedStatement pstmtProduct = db.con.prepareStatement(deleteProductSQL)) {
-                    pstmtProduct.setString(1, productCode);
-                    pstmtProduct.executeUpdate();
-                }
-
-                db.con.commit();
-            } catch (SQLException e) {
-                try {
-                    db.con.rollback();
-                } catch (SQLException e2) {
-                    e2.printStackTrace();
-                }
-                e.printStackTrace();
-            } finally {
-                try {
-                    db.con.setAutoCommit(true);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-                db.closeConnection();
-            }
-
-            refreshBoxedSets();
-        }
-    }
-
-    private boolean updateLocomotive(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap, String productCode) throws SQLException {
-        boolean success = false; // default to false, will be set to true if updates succeed
-        db.con.setAutoCommit(false); // Begin transaction
-
-        try {
-            // Update Product table
-            String updateProductSQL = "UPDATE Product SET brandName = ?, productName = ?, retailPrice = ?, productQuantity = ? WHERE productCode = ?";
-            try (PreparedStatement pstmtProduct = db.con.prepareStatement(updateProductSQL)) {
-                pstmtProduct.setString(1, textFieldMap.get("Brand Name").getText());
-                pstmtProduct.setString(2, textFieldMap.get("Product Name").getText());
-                String retailPriceText = textFieldMap.get("Retail Price").getText().replaceAll("[^\\d.]", ""); // Remove non-numeric characters.
-                pstmtProduct.setFloat(3, Float.parseFloat(retailPriceText));
-                pstmtProduct.setInt(4, Integer.parseInt(textFieldMap.get("Product Quantity").getText()));
-                pstmtProduct.setString(5, productCode);
-                pstmtProduct.executeUpdate();
-            }
-
-            // Update Individual table
-            String updateIndividualSQL = "UPDATE Individual SET modelType = ?, gauge = ? WHERE productCode = ?";
-            try (PreparedStatement pstmtIndividual = db.con.prepareStatement(updateIndividualSQL)) {
-                pstmtIndividual.setString(1, textFieldMap.get("Model Type").getText());
-                pstmtIndividual.setString(2, textFieldMap.get("Gauge").getText());
-                pstmtIndividual.setString(3, productCode);
-                pstmtIndividual.executeUpdate();
-            }
-
-            // Update Locomotives table
-            String updateLocomotivesSQL = "UPDATE Locomotives SET historicalEra = ?, DCCCode = ? WHERE productCode = ?";
-            try (PreparedStatement pstmtLocomotives = db.con.prepareStatement(updateLocomotivesSQL)) {
-                pstmtLocomotives.setString(1, textFieldMap.get("Historical Era").getText());
-                pstmtLocomotives.setString(2, textFieldMap.get("DCC Code").getText());
-                pstmtLocomotives.setString(3, productCode);
-                pstmtLocomotives.executeUpdate();
-            }
-
-            db.con.commit(); // Commit transaction
-            success = true; // if we reached this point, everything went well
-
-        } catch (SQLException e) {
-            db.con.rollback(); // Roll back transaction if anything goes wrong
-            throw e; // Rethrow the exception after rolling back to handle it in the calling method
-        } finally {
-            db.con.setAutoCommit(true); // Restore default behavior
-        }
-
-        return success; // return the status of the update operation
-    }
-
-
-    private void saveLocomotiveChanges(Map<String, JTextField> textFieldMap, String productCode) {
+        
+    // Add a method to delete the boxed set from the database
+    private boolean deleteBoxedSet(String productCode) {
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
-        boolean isUpdated = false;
-    
+        boolean deleted = false;
+        String correctvalue = null;
+
         try {
             db.openConnection();
-            isUpdated = updateLocomotive(db, textFieldMap, productCode);
-    
-            if (isUpdated) {
-                JOptionPane.showMessageDialog(this, "Locomotive updated successfully!");
+            db.con.setAutoCommit(false); // Begin transaction
+
+            // Select the boxedSetID from the database using the productCode
+            String selectBoxedSetIDSQL = "SELECT boxedSetID FROM BoxedSet WHERE productCode = ?";
+            try (PreparedStatement pstmtBoxedSet = db.con.prepareStatement(selectBoxedSetIDSQL)) {
+                pstmtBoxedSet.setString(1, productCode);
+                try (ResultSet rs = pstmtBoxedSet.executeQuery()) {
+                    if (rs.next()) {
+                        correctvalue = rs.getString("boxedSetID");
+                    }
+                }
+            }
+
+            // Only proceed if the correctvalue (boxedSetID) was found
+            if (correctvalue != null) {
+                // Delete BoxedSetContents related to the boxed set
+                String deleteBoxedSetContentsSQL = "DELETE FROM BoxedSetContents WHERE boxedSetID = ?";
+                try (PreparedStatement pstmtBoxedSetContents = db.con.prepareStatement(deleteBoxedSetContentsSQL)) {
+                    pstmtBoxedSetContents.setString(1, correctvalue);
+                    pstmtBoxedSetContents.executeUpdate();
+                }
+
+                // Delete BoxedSet entry
+                String deleteBoxedSetSQL = "DELETE FROM BoxedSet WHERE productCode = ?";
+                try (PreparedStatement pstmtBoxedSet = db.con.prepareStatement(deleteBoxedSetSQL)) {
+                    pstmtBoxedSet.setString(1, productCode);
+                    pstmtBoxedSet.executeUpdate();
+                }
+
+                db.con.commit(); // Commit transaction
+                deleted = true; // Mark deletion as successful
             } else {
-                JOptionPane.showMessageDialog(this, "Update failed, no changes were made.");
+                // If correctvalue was not found, rollback the transaction
+                db.con.rollback();
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Update error: " + e.getMessage());
+            try {
+                db.con.rollback(); // Roll back transaction if anything goes wrong
+            } catch (SQLException e2) {
+                e2.printStackTrace();
+            }
             e.printStackTrace();
         } finally {
             try {
-                if (db.con != null && !db.con.isClosed()) {
-                    db.closeConnection();
+                if (db.con != null) {
+                    db.con.setAutoCommit(true); // Restore default behavior
                 }
             } catch (SQLException e) {
-                JOptionPane.showMessageDialog(this, "Error closing the database connection: " + e.getMessage());
                 e.printStackTrace();
             }
+            db.closeConnection();
         }
-    
-        if (isUpdated) {
-            refreshBoxedSets();
-        }
+
+        return deleted;
     }
 
-    private void openEditDialog(String[] locomotiveData) {
-        JDialog editDialog = new JDialog(parentFrame, "Edit Locomotive", true);
+    private void openEditDialog(String[] productDetails) {
+        JDialog editDialog = new JDialog(parentFrame, "Edit Product Details", true);
         editDialog.setLayout(new BorderLayout());
         editDialog.setSize(400, 300);
         editDialog.setLocationRelativeTo(parentFrame);
     
-        JPanel fieldsPanel = new JPanel(new GridLayout(0, 2, 10, 10));
-        Map<String, JTextField> textFieldMap = new HashMap<>();
+        JPanel fieldsPanel = new JPanel(new GridLayout(0, 2, 10, 10)); // Adjust the GridLayout rows as needed
     
-        // Create text fields pre-filled with locomotive data
-        for (String data : locomotiveData) {
-            String[] splitData = data.split(":\\s+");
-            if (splitData.length == 2) {
-                JLabel label = new JLabel(splitData[0].trim());
-                JTextField textField = new JTextField(splitData[1]);
-                fieldsPanel.add(label);
-                fieldsPanel.add(textField);
-                // Remove the colon and trim the label before using it as a key
-                textFieldMap.put(splitData[0].trim(), textField);
-            }
+        for (int i = 0; i < productDetails.length; i += 4) {
+            // Create and add the product code label and text field
+            fieldsPanel.add(new JLabel(productDetails[i])); // Product Code label
+            JTextField productCodeField = new JTextField(productDetails[i + 1]); // Product Code value
+            fieldsPanel.add(productCodeField);
+    
+            // Create and add the quantity label and text field
+            fieldsPanel.add(new JLabel(productDetails[i + 2])); // Quantity label
+            JTextField quantityField = new JTextField(productDetails[i + 3]); // Quantity value
+            fieldsPanel.add(quantityField);
         }
-
-    JButton saveButton = new JButton("Save Changes");
-    saveButton.addActionListener(e -> {
-        saveLocomotiveChanges(textFieldMap, locomotiveData[0].split(": ")[1]);
-        editDialog.dispose();
-    });
-
-    JButton cancelButton = new JButton("Cancel");
-    cancelButton.addActionListener(e -> editDialog.dispose());
-
-    JPanel buttonPanel = new JPanel();
-    buttonPanel.add(saveButton);
-    buttonPanel.add(cancelButton);
-
-    editDialog.add(fieldsPanel, BorderLayout.CENTER);
-    editDialog.add(buttonPanel, BorderLayout.SOUTH);
-    editDialog.setVisible(true);
-}
+    
+        JButton saveButton = new JButton("Save Changes");
+        saveButton.addActionListener(e -> {
+            // Logic to save changes goes here
+            editDialog.dispose();
+        });
+    
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(e -> editDialog.dispose());
+    
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(saveButton);
+        buttonPanel.add(cancelButton);
+    
+        editDialog.add(fieldsPanel, BorderLayout.CENTER);
+        editDialog.add(buttonPanel, BorderLayout.SOUTH);
+        editDialog.setVisible(true);
+    }
+    
 
      private void styleButton(JButton button, Color color) {
         button.setFont(new Font("SansSerif", Font.PLAIN, 12));

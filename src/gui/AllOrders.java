@@ -57,35 +57,82 @@ public class AllOrders extends JPanel {
         }
     }
 
-    // Utility method to update the order status in the database
+    // Utility method to update the order status in the database and decrease the product quantity
     private static void fulfillOrder(DatabaseConnectionHandler db, String orderNumber, JFrame frame) {
-
         db.openConnection();
         try {
-            String updateSQL = "UPDATE OrderDetails SET order_status = 'fulfilled' WHERE order_number = ? AND order_status = 'confirmed'";
-            PreparedStatement pstmtUpdate = db.con.prepareStatement(updateSQL);
-            pstmtUpdate.setString(1, orderNumber);
-            int rowsAffected = pstmtUpdate.executeUpdate();
+            // Start transaction
+            db.con.setAutoCommit(false);
 
-            // Check if the update was successful
-            if (rowsAffected > 0) {
+            // Select productCode and Quantity from OrderLine where Order_number is the one provided
+            String selectOrderLineSQL = "SELECT productCode, Quantity FROM OrderLine WHERE Order_number = ?";
+            PreparedStatement pstmtSelectOrderLine = db.con.prepareStatement(selectOrderLineSQL);
+            pstmtSelectOrderLine.setString(1, orderNumber);
+            ResultSet rsOrderLine = pstmtSelectOrderLine.executeQuery();
+
+            while (rsOrderLine.next()) {
+                String productCode = rsOrderLine.getString("productCode");
+                int quantityOrdered = rsOrderLine.getInt("Quantity");
+
+                // Check current stock level for the product
+                String checkStockSQL = "SELECT productQuantity FROM Product WHERE productCode = ?";
+                PreparedStatement pstmtCheckStock = db.con.prepareStatement(checkStockSQL);
+                pstmtCheckStock.setString(1, productCode);
+                ResultSet rsCheckStock = pstmtCheckStock.executeQuery();
+
+                if (rsCheckStock.next()) {
+                    int currentStock = rsCheckStock.getInt("productQuantity");
+                    if (currentStock < quantityOrdered) {
+                        JOptionPane.showMessageDialog(frame, "Order could not be fulfilled. Please update stock levels for product code: " + productCode);
+                        db.con.rollback();
+                        return; // Exit the method early as we cannot fulfill this order
+                    }
+                }
+
+                // Update the Product table to decrease the productQuantity by the quantity ordered
+                String updateProductSQL = "UPDATE Product SET productQuantity = productQuantity - ? WHERE productCode = ?";
+                PreparedStatement pstmtUpdateProduct = db.con.prepareStatement(updateProductSQL);
+                pstmtUpdateProduct.setInt(1, quantityOrdered);
+                pstmtUpdateProduct.setString(2, productCode);
+                pstmtUpdateProduct.executeUpdate();
+            }
+
+            // Update OrderDetails to set the order status to 'fulfilled'
+            String updateOrderDetailsSQL = "UPDATE OrderDetails SET order_status = 'fulfilled' WHERE order_number = ? AND order_status = 'confirmed'";
+            PreparedStatement pstmtUpdateOrderDetails = db.con.prepareStatement(updateOrderDetailsSQL);
+            pstmtUpdateOrderDetails.setString(1, orderNumber);
+            int rowsAffectedOrderDetails = pstmtUpdateOrderDetails.executeUpdate();
+
+            // Check if the order status update was successful
+            if (rowsAffectedOrderDetails > 0) {
                 JOptionPane.showMessageDialog(frame, "Order " + orderNumber + " has been fulfilled.");
+                // Commit transaction
+                db.con.commit();
             } else {
                 JOptionPane.showMessageDialog(frame, "Order " + orderNumber + " could not be updated. It may not be in the correct state.");
+                db.con.rollback();
             }
 
             // Refresh the UI
             frame.dispose();
             createAndShowGUI();
         } catch (SQLException e) {
+            try {
+                db.con.rollback(); // Rollback on error
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
             e.printStackTrace();
         } finally {
-            db.closeConnection();
+            try {
+                db.con.setAutoCommit(true);
+                db.closeConnection();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         }
-
     }
 
-    
     public static void createAndShowGUI() {
         JFrame frame = new JFrame("Order Details with Products");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
