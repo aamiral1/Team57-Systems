@@ -6,7 +6,6 @@ import java.util.List;
 import db.DatabaseConnectionHandler;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -283,32 +282,6 @@ public class TrainSets extends JPanel {
             throw new SQLException("Unable to establish a database connection.");
         }
         return success;
-    }
-    
-    private void saveNewTrainSet(DatabaseConnectionHandler db, Map<String, JTextField> textFieldMap) {
-        boolean isInserted = false;
-    
-        // Create a Map to store the String values extracted from the text fields
-        Map<String, String> trainSetData = new HashMap<>();
-        for (Map.Entry<String, JTextField> entry : textFieldMap.entrySet()) {
-            trainSetData.put(entry.getKey(), entry.getValue().getText());
-        }
-    
-        try {
-            isInserted = insertBoxedSetContents(db, trainSetData); // Use the new Map with String values
-    
-            if (isInserted) {
-                JOptionPane.showMessageDialog(this, "New train set added successfully!");
-                refreshBoxedSets(); // Refresh the UI to show the new train set
-            } else {
-                JOptionPane.showMessageDialog(this, "Insert failed, no changes were made.");
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Insert error: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            db.closeConnection(); // We can rely on closeConnection() to check if conn is null or closed
-        }
     }
     
     private java.util.List<String[]> getBoxedSetContents() {
