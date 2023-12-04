@@ -158,7 +158,7 @@ public class displayingBoxedProductsUI {
         db.openConnection(); // Make sure to open a connection to the database
 
         JFrame frame = new JFrame("Boxed Sets Product Details");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
         JPanel northPanel = new JPanel(new BorderLayout());
@@ -324,7 +324,7 @@ public class displayingBoxedProductsUI {
     // Method to view items added to cart
     static void viewCart() {
         JFrame cartFrame = new JFrame("View Cart");
-        cartFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        cartFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         cartFrame.setLayout(new BorderLayout(10, 10));
         
         // Header Panel
@@ -443,7 +443,7 @@ public class displayingBoxedProductsUI {
             
                     // open payment window and wait for the user to enter details
                     SwingUtilities.invokeLater(() -> {
-                        PaymentWindow newPaymentWindow = new PaymentWindow();
+                        PaymentWindow newPaymentWindow = new PaymentWindow(true);
                     });
                 }
                 // Bank Details exist for current user

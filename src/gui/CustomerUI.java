@@ -82,11 +82,11 @@ public class CustomerUI extends JPanel {
                 // Calls the view cart method
                 displayInduvidualProductsUI.viewCart();
         
-                // Dispose the current window by finding the JFrame ancestor of the button
-                JFrame topLevelFrame = (JFrame) SwingUtilities.getWindowAncestor(viewCartButton);
-                if (topLevelFrame != null) {
-                    topLevelFrame.dispose(); // Closes the current window
-                }
+                // // Dispose the current window by finding the JFrame ancestor of the button
+                // JFrame topLevelFrame = (JFrame) SwingUtilities.getWindowAncestor(viewCartButton);
+                // if (topLevelFrame != null) {
+                //     topLevelFrame.dispose(); // Closes the current window
+                // }
             }
         });
         

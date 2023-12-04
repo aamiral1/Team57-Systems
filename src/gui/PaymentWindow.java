@@ -20,9 +20,9 @@ import java.util.regex.Pattern;
 
 public class PaymentWindow extends JFrame {
 
-    public PaymentWindow() {
+    public PaymentWindow(boolean order) {
 
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(600, 400);
         setTitle("Payment Window");
 
@@ -36,8 +36,8 @@ public class PaymentWindow extends JFrame {
         JFormattedTextField expiryDateField = new JFormattedTextField(dateFormat);
         expiryDateField.setColumns(10);
 
-        JButton confirmAndPayButton = new JButton("Confirm & Pay");
-        JButton cancelButton = new JButton("Cancel Order");
+        JButton confirmAndPayButton = new JButton("Confirm");
+        JButton cancelButton = new JButton("Cancel");
 
         // Create layout and add components
         JPanel panel = new JPanel();
@@ -153,29 +153,45 @@ public class PaymentWindow extends JFrame {
                     BankDetail userBankDetail = new BankDetail(cardNameField.getText(), cardNumberField.getText(),
                             expiryDateField.getText(), cvv.getText());
 
-                    
+                    // update User's banking details in database
                     Boolean addedBankDetail = DatabaseOperations.addBankDetail(UserManager.getCurrentUser(),
                             userBankDetail, db.con);
 
                     System.out.println("Banking Detail Update Status: " + addedBankDetail);
-                
-                    // update User's banking details in database
-                                    
+
+                    // if just editing details
+                    if (!order && addedBankDetail){
+                        // Show confirmation message
+                        JOptionPane.showMessageDialog(
+                                null,
+                                "Banking Details Updated Successfully!",
+                                "Confirmation",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    } else if (!order && !addedBankDetail){
+                        JOptionPane.showMessageDialog(
+                                null,
+                                "Banking Details Update Error!",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
 
                 } else {
                     JOptionPane.showMessageDialog(null, "Card Details are Invalid");
                 }
+
                 
                 // Place order
-                boolean orderConfirmedStatus = DatabaseOperations.placeOrder(UserManager.getCurrentUser(), db.con);
-                // Show confirmation message
-                JOptionPane.showMessageDialog(
-                        null,
-                        "Order Status: " + (orderConfirmedStatus ? "Confirmed" : "Rejected"),
-                        "Confirmation",
-                        JOptionPane.INFORMATION_MESSAGE);
-                System.out.println("Confirm and pay button clicked");
-
+                if (order){
+                    boolean orderConfirmedStatus = DatabaseOperations.placeOrder(UserManager.getCurrentUser(), db.con);
+                    // Show confirmation message
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Order Status: " + (orderConfirmedStatus ? "Confirmed" : "Rejected"),
+                            "Confirmation",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    System.out.println("Confirm and pay button clicked");
+                }
+               
                 db.closeConnection();
             }
         });
@@ -200,9 +216,9 @@ public class PaymentWindow extends JFrame {
         setVisible(true);
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            PaymentWindow window = new PaymentWindow();
-        });
-    }
+    // public static void main(String[] args) {
+    //     SwingUtilities.invokeLater(() -> {
+    //         PaymentWindow window = new PaymentWindow(order);
+    //     });
+    // }
 }

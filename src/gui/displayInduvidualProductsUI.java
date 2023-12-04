@@ -34,7 +34,7 @@ public class displayInduvidualProductsUI {
     public static void createAndShowGUI(String[][] productDetails) {
 
         JFrame frame = new JFrame("Product Details");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
         JPanel northPanel = new JPanel(new BorderLayout());
@@ -50,7 +50,7 @@ public class displayInduvidualProductsUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 viewCart(); // Calls the view cart method
-                frame.dispose(); // Closes the current window
+                // frame.dispose(); // Closes the current window
             }
         });
 
@@ -104,56 +104,58 @@ public class displayInduvidualProductsUI {
     // Method to view items added to cart
     static void viewCart() {
         JFrame cartFrame = new JFrame("View Cart");
-        cartFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        cartFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         cartFrame.setLayout(new BorderLayout(10, 10));
-        
+
         // Header Panel
         JPanel headerPanel = new JPanel(new GridLayout(1, 4, 10, 10));
         headerPanel.add(new JLabel("Order Number"));
         headerPanel.add(new JLabel("Product Code"));
         headerPanel.add(new JLabel("Quantity"));
         headerPanel.add(new JLabel("Line Cost"));
-        
+
         // Display Panel
         JPanel displayCartPanel = new JPanel();
         displayCartPanel.setLayout(new BoxLayout(displayCartPanel, BoxLayout.Y_AXIS));
         displayCartPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         displayCartPanel.add(headerPanel);
-    
+
         // Scroll Pane
         JScrollPane scrollPane = new JScrollPane(displayCartPanel);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         cartFrame.add(scrollPane, BorderLayout.CENTER);
-        
+
         // Database Connection
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         db.openConnection();
         User currentUserRole = UserManager.getCurrentUser();
         String usersID = currentUserRole.getUserID();
-    
+
         try {
             PreparedStatement pstmt = db.con.prepareStatement(
-                "SELECT OrderLine.order_number, OrderLine.productCode, OrderLine.Quantity, OrderLine.Line_cost " +
-                "FROM OrderLine INNER JOIN OrderDetails ON OrderLine.order_number = OrderDetails.order_number " +
-                "WHERE OrderDetails.user_id = ? AND OrderDetails.order_status = 'pending'");
+                    "SELECT OrderLine.order_number, OrderLine.productCode, OrderLine.Quantity, OrderLine.Line_cost " +
+                            "FROM OrderLine INNER JOIN OrderDetails ON OrderLine.order_number = OrderDetails.order_number "
+                            +
+                            "WHERE OrderDetails.user_id = ? AND OrderDetails.order_status = 'pending'");
             pstmt.setString(1, usersID);
-    
+
             ResultSet rs = pstmt.executeQuery();
-            
+
             // Process ResultSet
             while (rs.next()) {
                 String orderNumber = rs.getString("order_number");
                 String productCode = rs.getString("productCode");
                 int quantity = rs.getInt("Quantity");
                 BigDecimal lineCost = rs.getBigDecimal("Line_cost");
-            
-                JPanel productPanel = new JPanel(new GridLayout(1, 5, 5, 5)); // 1 row, 5 columns, to accommodate the delete button
+
+                JPanel productPanel = new JPanel(new GridLayout(1, 5, 5, 5)); // 1 row, 5 columns, to accommodate the
+                                                                              // delete button
                 productPanel.add(new JLabel(orderNumber));
                 productPanel.add(new JLabel(productCode));
                 productPanel.add(new JLabel(String.valueOf(quantity)));
                 productPanel.add(new JLabel(lineCost.toPlainString()));
-            
+
                 // Create a delete button and add it to the row
                 JButton deleteButton = new JButton("Delete");
                 deleteButton.addActionListener(e -> {
@@ -164,7 +166,7 @@ public class displayInduvidualProductsUI {
                     displayCartPanel.revalidate();
                     displayCartPanel.repaint();
                 });
-            
+
                 productPanel.add(deleteButton); // Add the delete button to the product panel
                 displayCartPanel.add(productPanel);
             }
@@ -173,7 +175,7 @@ public class displayInduvidualProductsUI {
         } finally {
             db.closeConnection();
         }
-    
+
         // Buttons Panel
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         JButton backButton = new JButton("Back");
@@ -181,13 +183,13 @@ public class displayInduvidualProductsUI {
             // Dispose the current window
             JFrame currentFrame = (JFrame) SwingUtilities.getWindowAncestor((Component) e.getSource());
             currentFrame.dispose();
-        
+
             // Create a new JFrame to hold the CustomerUI panel
             JFrame customerFrame = new JFrame("Customer Page");
             customerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             customerFrame.setSize(1000, 700); // Set the size according to your needs
             customerFrame.setLocationRelativeTo(null); // Center on screen
-        
+
             // Add an instance of CustomerUI to the JFrame
             CustomerUI customerUI = new CustomerUI();
             customerFrame.add(customerUI);
@@ -220,10 +222,10 @@ public class displayInduvidualProductsUI {
                 if (bankDetails.isEmpty()) {
                     System.out.println("CURRENT ID: " + currentUser.getUserID());
                     System.out.println("No Bank Detail Exist");
-            
+
                     // open payment window and wait for the user to enter details
                     SwingUtilities.invokeLater(() -> {
-                        PaymentWindow newPaymentWindow = new PaymentWindow();
+                        PaymentWindow newPaymentWindow = new PaymentWindow(true);
                     });
                 }
                 // Bank Details exist for current user
@@ -262,14 +264,14 @@ public class displayInduvidualProductsUI {
                         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                         frame.setSize(800, 600); // Set the size of the frame
                         frame.setLocationRelativeTo(null);
-    
+
                         // Add the CustomerUI instance to the frame
                         CustomerUI customerUI = new CustomerUI();
                         frame.add(customerUI);
-    
+
                         // Make the frame visible
-                        frame.setVisible(true);                    }
-                    else if (confirmationResult == JOptionPane.NO_OPTION) {
+                        frame.setVisible(true);
+                    } else if (confirmationResult == JOptionPane.NO_OPTION) {
                         JOptionPane.showMessageDialog(null, "Order Placed Unsuccessfully");
                         viewCart(); // Calls the view cart method
                         cartFrame.dispose(); // Closes the current window
@@ -278,13 +280,14 @@ public class displayInduvidualProductsUI {
                         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                         frame.setSize(800, 600); // Set the size of the frame
                         frame.setLocationRelativeTo(null);
-    
+
                         // Add the CustomerUI instance to the frame
                         CustomerUI customerUI = new CustomerUI();
                         frame.add(customerUI);
-    
+
                         // Make the frame visible
-                        frame.setVisible(true);                    }
+                        frame.setVisible(true);
+                    }
                 }
                 // Close the current window
                 cartFrame.dispose();
@@ -297,14 +300,14 @@ public class displayInduvidualProductsUI {
         // Open a connection to the database
         DatabaseConnectionHandler db = new DatabaseConnectionHandler();
         db.openConnection();
-        
+
         try {
             // Prepare the SQL DELETE statement
             String sql = "DELETE FROM OrderLine WHERE order_number = ? AND productCode = ?";
             PreparedStatement pstmt = db.con.prepareStatement(sql);
             pstmt.setString(1, orderNumber);
             pstmt.setString(2, productCode);
-            
+
             // Execute the delete statement
             pstmt.executeUpdate();
         } catch (SQLException sqlException) {
@@ -345,43 +348,43 @@ public class displayInduvidualProductsUI {
         addToCartButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-        
+
                 User currentUserRole = UserManager.getCurrentUser();
                 String usersID = currentUserRole.getUserID();
-                
+
                 DatabaseConnectionHandler db = new DatabaseConnectionHandler();
                 db.openConnection();
-                
+
                 // Gets the details of the product row the button is on using custom method and
                 // adds to the cart data structure
                 String[] productDetails = getProductDetailsFromPanel((JPanel) addToCartButton.getParent());
-                
+
                 int quantity = (int) quantitySpinner.getValue();
-                
+
                 String productCode = productDetails[0];
                 BigDecimal retailPrice = new BigDecimal(productDetails[4]);
                 BigDecimal lineCost = retailPrice.multiply(new BigDecimal(quantity))
-                                                 .setScale(2, RoundingMode.HALF_UP);
-        
+                        .setScale(2, RoundingMode.HALF_UP);
+
                 try {
                     // SQL query to fetch order numbers for a specific user with 'pending' status
                     String ord_num_query = "SELECT order_number FROM OrderDetails WHERE user_id = ? AND order_status = 'pending'";
-                    
+
                     // Prepare the SQL statement for fetching order numbers
                     PreparedStatement pstmt = db.con.prepareStatement(ord_num_query);
-                    
+
                     // Set the user_id parameter to the retrieved usersID
                     pstmt.setString(1, usersID);
-                
+
                     // Execute the query and process the result set
                     ResultSet rs = pstmt.executeQuery();
-                    
+
                     String orderNumber = null;
                     if (rs.next()) {
                         orderNumber = rs.getString("order_number");
                         System.out.println(orderNumber); // This will print the first order number for the given user ID
                     }
-                    
+
                     if (orderNumber != null) {
                         // Check if the order line already exists
                         String checkLineExistsQuery = "SELECT Quantity FROM OrderLine WHERE order_number = ? AND productCode = ?";
@@ -389,13 +392,14 @@ public class displayInduvidualProductsUI {
                         pstmtCheck.setString(1, orderNumber);
                         pstmtCheck.setString(2, productCode);
                         ResultSet rsCheck = pstmtCheck.executeQuery();
-                        
+
                         if (rsCheck.next()) {
                             // If the product already exists in the cart, update the quantity and line cost
                             int existingQuantity = rsCheck.getInt("Quantity");
                             BigDecimal newQuantity = new BigDecimal(existingQuantity + quantity);
-                            BigDecimal newLineCost = retailPrice.multiply(newQuantity).setScale(2, RoundingMode.HALF_UP);
-                            
+                            BigDecimal newLineCost = retailPrice.multiply(newQuantity).setScale(2,
+                                    RoundingMode.HALF_UP);
+
                             String updateOrderLineSQL = "UPDATE OrderLine SET Quantity = ?, Line_cost = ? WHERE order_number = ? AND productCode = ?";
                             PreparedStatement pstmtUpdate = db.con.prepareStatement(updateOrderLineSQL);
                             pstmtUpdate.setInt(1, newQuantity.intValue());
@@ -407,23 +411,27 @@ public class displayInduvidualProductsUI {
                         } else {
                             // If the product does not exist in the cart, insert a new order line
                             String insertOrderLineSQL = "INSERT INTO OrderLine(order_number, line_id, productCode, Quantity, Line_cost) VALUES (?, ?, ?, ?, ?)";
-                    
+
                             // Prepare the SQL statement for inserting the new order line
                             PreparedStatement pstmtInsert = db.con.prepareStatement(insertOrderLineSQL);
-                    
+
                             // Set parameters for the insert statement
                             pstmtInsert.setString(1, orderNumber);
                             pstmtInsert.setString(2, UniqueUserIDGenerator.generateUniqueUserID());
                             pstmtInsert.setString(3, productCode);
                             pstmtInsert.setInt(4, quantity);
                             pstmtInsert.setBigDecimal(5, lineCost);
-                            
+
                             // Execute the insert statement
                             pstmtInsert.executeUpdate();
                             JOptionPane.showMessageDialog(null, "Product added to cart!");
                         }
+
+                        // Pop-up message for successful addition to cart
+                        JOptionPane.showMessageDialog(null, "Item successfully added to cart!", "Success",
+                                JOptionPane.INFORMATION_MESSAGE);
                     }
-                
+
                 } catch (SQLException sqlException) {
                     sqlException.printStackTrace(); // Handle any SQL exceptions here
                 } finally {

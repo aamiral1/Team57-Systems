@@ -140,17 +140,31 @@ public class SignUp extends JPanel {
                     // Sign Up User
                     User newUser = new User(userID, username, name, hashedPassword, emailAddress, houseNumber, cityName,
                             roadName, postcode, joinDate, role, salt);
-                    if (!DatabaseOperations.userExists(newUser.getUsername())) {
-                        DatabaseOperations.signUp(newUser);
-                    } else {
+                    if (!DatabaseOperations.userExists(newUser.getUsername()) && !DatabaseOperations.emailExists(newUser.getEmailAddress())) {
+                        boolean isSignUp = DatabaseOperations.signUp(newUser);
+                        if (isSignUp){
+                            JOptionPane.showMessageDialog(
+                            null,
+                            "Signed Up Successfully",
+                            "Information",
+                            JOptionPane.INFORMATION_MESSAGE);
+                        }
+                    } else if (DatabaseOperations.userExists(newUser.getUsername())){
                         // Create an error pop-up dialog
                         JOptionPane.showMessageDialog(
                                 null,
                                 "Username Taken",
                                 "Error",
                                 JOptionPane.ERROR_MESSAGE);
-
+                    } else if (DatabaseOperations.emailExists(newUser.getEmailAddress())){
+                        // Create an error pop-up dialog
+                        JOptionPane.showMessageDialog(
+                                null,
+                                "Email Taken",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
                     }
+                    
 
                     db.closeConnection();                
 

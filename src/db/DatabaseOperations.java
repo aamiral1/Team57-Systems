@@ -230,6 +230,30 @@ public class DatabaseOperations {
         return isExists;
     }
 
+    public static Boolean emailExists(String email) {
+        Boolean isExists = false;
+        // open db connection
+        DatabaseConnectionHandler db = new DatabaseConnectionHandler();
+        db.openConnection();
+
+        try {
+            String query = "SELECT 1 FROM User WHERE email=?";
+            PreparedStatement pstmt = db.con.prepareStatement(query);
+
+            // get username
+            pstmt.setString(1, email);
+            ResultSet matchedUsers = pstmt.executeQuery();
+
+            if (matchedUsers.next()) {
+                isExists = true; // a user with entered username already exists
+            }
+
+        } catch (SQLException se) {
+            se.printStackTrace();
+        }
+        return isExists;
+    }
+
     public static Boolean saveUserEditDetails(Connection connection, String userID, String username, String name,
             String enteredPassword, String emailString,
             String houseNumber, String cityName, String roadName, String postCode, String salt) {
@@ -333,6 +357,23 @@ public class DatabaseOperations {
 
         try {
             // Prepare SQL Query with bank detail parameters
+            con.setAutoCommit(false);
+
+            // Check for any existing banking detail entries
+            String checkCardQuery = "SELECT * FROM BankingDetails WHERE user_id=?";
+            PreparedStatement astmt = con.prepareStatement(checkCardQuery);
+            astmt.setString(1, myUser.getUserID());
+            ResultSet res = astmt.executeQuery();
+            // Delete any existing card details
+            if (res.next()) {
+                System.out.println("Deleting existing bank details");
+                String deleteBankDetailQuery = "DELETE FROM BankingDetails WHERE user_id=?";
+                PreparedStatement qstmt = con.prepareStatement(deleteBankDetailQuery);
+                qstmt.setString(1, myUser.getUserID());
+                qstmt.executeUpdate();
+            }
+
+            // Insert new banking details
             String query = "INSERT INTO BankingDetails (user_id, card_name, card_number, expiry_date, cvv, valid_status, salt) VALUES (?,?,?,?,?,?,?)";
             PreparedStatement pstmt = con.prepareStatement(query);
 
@@ -346,15 +387,25 @@ public class DatabaseOperations {
 
             // Run the sql query
             pstmt.executeUpdate();
-
+            con.commit();
             System.out.println("Bank Details Updated for User " + myUser.getUserID() + " successfully!");
             isAdded = true;
 
         } catch (SQLException se) {
-            System.out.println(
-                    "Failed to add bank details for user  " + myUser.getUserID() + " " + bankDetail.getCardNumber());
+            System.out.println("Failed to add bank details for user " + myUser.getUserID());
             se.printStackTrace();
+            try {
+                con.rollback();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
             isAdded = false;
+        } finally {
+            try {
+                con.setAutoCommit(true);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
 
         return isAdded;
@@ -404,7 +455,8 @@ public class DatabaseOperations {
                                     updateStockStmt.setInt(1, quantity);
                                     updateStockStmt.setString(2, productCode);
                                     updateStockStmt.executeUpdate();
-                                    System.out.println("Stock quantities updated successfully for product code " + productCode);
+                                    System.out.println(
+                                            "Stock quantities updated successfully for product code " + productCode);
                                 }
                             }
                         } else {

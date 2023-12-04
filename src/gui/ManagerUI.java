@@ -92,7 +92,7 @@ public class ManagerUI extends JFrame {
 
         // Frame properties
         pack(); // Adjusts window to fit all components
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setTitle("Manager UI");
         setLocationRelativeTo(null); // Center the window
         setVisible(true);
